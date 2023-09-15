@@ -1,0 +1,15 @@
+{
+  "name": "owncloud/moodle-repository_ocis",
+  "license": "GPL-3.0-or-later",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/JankariTech/ocis-sdk-php.git"
+    }
+  ],
+  "require": {
+    "owncloud/ocis-sdk-php": "*@dev"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}

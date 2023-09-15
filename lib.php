@@ -1,0 +1,239 @@
+<?php
+
+/**
+ * oCIS repository plugin library.
+ *
+ * @package    repository_ocis
+ * @copyright  2017 Project seminar (Learnweb, University of Münster)
+ * @copyright  2023 ownCloud GmbH
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or
+ */
+
+use core\oauth2\api as oauth2_api;
+use core\oauth2\client as oauth2_client;
+use core\oauth2\issuer as oauth2_issuer;
+use repository_ocis\configuration_exception;
+use repository_ocis\issuer_management;
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot . '/repository/lib.php');
+
+class repository_ocis extends repository {
+    const SCOPES = 'openid profile email offline_access';
+    private ?oauth2_issuer $oauth2_issuer;
+    private ?oauth2_client $oauth2_client = null;
+
+    /**
+     * repository_nextcloud constructor.
+     *
+     * @param int $repositoryid
+     * @param bool|int|stdClass $context
+     * @param array $options
+     */
+    public function __construct($repositoryid, $context = SYSCONTEXTID, $options = array()) {
+        parent::__construct($repositoryid, $context, $options);
+        // Issuer from repository instance config.
+        $issuerid = $this->get_option('issuerid');
+        $this->oauth2_issuer = oauth2_api::get_issuer($issuerid);
+
+        try {
+            // Load the webdav endpoint and parse the basepath.
+            $webdavendpoint = issuer_management::parse_endpoint_url('webdav', $this->oauth2_issuer);
+            // Get basepath without trailing slash, because future uses will come with a leading slash.
+            $basepath = $webdavendpoint['path'];
+            if (strlen($basepath) > 0 && substr($basepath, -1) === '/') {
+                $basepath = substr($basepath, 0, -1);
+            }
+            $this->davbasepath = $basepath;
+        } catch (configuration_exception $e) {
+            // A repository is marked as disabled when no webdav_endpoint is present
+            // or it fails to parse, because all operations concerning files
+            // rely on the webdav endpoint.
+            $this->disabled = true;
+            return;
+        }
+
+        if (!$this->oauth2_issuer) {
+            $this->disabled = true;
+            return;
+        } else if (!$this->oauth2_issuer->get('enabled')) {
+            // In case the Issuer is not enabled, the repository is disabled.
+            $this->disabled = true;
+            return;
+        } else if (!issuer_management::is_valid_issuer($this->oauth2_issuer)) {
+            // Check if necessary endpoints are present.
+            $this->disabled = true;
+            return;
+        }
+    }
+
+    /**
+     * Get file listing.
+     *
+     * This is a mandatory method for any repository.
+     *
+     * See repository::get_listing() for details.
+     *
+     * @param string $encodedpath
+     * @param string $page
+     * @return array the list of files, including meta information
+     */
+    public function get_listing($encodedpath = '', $page = '') {
+        // This methods
+        return array('list' => []);
+    }
+
+    /**
+     * This method adds a select form and additional information to the settings form..
+     *
+     * @param \moodleform $mform Moodle form (passed by reference)
+     * @return bool|void
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public static function instance_config_form($mform) {
+        if (!has_capability('moodle/site:config', context_system::instance())) {
+            $mform->addElement('static', null, '',  get_string('nopermissions', 'error', get_string('configplugin',
+                'repository_ocis')));
+            return false;
+        }
+
+        // Load configured issuers.
+        $issuers = core\oauth2\api::get_all_issuers();
+        $types = array();
+
+        // Validates which issuers implement the right endpoints. WebDav is necessary for ocis.
+        $validissuers = [];
+        foreach ($issuers as $issuer) {
+            $types[$issuer->get('id')] = $issuer->get('name');
+            if (\repository_ocis\issuer_management::is_valid_issuer($issuer)) {
+                $validissuers[] = $issuer->get('name');
+            }
+        }
+
+        // Render the form.
+        $url = new \moodle_url('/admin/tool/oauth2/issuers.php');
+        $mform->addElement('static', null, '', get_string('oauth2serviceslink', 'repository_ocis', $url->out()));
+
+        $mform->addElement('select', 'issuerid', get_string('chooseissuer', 'repository_ocis'), $types);
+        $mform->addRule('issuerid', get_string('required'), 'required', null, 'issuer');
+        $mform->addHelpButton('issuerid', 'chooseissuer', 'repository_ocis');
+        $mform->setType('issuerid', PARAM_INT);
+
+        // All issuers that are valid are displayed seperately (if any).
+        if (count($validissuers) === 0) {
+            $mform->addElement('static', null, '', get_string('no_right_issuers', 'repository_ocis'));
+        } else {
+            $mform->addElement('static', null, '', get_string('right_issuers', 'repository_ocis',
+                implode(', ', $validissuers)));
+        }
+    }
+
+    /**
+     * Get a cached user authenticated oauth client.
+     *
+     * @param bool|moodle_url $overrideurl Use this url instead of the repo callback.
+     * @return oauth2_client
+     */
+    protected function get_user_oauth_client($overrideurl = false) {
+        if ($this->oauth2_client) {
+            return $this->oauth2_client;
+        }
+        if ($overrideurl) {
+            $returnurl = $overrideurl;
+        } else {
+            $returnurl = new moodle_url('/repository/repository_callback.php');
+            $returnurl->param('callback', 'yes');
+            $returnurl->param('repo_id', $this->id);
+            $returnurl->param('sesskey', sesskey());
+        }
+        $this->oauth2_client = oauth2_api::get_user_oauth_client($this->oauth2_issuer, $returnurl, self::SCOPES, true);
+        return $this->oauth2_client;
+    }
+
+    /**
+     * Prints a simple Login Button which redirects to an authorization window of ocis.
+     *
+     * @return array<mixed> login window properties.
+     * @throws coding_exception
+     */
+    public function print_login(): array {
+        $client = $this->get_user_oauth_client();
+        $loginurl = $client->get_login_url();
+        if ($this->options['ajax']) {
+            $ret = array();
+            $btn = new \stdClass();
+            $btn->type = 'popup';
+            $btn->url = $loginurl->out(false);
+            $ret['login'] = array($btn);
+            return $ret;
+        } else {
+            echo html_writer::link($loginurl, get_string('login', 'repository'),
+                array('target' => '_blank',  'rel' => 'noopener noreferrer'));
+        }
+        return [];
+    }
+
+    /**
+     * Sets up access token after the redirection from Nextcloud.
+     */
+    public function callback() {
+        $client = $this->get_user_oauth_client();
+        // If an Access Token is stored within the client, it has to be deleted to prevent the addition
+        // of an Bearer authorization header in the request method.
+        $client->log_out();
+
+        // This will upgrade to an access token if we have an authorization code and save the access token in the session.
+        $client->is_logged_in();
+    }
+
+    /**
+     * Deletes the held Access Token and prints the Login window.
+     *
+     * @return array login window properties.
+     */
+    public function logout() {
+        $client = $this->get_user_oauth_client();
+        $client->log_out();
+        return parent::logout();
+    }
+
+    /**
+     * Function which checks whether the user is logged in on the Nextcloud instance.
+     *
+     * @return bool false, if no Access Token is set or can be requested.
+     */
+    public function check_login() {
+        $client = $this->get_user_oauth_client();
+        return $client->is_logged_in();
+    }
+
+    /**
+     * Tells how the file can be picked from this repository.
+     *
+     * @return int
+     */
+    public function supported_returntypes() {
+        return FILE_INTERNAL;
+    }
+
+    /**
+     * Which return type should be selected by default.
+     *
+     * @return int
+     */
+    public function default_returntype() {
+        return FILE_INTERNAL;
+    }
+
+    /**
+     * Names of the plugin settings
+     *
+     * @return array
+     */
+    public static function get_instance_option_names() {
+        return ['issuerid', 'controlledlinkfoldername',
+            'defaultreturntype', 'supportedreturntypes'];
+    }
+}
