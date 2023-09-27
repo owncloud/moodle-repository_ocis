@@ -37,23 +37,6 @@ class repository_ocis extends repository {
         $issuerid = $this->get_option('issuerid');
         $this->oauth2_issuer = oauth2_api::get_issuer($issuerid);
 
-        try {
-            // Load the webdav endpoint and parse the basepath.
-            $webdavendpoint = issuer_management::parse_endpoint_url('webdav', $this->oauth2_issuer);
-            // Get basepath without trailing slash, because future uses will come with a leading slash.
-            $basepath = $webdavendpoint['path'];
-            if (strlen($basepath) > 0 && substr($basepath, -1) === '/') {
-                $basepath = substr($basepath, 0, -1);
-            }
-            $this->davbasepath = $basepath;
-        } catch (configuration_exception $e) {
-            // A repository is marked as disabled when no webdav_endpoint is present
-            // or it fails to parse, because all operations concerning files
-            // rely on the webdav endpoint.
-            $this->disabled = true;
-            return;
-        }
-
         if (!$this->oauth2_issuer) {
             $this->disabled = true;
             return;

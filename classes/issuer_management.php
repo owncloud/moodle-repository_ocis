@@ -44,8 +44,6 @@ class issuer_management {
      * @return bool True, if all endpoints exist; false otherwise.
      */
     public static function is_valid_issuer(\core\oauth2\issuer $issuer) {
-        $endpointwebdav = false;
-        $endpointocs = false;
         $endpointtoken = false;
         $endpointauth = false;
         $endpointuserinfo = false;
@@ -53,12 +51,6 @@ class issuer_management {
         foreach ($endpoints as $endpoint) {
             $name = $endpoint->get('name');
             switch ($name) {
-                case 'webdav_endpoint':
-                    $endpointwebdav = true;
-                    break;
-                case 'ocs_endpoint':
-                    $endpointocs = true;
-                    break;
                 case 'token_endpoint':
                     $endpointtoken = true;
                     break;
@@ -70,7 +62,7 @@ class issuer_management {
                     break;
             }
         }
-        return $endpointwebdav && $endpointocs && $endpointtoken && $endpointauth && $endpointuserinfo;
+        return $endpointtoken && $endpointauth && $endpointuserinfo;
     }
 
     /**
