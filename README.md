@@ -39,8 +39,8 @@ The moodle administrator is able to name a folder to limit every user to only be
      ```bash
      git clone https://github.com/moodle/moodle.git --branch MOODLE_402_STABLE --single-branch --depth=1
      cd moodle/repository/
-     git clone https://github.com/owncloud/moodle-repository_ocis.git
-     cd moodle-repository_ocis
+     git clone https://github.com/owncloud/moodle-repository_ocis.git ocis
+     cd ocis
      composer install
      cd ../../../
      git clone https://github.com/moodlehq/moodle-docker.git
