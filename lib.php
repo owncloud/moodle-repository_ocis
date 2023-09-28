@@ -16,7 +16,6 @@ use Owncloud\OcisSdkPhp\Drive;
 use Owncloud\OcisSdkPhp\DriveType;
 use Owncloud\OcisSdkPhp\Ocis;
 use Owncloud\OcisSdkPhp\OcisResource;
-use repository_ocis\configuration_exception;
 use repository_ocis\issuer_management;
 
 defined('MOODLE_INTERNAL') || die();
@@ -27,9 +26,10 @@ require_once($CFG->dirroot . '/repository/lib.php');
 class repository_ocis extends repository {
     private ?oauth2_issuer $oauth2_issuer;
     private ?oauth2_client $oauth2_client = null;
+    private ?Ocis $ocis = null;
 
     /**
-     * repository_nextcloud constructor.
+     * repository_ocis constructor.
      *
      * @param int $repositoryid
      * @param bool|int|stdClass $context
@@ -56,6 +56,22 @@ class repository_ocis extends repository {
     }
 
     /**
+     * @throws coding_exception
+     * @throws \Exception
+     */
+    private function getOcisClient(): Ocis {
+        $access_token = $this->get_user_oauth_client()->get_accesstoken();
+
+        if ($this->ocis === null) {
+            $base_url = $this->oauth2_issuer->get('baseurl');
+            $this->ocis = new Ocis($base_url, $access_token->token);
+        } else {
+            //update the token for the ocis client, just in case it changed
+            $this->ocis->setAccessToken($access_token->token);
+        }
+        return $this->ocis;
+    }
+    /**
      * Get file listing.
      *
      * This is a mandatory method for any repository.
@@ -73,9 +89,7 @@ class repository_ocis extends repository {
             $path = '/';
         }
 
-        $base_url = $this->oauth2_issuer->get('baseurl');
-        $access_token = $this->get_user_oauth_client()->get_accesstoken();
-        $ocis = new Ocis($base_url,$access_token->token);
+        $ocis = $this->getOcisClient();
         $drives = $ocis->listMyDrives();
         /**
          * @type ?Drive $drive
@@ -172,7 +186,7 @@ class repository_ocis extends repository {
         $issuers = core\oauth2\api::get_all_issuers();
         $types = array();
 
-        // Validates which issuers implement the right endpoints. WebDav is necessary for ocis.
+        // Validates which issuers implement the right endpoints.
         $validissuers = [];
         foreach ($issuers as $issuer) {
             $types[$issuer->get('id')] = $issuer->get('name');
@@ -190,7 +204,7 @@ class repository_ocis extends repository {
         $mform->addHelpButton('issuerid', 'chooseissuer', 'repository_ocis');
         $mform->setType('issuerid', PARAM_INT);
 
-        // All issuers that are valid are displayed seperately (if any).
+        // All issuers that are valid are displayed separately (if any).
         if (count($validissuers) === 0) {
             $mform->addElement('static', null, '', get_string('no_right_issuers', 'repository_ocis'));
         } else {
@@ -245,7 +259,7 @@ class repository_ocis extends repository {
     }
 
     /**
-     * Sets up access token after the redirection from Nextcloud.
+     * Sets up access token after the redirection from ocis.
      */
     public function callback() {
         $client = $this->get_user_oauth_client();
@@ -269,7 +283,7 @@ class repository_ocis extends repository {
     }
 
     /**
-     * Function which checks whether the user is logged in on the Nextcloud instance.
+     * Function which checks whether the user is logged in on the ocis instance.
      *
      * @return bool false, if no Access Token is set or can be requested.
      */
@@ -304,5 +318,15 @@ class repository_ocis extends repository {
     public static function get_instance_option_names() {
         return ['issuerid', 'controlledlinkfoldername',
             'defaultreturntype', 'supportedreturntypes'];
+    }
+
+    public function get_file($fileId, $filename = ''): array
+    {
+        $ocis = $this->getOcisClient();
+
+        $local_path = $this->prepare_file($fileId);
+        $stream = $ocis->getFileStreamById($fileId);
+        file_put_contents($local_path, $stream);
+        return ['path' => $local_path, 'url' => $fileId];
     }
 }
