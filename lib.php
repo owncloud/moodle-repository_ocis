@@ -12,15 +12,19 @@
 use core\oauth2\api as oauth2_api;
 use core\oauth2\client as oauth2_client;
 use core\oauth2\issuer as oauth2_issuer;
+use Owncloud\OcisSdkPhp\Drive;
+use Owncloud\OcisSdkPhp\DriveType;
+use Owncloud\OcisSdkPhp\Ocis;
+use Owncloud\OcisSdkPhp\OcisResource;
 use repository_ocis\configuration_exception;
 use repository_ocis\issuer_management;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once (__DIR__ . '/vendor/autoload.php');
 require_once($CFG->dirroot . '/repository/lib.php');
 
 class repository_ocis extends repository {
-    const SCOPES = 'openid profile email offline_access';
     private ?oauth2_issuer $oauth2_issuer;
     private ?oauth2_client $oauth2_client = null;
 
@@ -58,13 +62,95 @@ class repository_ocis extends repository {
      *
      * See repository::get_listing() for details.
      *
-     * @param string $encodedpath
+     * @param string $path
      * @param string $page
      * @return array the list of files, including meta information
+     * @throws Exception
      */
-    public function get_listing($encodedpath = '', $page = '') {
-        // This methods
-        return array('list' => []);
+    public function get_listing($path = '', $page = '') {
+        global $OUTPUT;
+        if ($path === "") {
+            $path = '/';
+        }
+
+        $base_url = $this->oauth2_issuer->get('baseurl');
+        $access_token = $this->get_user_oauth_client()->get_accesstoken();
+        $ocis = new Ocis($base_url,$access_token->token);
+        $drives = $ocis->listMyDrives();
+        /**
+         * @type ?Drive $drive
+         */
+        $drive = null;
+        foreach ($drives as $drive) {
+            if ($drive->getType() === DriveType::PERSONAL) {
+                break;
+            }
+        }
+        if ($drive === null) {
+            throw new Exception(get_string('no_personal_drive_found', 'repository_ocis'));
+        }
+        $resources = $drive->listResources($path);
+
+        $list = [];
+        /**
+         * @type OcisResource $resource
+         */
+        foreach ($resources as $resource) {
+            $last_modified_time = new DateTime($resource->getLastModifiedTime());
+            $list_item = [
+                'title' => $resource->getName(),
+                'date' => $last_modified_time->getTimestamp(),
+                'size' => $resource->getSize(),
+                'source' => $resource->getId()
+            ];
+            if ($resource->getType() === 'folder') {
+                $list_item['children'] = [];
+                $list_item['path'] = $path . "/" . $resource->getName();
+                $list_item['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
+
+                // for sorting, `0` to make sure folders are on top
+                // then the name in uppercase to sort everything alphabetically with ksort
+                $list["0" . strtoupper($resource->getName())] = $list_item;
+            } else {
+                $list_item['thumbnail'] = $OUTPUT->image_url(
+                    file_extension_icon($resource->getName(), 90)
+                )->out(false);
+
+                // for sorting, `1` to make sure files are listed after folders
+                $list["1" . strtoupper($resource->getName())] = $list_item;
+
+            }
+        }
+
+        $breadcrumb_path = [
+            [
+                'name' => $this->get_meta()->name,
+                'path' => '/',
+            ]
+        ];
+        if ($path !== '/') {
+            $chunks = explode('/', trim($path, '/'));
+            $parent = '/';
+            // Every sub-path to the last part of the current path is a parent path.
+            foreach ($chunks as $chunk) {
+                $subpath = $parent . $chunk . '/';
+                $breadcrumb_path[] = [
+                    'name' => urldecode($chunk),
+                    'path' => $subpath
+                ];
+                // Prepare next iteration.
+                $parent = $subpath;
+            }
+        }
+        ksort($list);
+        return [
+            //this will be used to build navigation bar
+            'dynload' => true,
+            'nosearch' => true,
+            'path' => $breadcrumb_path,
+            'manage' => $drive->getWebUrl(),
+            'list' => $list
+        ];
     }
 
     /**
@@ -131,7 +217,7 @@ class repository_ocis extends repository {
             $returnurl->param('repo_id', $this->id);
             $returnurl->param('sesskey', sesskey());
         }
-        $this->oauth2_client = oauth2_api::get_user_oauth_client($this->oauth2_issuer, $returnurl, self::SCOPES, true);
+        $this->oauth2_client = oauth2_api::get_user_oauth_client($this->oauth2_issuer, $returnurl, '', true);
         return $this->oauth2_client;
     }
 
