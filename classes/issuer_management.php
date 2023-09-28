@@ -65,6 +65,17 @@ class issuer_management {
         return $endpointtoken && $endpointauth && $endpointuserinfo;
     }
 
+    public static function get_webfinger_url(\core\oauth2\issuer $issuer): string|bool {
+        $endpoints = \core\oauth2\api::get_endpoints($issuer);
+        foreach ($endpoints as $endpoint) {
+            $name = $endpoint->get('name');
+            if ($name === 'webfinger_endpoint') {
+                return $endpoint->get('url');
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns the parsed url parts of an endpoint of an issuer.
      * @param string $endpointname
