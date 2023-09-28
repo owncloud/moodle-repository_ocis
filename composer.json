@@ -4,7 +4,7 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/JankariTech/ocis-sdk-php.git"
+      "url": "https://github.com/owncloud/ocis-php-sdk.git"
     }
   ],
   "require": {
