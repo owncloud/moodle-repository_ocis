@@ -12,10 +12,10 @@
 use core\oauth2\api as oauth2_api;
 use core\oauth2\client as oauth2_client;
 use core\oauth2\issuer as oauth2_issuer;
-use Owncloud\OcisSdkPhp\Drive;
-use Owncloud\OcisSdkPhp\DriveType;
-use Owncloud\OcisSdkPhp\Ocis;
-use Owncloud\OcisSdkPhp\OcisResource;
+use Owncloud\OcisPhpSdk\Drive;
+use Owncloud\OcisPhpSdk\DriveType;
+use Owncloud\OcisPhpSdk\Ocis;
+use Owncloud\OcisPhpSdk\OcisResource;
 use repository_ocis\issuer_management;
 
 defined('MOODLE_INTERNAL') || die();
