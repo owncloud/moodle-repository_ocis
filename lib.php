@@ -96,7 +96,7 @@ class repository_ocis extends repository {
          */
         $drive = null;
         foreach ($drives as $drive) {
-            if ($drive->getType() === DriveType::PERSONAL) {
+            if ($drive->getType() === DriveType::PERSONAL->value) {
                 break;
             }
         }
