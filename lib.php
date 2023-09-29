@@ -91,19 +91,24 @@ class repository_ocis extends repository {
 
         $ocis = $this->getOcisClient();
         $drives = $ocis->listMyDrives();
+
         /**
-         * @type ?Drive $drive
+         * @type ?Drive $personalDrive
          */
-        $drive = null;
+        $personalDrive = null;
         foreach ($drives as $drive) {
+            /**
+             * @type Drive $drive
+             */
             if ($drive->getType() === DriveType::PERSONAL->value) {
+                $personalDrive = $drive;
                 break;
             }
         }
-        if ($drive === null) {
+        if ($personalDrive === null) {
             throw new Exception(get_string('no_personal_drive_found', 'repository_ocis'));
         }
-        $resources = $drive->listResources($path);
+        $resources = $personalDrive->listResources($path);
 
         $list = [];
         /**
@@ -162,7 +167,7 @@ class repository_ocis extends repository {
             'dynload' => true,
             'nosearch' => true,
             'path' => $breadcrumb_path,
-            'manage' => $drive->getWebUrl(),
+            'manage' => $personalDrive->getWebUrl(),
             'list' => $list
         ];
     }
