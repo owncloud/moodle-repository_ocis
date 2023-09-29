@@ -100,7 +100,7 @@ class repository_ocis extends repository {
             /**
              * @type Drive $drive
              */
-            if ($drive->getType() === DriveType::PERSONAL->value) {
+            if ($drive->getType() === DriveType::PERSONAL) {
                 $personalDrive = $drive;
                 break;
             }
