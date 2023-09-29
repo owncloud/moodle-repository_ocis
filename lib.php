@@ -65,13 +65,21 @@ class repository_ocis extends repository {
         if ($this->ocis === null) {
             $webfinger_url = issuer_management::get_webfinger_url($this->oauth2_issuer);
             if ($webfinger_url) {
-                $this->ocis = new Ocis($webfinger_url, $access_token->token, ['webfinger' => true]);
+                try {
+                    $this->ocis = new Ocis($webfinger_url, $access_token->token, ['webfinger' => true]);
+                } catch (\Exception $e) {
+                    throw new \moodle_exception(
+                        'webfinger_error',
+                        'repository_ocis',
+                        '',
+                        null,
+                        $e->getMessage()
+                    );
+                }
             } else {
                 $base_url = $this->oauth2_issuer->get('baseurl');
                 $this->ocis = new Ocis($base_url, $access_token->token);
             }
-
-
         } else {
             //update the token for the ocis client, just in case it changed
             $this->ocis->setAccessToken($access_token->token);
