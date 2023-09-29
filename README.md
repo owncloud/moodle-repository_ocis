@@ -34,6 +34,19 @@ The moodle administrator is able to name a folder to limit every user to only be
 ## Installation
 
 1. Install [ocis](https://doc.owncloud.com/ocis/next/quickguide/quickguide.html)
+   - NOTE: if you want to run ocis on `localhost` you need to create TLS certificates, make your system trust them and start ocis with those certificates. e.g. on Debian based systems:
+     ```bash
+     openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=localhost'
+     sudo cp ocis.crt /usr/local/share/ca-certificates
+     sudo update-ca-certificates
+     OCIS_INSECURE=true \
+     PROXY_HTTP_ADDR=0.0.0.0:9200 \
+     OCIS_URL=https://localhost:9200 \
+     PROXY_TRANSPORT_TLS_KEY=./ocis.pem \
+     PROXY_TRANSPORT_TLS_CERT=./ocis.crt \
+     ./ocis server
+     ```
+     :exclamation: Having set `OCIS_INSECURE=true` is not recommended for production use! :exclamation:
 2. Install moodle and this plugin
    - Development environment with docker
      ```bash
@@ -58,25 +71,27 @@ The moodle administrator is able to name a folder to limit every user to only be
      - copy / clone the code of the repository into the `repository/ocis` folder of your moodle installation
      - run `composer install` inside of the `repository/ocis` folder
 3. Login to moodle as "admin"
-4. Go to the "OAuth 2 services" page ("Site administration" > "Server" > "OAuth 2 services")
-5. Create a new "Custom" service
+4. If you run ocis on `localhost` or any local IP address go to the "HTTP security" page ("Site administration" > "Server" > "HTTP security") and delete the IP address and host-name you are using from the "cURL blocked hosts list" list
+5. If you run ocis on any port other than `443` go to the "HTTP security" page ("Site administration" > "Server" > "HTTP security") and add the port you are using to the "cURL allowed ports list" list
+6. Go to the "OAuth 2 services" page ("Site administration" > "Server" > "OAuth 2 services")
+7. Create a new "Custom" service
    - Choose any name you like
      - Set "Client ID", for testing `xdXOt13JKxym1B1QcEncf2XDkLAexMBFwiT9j6EfhhHFJhs2KM9jbjTmf8JBXE69` can be used
      - Set "Client secret", for testing `UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh` can be used
      - Set "Service base URL" to the URL of your ocis instance. An instance with a trusted TLS certificate is required. 
      - Set "Scopes included in a login request for offline access." to `openid offline_access email profile`
-6. Go to the "Manage repositories" page ("Site administration" > "Plugins" > "Repositories" > "Manage repositories")
-7. Set the "ownCloud Infinite Scale repository" to "Enabled and visible"
-8. Save the settings
-9. Go again into the Settings page of the "ownCloud Infinite Scale repository"
-10. Create a new repository instance
-11. Choose a name you like
-12. Select the Oauth2 service you created before
-13. Save the settings
-14. Navigate to any page where there is a file picker e.g. "My courses" > "Create course" > "Course image"
-15. "Add" a new file
-16. Select the repository you have created earlier
-17. Click "Login in to your account"
-18. Go through the login / oauth process
-19. Now you should be able to see the content of your personal space and select files from there
+8. Go to the "Manage repositories" page ("Site administration" > "Plugins" > "Repositories" > "Manage repositories")
+9. Set the "ownCloud Infinite Scale repository" to "Enabled and visible"
+10. Save the settings
+11. Go again into the Settings page of the "ownCloud Infinite Scale repository"
+12. Create a new repository instance
+13. Choose a name you like
+14. Select the Oauth2 service you created before
+15. Save the settings
+16. Navigate to any page where there is a file picker e.g. "My courses" > "Create course" > "Course image"
+17. "Add" a new file
+18. Select the repository you have created earlier
+19. Click "Login in to your account"
+20. Go through the login / oauth process
+21. Now you should be able to see the content of your personal space and select files from there
 
