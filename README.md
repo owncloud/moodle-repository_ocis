@@ -27,10 +27,6 @@ There are three different modes for the Moodle user to link files from oCIS to M
 3. **Controlled Link**: (Create an access controlled link to the file)
    For this to work a special oCIS account needs to be connected to Moodle that will be used as a System account. If the user selects the "Controlled Link" option, the file will first be copied to a Moodle specific folder in oCIS, then shared to the System account and Moodle will access it through the System account.
 
-### 3. Limiting linking possibilities to a single folder (root jail)
-
-The moodle administrator is able to name a folder to limit every user to only be able to link files from a folder with that specific name inside her/his personal space to Moodle. This named folder will effectively become a root jail for any linking operations with moodle. The user will be able to use any file from that folder or any sub-folder below the root jail.
-
 ## Installation
 
 1. Install [ocis](https://doc.owncloud.com/ocis/next/quickguide/quickguide.html)
