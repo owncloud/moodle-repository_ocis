@@ -35,3 +35,4 @@ $string['oauth2serviceslink'] = '<a href="{$a}" title="Link to OAuth 2 services 
 
 // Filepicker
 $string['no_personal_drive_found'] = 'No personal drive found';
+$string['webfinger_error'] = 'Could not get user-information from webfinger service.';
