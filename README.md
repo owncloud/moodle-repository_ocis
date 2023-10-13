@@ -67,8 +67,8 @@ There are three different modes for the Moodle user to link files from oCIS to M
      - copy / clone the code of the repository into the `repository/ocis` folder of your moodle installation
      - run `composer install` inside of the `repository/ocis` folder
 3. Login to moodle as "admin"
-4. If you run ocis on `localhost` or any local IP address go to the "HTTP security" page ("Site administration" > "Server" > "HTTP security") and delete the IP address and host-name you are using from the "cURL blocked hosts list" list
-5. If you run ocis on any port other than `443` go to the "HTTP security" page ("Site administration" > "Server" > "HTTP security") and add the port you are using to the "cURL allowed ports list" list
+4. If you run ocis on `localhost` or any local IP address go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and delete the IP address and host-name you are using from the "cURL blocked hosts list" list
+5. If you run ocis on any port other than `443` go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and add the port you are using to the "cURL allowed ports list" list
 6. Go to the "OAuth 2 services" page ("Site administration" > "Server" > "OAuth 2 services")
 7. Create a new "Custom" service
    1. Choose any name you like
@@ -79,7 +79,7 @@ There are three different modes for the Moodle user to link files from oCIS to M
    6. Save the changes
 8. To use webfinger for discovery of the oCIS server that is assigned to a specific user:
     1. Click on the "Configure endpoints" icon of the newly created service
-    2. Create a new endpoint with the name `webfinger_endpoint` and the webfinder URL e.g. `<service-base-url>/.well-known/webfinger`
+    2. Create a new endpoint with the name `webfinger_endpoint` and the webfinger URL e.g. `<service-base-url>/.well-known/webfinger`
 9. Go to the "Manage repositories" page ("Site administration" > "Plugins" > "Repositories" > "Manage repositories")
 10. Set the "ownCloud Infinite Scale repository" to "Enabled and visible"
 11. Save the settings
