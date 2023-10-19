@@ -97,7 +97,7 @@ There are three different modes for the Moodle user to link files from oCIS to M
           ```
 3. Login to moodle as "admin"
 4. If you run oCIS on `localhost` or any local IP address go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and delete the IP address and host-name you are using from the "cURL blocked hosts list" list. E.g if you have been following the examples above and using `https://host.docker.internal:9200` as the address for oCIS, you will have to delete `172.16.0.0/12` from the list. 
-5. If you run oCIS on any port other than `443` go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and add the port you are using to the "cURL allowed ports list" list
+5. If you run oCIS on any port other than `443` go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and add the port you are using to the "cURL allowed ports list" list. E.g. if you have been following the examples above add `9200` to the list.
 6. Go to the "OAuth 2 services" page ("Site administration" > "Server" > "OAuth 2 services")
 7. Create a new "Custom" service
    1. Choose any name you like
