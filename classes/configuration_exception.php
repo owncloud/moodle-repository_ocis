@@ -25,8 +25,6 @@
 
 namespace repository_ocis;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Exception for when client configuration data is missing.
  *
@@ -35,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class configuration_exception extends \moodle_exception {
-
     /**
      * This exception is used when the configuration of the plugin can not be processed or database entries are
      * missing.
