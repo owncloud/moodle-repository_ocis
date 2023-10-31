@@ -27,8 +27,6 @@ namespace repository_ocis;
 
 use repository_ocis\configuration_exception;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Provide static functions for creating and validating issuers.
  *
@@ -37,7 +35,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class issuer_management {
-
     /**
      * Check if an issuer provides all endpoints that are required by repository_ocis.
      * @param \core\oauth2\issuer $issuer An issuer.
@@ -65,6 +62,13 @@ class issuer_management {
         return $endpointtoken && $endpointauth && $endpointuserinfo;
     }
 
+    /**
+     * If a webfinger URL is set for the oauth service/issue return it, otherwise return FALSE
+     *
+     * @param \core\oauth2\issuer $issuer
+     * @return string|bool
+     * @throws \coding_exception
+     */
     public static function get_webfinger_url(\core\oauth2\issuer $issuer): string|bool {
         $endpoints = \core\oauth2\api::get_endpoints($issuer);
         foreach ($endpoints as $endpoint) {
@@ -83,7 +87,7 @@ class issuer_management {
      * @return array parseurl [scheme => https/http, host=>'hostname', port=>443, path=>'path']
      * @throws configuration_exception if an endpoint is undefined
      */
-    public static function parse_endpoint_url(string $endpointname, \core\oauth2\issuer $issuer) : array {
+    public static function parse_endpoint_url(string $endpointname, \core\oauth2\issuer $issuer): array {
         $url = $issuer->get_endpoint_url($endpointname);
         if (empty($url)) {
             throw new configuration_exception(get_string('endpointnotdefined', 'repository_ocis', $endpointname));

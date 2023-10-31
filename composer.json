@@ -11,5 +11,14 @@
     "owncloud/ocis-php-sdk": "*@dev"
   },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "require-dev": {
+    "squizlabs/php_codesniffer": "*",
+    "moodlehq/moodle-cs": "^3.3"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
 }

@@ -94,3 +94,15 @@ There are three different modes for the Moodle user to link files from oCIS to M
 20. Click "Login in to your account"
 21. Go through the login / oauth process
 22. Now you should be able to see the content of your personal space and select files from there
+
+
+## Development
+
+### Run tests
+
+#### Style check
+To meet the [moodle coding style](https://moodledev.io/general/development/policies/codingstyle), we are using phpcs with the [moodle ruleset](https://moodledev.io/general/development/tools/phpcs).
+```bash
+make test-php-style
+make test-php-style-fix
+```

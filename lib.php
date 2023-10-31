@@ -1,4 +1,19 @@
 <?php
+// This file is part of the ocis repository for Moodle - http://moodle.org/
+//
+// The ocis repository for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The ocis repository for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with the ocis repository for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 /**
  * oCIS repository plugin library.
@@ -20,12 +35,34 @@ use repository_ocis\issuer_management;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once (__DIR__ . '/vendor/autoload.php');
+require_once(__DIR__ . '/vendor/autoload.php');
 require_once($CFG->dirroot . '/repository/lib.php');
 
+/**
+ * oCIS repository class.
+ *
+ * @package    repository_ocis
+ * @copyright  2017 Project seminar (Learnweb, University of Münster)
+ * @copyright  2023 ownCloud GmbH
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class repository_ocis extends repository {
-    private ?oauth2_issuer $oauth2_issuer;
-    private ?oauth2_client $oauth2_client = null;
+    /**
+     * OAuth 2 Issuer used by this repo.
+     * @var ?oauth2_issuer
+     */
+    private ?oauth2_issuer $oauth2issuer;
+
+    /**
+     * OAuth 2 client used by this repo.
+     * @var ?oauth2_client
+     */
+    private ?oauth2_client $oauth2client = null;
+
+    /**
+     * Main object to access the oCIS instance.
+     * @var ?Ocis
+     */
     private ?Ocis $ocis = null;
 
     /**
@@ -35,20 +72,20 @@ class repository_ocis extends repository {
      * @param bool|int|stdClass $context
      * @param array $options
      */
-    public function __construct($repositoryid, $context = SYSCONTEXTID, $options = array()) {
+    public function __construct($repositoryid, $context = SYSCONTEXTID, $options = []) {
         parent::__construct($repositoryid, $context, $options);
         // Issuer from repository instance config.
         $issuerid = $this->get_option('issuerid');
-        $this->oauth2_issuer = oauth2_api::get_issuer($issuerid);
+        $this->oauth2issuer = oauth2_api::get_issuer($issuerid);
 
-        if (!$this->oauth2_issuer) {
+        if (!$this->oauth2issuer) {
             $this->disabled = true;
             return;
-        } else if (!$this->oauth2_issuer->get('enabled')) {
+        } else if (!$this->oauth2issuer->get('enabled')) {
             // In case the Issuer is not enabled, the repository is disabled.
             $this->disabled = true;
             return;
-        } else if (!issuer_management::is_valid_issuer($this->oauth2_issuer)) {
+        } else if (!issuer_management::is_valid_issuer($this->oauth2issuer)) {
             // Check if necessary endpoints are present.
             $this->disabled = true;
             return;
@@ -56,17 +93,21 @@ class repository_ocis extends repository {
     }
 
     /**
+     * Returns the oCIS client object.
+     * This function will create a new client if none exists or update the token if it changed,
+     * that way it makes sure that always the current token is used.
+     *
      * @throws coding_exception
      * @throws \Exception
      */
-    private function getOcisClient(): Ocis {
-        $access_token = $this->get_user_oauth_client()->get_accesstoken();
+    private function getocisclient(): Ocis {
+        $accesstoken = $this->get_user_oauth_client()->get_accesstoken();
 
         if ($this->ocis === null) {
-            $webfinger_url = issuer_management::get_webfinger_url($this->oauth2_issuer);
-            if ($webfinger_url) {
+            $webfingerurl = issuer_management::get_webfinger_url($this->oauth2issuer);
+            if ($webfingerurl) {
                 try {
-                    $this->ocis = new Ocis($webfinger_url, $access_token->token, ['webfinger' => true]);
+                    $this->ocis = new Ocis($webfingerurl, $accesstoken->token, ['webfinger' => true]);
                 } catch (\Exception $e) {
                     throw new \moodle_exception(
                         'webfinger_error',
@@ -77,12 +118,12 @@ class repository_ocis extends repository {
                     );
                 }
             } else {
-                $base_url = $this->oauth2_issuer->get('baseurl');
-                $this->ocis = new Ocis($base_url, $access_token->token);
+                $baseurl = $this->oauth2issuer->get('baseurl');
+                $this->ocis = new Ocis($baseurl, $accesstoken->token);
             }
         } else {
-            //update the token for the ocis client, just in case it changed
-            $this->ocis->setAccessToken($access_token->token);
+            // Update the token for the ocis client, just in case it changed.
+            $this->ocis->setAccessToken($accesstoken->token);
         }
         return $this->ocis;
     }
@@ -107,60 +148,53 @@ class repository_ocis extends repository {
         $ocis = $this->getOcisClient();
         $drives = $ocis->listMyDrives();
 
-        /**
-         * @type ?Drive $personalDrive
-         */
-        $personalDrive = null;
+        /** @var ?Drive $personaldrive */
+        $personaldrive = null;
+        /** @var Drive $drive */
         foreach ($drives as $drive) {
-            /**
-             * @type Drive $drive
-             */
             if ($drive->getType() === DriveType::PERSONAL) {
-                $personalDrive = $drive;
+                $personaldrive = $drive;
                 break;
             }
         }
-        if ($personalDrive === null) {
+        if ($personaldrive === null) {
             throw new Exception(get_string('no_personal_drive_found', 'repository_ocis'));
         }
-        $resources = $personalDrive->listResources($path);
+        $resources = $personaldrive->listResources($path);
 
         $list = [];
-        /**
-         * @type OcisResource $resource
-         */
+        /** @var OcisResource $resource */
         foreach ($resources as $resource) {
-            $last_modified_time = new DateTime($resource->getLastModifiedTime());
-            $list_item = [
+            $lastmodifiedtime = new DateTime($resource->getLastModifiedTime());
+            $listitem = [
                 'title' => $resource->getName(),
-                'date' => $last_modified_time->getTimestamp(),
+                'date' => $lastmodifiedtime->getTimestamp(),
                 'size' => $resource->getSize(),
-                'source' => $resource->getId()
+                'source' => $resource->getId(),
             ];
             if ($resource->getType() === 'folder') {
-                $list_item['children'] = [];
-                $list_item['path'] = $path . "/" . $resource->getName();
-                $list_item['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
+                $listitem['children'] = [];
+                $listitem['path'] = $path . "/" . $resource->getName();
+                $listitem['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
 
-                // for sorting, `0` to make sure folders are on top
-                // then the name in uppercase to sort everything alphabetically with ksort
-                $list["0" . strtoupper($resource->getName())] = $list_item;
+                // This is to help with sorting, `0` is to make sure folders are on top
+                // then the name in uppercase to sort everything alphabetically with ksort.
+                $list["0" . strtoupper($resource->getName())] = $listitem;
             } else {
-                $list_item['thumbnail'] = $OUTPUT->image_url(
+                $listitem['thumbnail'] = $OUTPUT->image_url(
                     file_extension_icon($resource->getName(), 90)
                 )->out(false);
 
-                // for sorting, `1` to make sure files are listed after folders
-                $list["1" . strtoupper($resource->getName())] = $list_item;
-
+                // This is to help with sorting, for sorting, `1` to make sure files are listed after folders.
+                $list["1" . strtoupper($resource->getName())] = $listitem;
             }
         }
 
-        $breadcrumb_path = [
+        $breadcrumbpath = [
             [
                 'name' => $this->get_meta()->name,
                 'path' => '/',
-            ]
+            ],
         ];
         if ($path !== '/') {
             $chunks = explode('/', trim($path, '/'));
@@ -168,9 +202,9 @@ class repository_ocis extends repository {
             // Every sub-path to the last part of the current path is a parent path.
             foreach ($chunks as $chunk) {
                 $subpath = $parent . $chunk . '/';
-                $breadcrumb_path[] = [
+                $breadcrumbpath[] = [
                     'name' => urldecode($chunk),
-                    'path' => $subpath
+                    'path' => $subpath,
                 ];
                 // Prepare next iteration.
                 $parent = $subpath;
@@ -178,12 +212,12 @@ class repository_ocis extends repository {
         }
         ksort($list);
         return [
-            //this will be used to build navigation bar
+            // This will be used to build navigation bar.
             'dynload' => true,
             'nosearch' => true,
-            'path' => $breadcrumb_path,
-            'manage' => $personalDrive->getWebUrl(),
-            'list' => $list
+            'path' => $breadcrumbpath,
+            'manage' => $personaldrive->getWebUrl(),
+            'list' => $list,
         ];
     }
 
@@ -197,14 +231,16 @@ class repository_ocis extends repository {
      */
     public static function instance_config_form($mform) {
         if (!has_capability('moodle/site:config', context_system::instance())) {
-            $mform->addElement('static', null, '',  get_string('nopermissions', 'error', get_string('configplugin',
-                'repository_ocis')));
+            $mform->addElement('static', null, '', get_string('nopermissions', 'error', get_string(
+                'configplugin',
+                'repository_ocis'
+            )));
             return false;
         }
 
         // Load configured issuers.
         $issuers = core\oauth2\api::get_all_issuers();
-        $types = array();
+        $types = [];
 
         // Validates which issuers implement the right endpoints.
         $validissuers = [];
@@ -228,8 +264,11 @@ class repository_ocis extends repository {
         if (count($validissuers) === 0) {
             $mform->addElement('static', null, '', get_string('no_right_issuers', 'repository_ocis'));
         } else {
-            $mform->addElement('static', null, '', get_string('right_issuers', 'repository_ocis',
-                implode(', ', $validissuers)));
+            $mform->addElement('static', null, '', get_string(
+                'right_issuers',
+                'repository_ocis',
+                implode(', ', $validissuers)
+            ));
         }
     }
 
@@ -240,8 +279,8 @@ class repository_ocis extends repository {
      * @return oauth2_client
      */
     protected function get_user_oauth_client($overrideurl = false) {
-        if ($this->oauth2_client) {
-            return $this->oauth2_client;
+        if ($this->oauth2client) {
+            return $this->oauth2client;
         }
         if ($overrideurl) {
             $returnurl = $overrideurl;
@@ -251,8 +290,8 @@ class repository_ocis extends repository {
             $returnurl->param('repo_id', $this->id);
             $returnurl->param('sesskey', sesskey());
         }
-        $this->oauth2_client = oauth2_api::get_user_oauth_client($this->oauth2_issuer, $returnurl, '', true);
-        return $this->oauth2_client;
+        $this->oauth2client = oauth2_api::get_user_oauth_client($this->oauth2issuer, $returnurl, '', true);
+        return $this->oauth2client;
     }
 
     /**
@@ -265,15 +304,18 @@ class repository_ocis extends repository {
         $client = $this->get_user_oauth_client();
         $loginurl = $client->get_login_url();
         if ($this->options['ajax']) {
-            $ret = array();
+            $ret = [];
             $btn = new \stdClass();
             $btn->type = 'popup';
             $btn->url = $loginurl->out(false);
-            $ret['login'] = array($btn);
+            $ret['login'] = [$btn];
             return $ret;
         } else {
-            echo html_writer::link($loginurl, get_string('login', 'repository'),
-                array('target' => '_blank',  'rel' => 'noopener noreferrer'));
+            echo html_writer::link(
+                $loginurl,
+                get_string('login', 'repository'),
+                ['target' => '_blank', 'rel' => 'noopener noreferrer']
+            );
         }
         return [];
     }
@@ -337,16 +379,31 @@ class repository_ocis extends repository {
      */
     public static function get_instance_option_names() {
         return ['issuerid', 'controlledlinkfoldername',
-            'defaultreturntype', 'supportedreturntypes'];
+            'defaultreturntype', 'supportedreturntypes', ];
     }
 
-    public function get_file($fileId, $filename = ''): array
-    {
+    /**
+     * Gets a file from oCIS, stores it locally and returns the path and fileid.
+     * Moodle calls this method to retrieve the file that the user selected from a remote server.
+     *
+     * @see https://moodledev.io/docs/4.2/apis/plugintypes/repository#get_fileurl-filename--
+     *
+     * @param string $fileid
+     * @param string $filename
+     * @return array
+     * @throws \Owncloud\OcisPhpSdk\Exception\BadRequestException
+     * @throws \Owncloud\OcisPhpSdk\Exception\ForbiddenException
+     * @throws \Owncloud\OcisPhpSdk\Exception\HttpException
+     * @throws \Owncloud\OcisPhpSdk\Exception\NotFoundException
+     * @throws \Owncloud\OcisPhpSdk\Exception\UnauthorizedException
+     * @throws coding_exception
+     */
+    public function get_file($fileid, $filename = ''): array {
         $ocis = $this->getOcisClient();
 
-        $local_path = $this->prepare_file($fileId);
-        $stream = $ocis->getFileStreamById($fileId);
-        file_put_contents($local_path, $stream);
-        return ['path' => $local_path, 'url' => $fileId];
+        $localpath = $this->prepare_file($fileid);
+        $stream = $ocis->getFileStreamById($fileid);
+        file_put_contents($localpath, $stream);
+        return ['path' => $localpath, 'url' => $fileid];
     }
 }
