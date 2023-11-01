@@ -1,29 +1,22 @@
 const {Given, When, Then} = require('@cucumber/cucumber')
 // import expect for assertion
 const { expect } = require("@playwright/test");
+const Login = require("../pageObjects/Login");
 
-const url = 'http://localhost:8000/login/index.php';
-const username = 'admin';
-const password = 'admin';
-const usernameSelector = '//div[@class="login-form-username form-group"]//input[@class="form-control form-control-lg"]'
-const passwordSelector = '//div[@class="login-form-password form-group"]//input[@class="form-control form-control-lg"]'
+const login = new Login();
 const pageExpandSelector = '//div[@class="d-print-block"]';
 const fileSelector = 'icon fa fa-file-o fa-fw';
 const ownCloudSelector = '.fp-repo nav-item even active';
 const items = '.ygtvitem';
-const loginButton = '//button[@class = "btn btn-primary btn-lg"]';
 const mycourseSelector = '//li[@data-key = "mycourses"]';
-const createcourseSelector = '//button[@class="btn btn-primary"]';
-
+const createcourseSelector = '.nocourseslink';
 
 Given('a user has logged in', async function () {
-    await page.goto(url);
-    await page.fill(usernameSelector,username);
-    await page.fill(passwordSelector,password);
-    await page.click(loginButton);
+    await login.goToLoginPage();
+    await login.loginUser();
 });
 
-Given('a user has navigated to the course addition page', async function () {
+Given('a user has navigated to my course page', async function () {
     await page.locator(mycourseSelector).click();
     await page.click(createcourseSelector);
 });
