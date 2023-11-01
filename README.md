@@ -28,7 +28,18 @@ There are three different modes for the Moodle user to link files from oCIS to M
    For this to work a special oCIS account needs to be connected to Moodle that will be used as a System account. If the user selects the "Controlled Link" option, the file will first be copied to a Moodle specific folder in oCIS, then shared to the System account and Moodle will access it through the System account.
 
 ## Installation
-1. Install moodle and this plugin
+1. TLS certificate
+   The TLS certificates of oCIS need to be trusted by the server running moodle. If your oCIS instance has already a trusted certificate you can skip this step. 
+   If you are using self-signed certificates you need to copy them to the moodle server and make it trust them. e.g. on Debian based systems to run oCIS on `https://host.docker.internal:9200`:
+   1. create a TLS certificate
+      ```bash
+      openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=host.docker.internal'
+      ```
+   2. make 'host.docker.internal' resolve to the IP 127.0.0.1 on the docker host machine
+      ```bash
+      sudo sh -c "echo '127.0.0.1 host.docker.internal' >> /etc/hosts"
+      ```
+2. Install moodle and this plugin
     - Development environment with docker:
       ```bash
       # get moodle from git
@@ -53,53 +64,41 @@ There are three different modes for the Moodle user to link files from oCIS to M
         webserver:
           extra_hosts:
             - host.docker.internal:host-gateway
+          environment:
+            MOODLE_DISABLE_CURL_SECURITY: "true" # optional, but useful for testing on localhost or host.docker.internal
+            MOODLE_OCIS_URL: "https://host.docker.internal:9200" # optional, used to create OAuth 2 services and repository instance during installation
+            MOODLE_OCIS_CLIENT_ID: "xdXOt13JKxym1B1QcEncf2XDkLAexMBFwiT9j6EfhhHFJhs2KM9jbjTmf8JBXE69"  # optional, used to create OAuth 2 services and repository instance during installation
+            MOODLE_OCIS_CLIENT_SECRET: "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh" # optional, used to create OAuth 2 services and repository instance during installation
       EOF
       # run moodle
       bin/moodle-docker-compose up -d
+      # if oCIS will run with a self signed certificate copy that into the moodle container and make it trust it
+      bin/moodle-docker-compose cp </path/of/ocis.crt> webserver:/usr/local/share/ca-certificates/
+      bin/moodle-docker-compose exec webserver update-ca-certificates
       bin/moodle-docker-wait-for-db
       bin/moodle-docker-compose exec webserver php admin/cli/install_database.php --agree-license --fullname="Docker moodle" --shortname="docker_moodle" --summary="Docker moodle site" --adminpass="admin" --adminemail="admin@example.com"
       ```
-      moodle will now be available under http://localhost:8000 
+      moodle will now be available under http://localhost:8000
     - Other installation methods:
         - [Install and run moodle](https://docs.moodle.org/402/en/Installing_Moodle)
         - copy / clone the code of the repository into the `repository/ocis` folder of your moodle installation
         - run `composer install` inside of the `repository/ocis` folder
-2. Install [oCIS](https://doc.owncloud.com/ocis/next/quickguide/quickguide.html)
-   - NOTE: the TLS certificates of oCIS need to be trusted by the server running moodle, so if you are using self-signed certificates you need to copy them to the moodle server and make it trust them. e.g. on Debian based systems to run oCIS on `https://host.docker.internal:9200`:
-     1. create a TLS certificate
-        ```bash
-        openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=host.docker.internal'
-        ```
-     2. make 'host.docker.internal' resolve to the IP 127.0.0.1 on the docker host machine
-        ```bash
-        sudo sh -c "echo '127.0.0.1 host.docker.internal' >> /etc/hosts"
-        ```
-     3. run oCIS using this certificate: 
+3. Install & run [oCIS](https://doc.owncloud.com/ocis/next/quickguide/quickguide.html)
+   If you have created an own TLS certificate in point 1, run oCIS using this certificate: 
         ```bash
         OCIS_INSECURE=true \
         PROXY_HTTP_ADDR=0.0.0.0:9200 \
         OCIS_URL=https://host.docker.internal:9200 \
-        PROXY_TRANSPORT_TLS_KEY=./ocis.pem \
-        PROXY_TRANSPORT_TLS_CERT=./ocis.crt \
+        PROXY_TRANSPORT_TLS_KEY=</path/of/ocis.pem> \
+        PROXY_TRANSPORT_TLS_CERT=</path/of/ocis.crt> \
         ./ocis server
         ```
         :exclamation: Having set `OCIS_INSECURE=true` is not recommended for production use! :exclamation:
-     4. copy the certificate file to the store of the oCIS server and make the system trust it
-        - if oCIS runs on the same server as moodle:
-          ```bash
-          sudo cp ocis.crt /usr/local/share/ca-certificates
-          sudo update-ca-certificates
-          ```
-        - if moodle runs in the development docker container from point 1:
-          ```bash
-          docker cp ocis.crt moodle-docker-webserver-1:/usr/local/share/ca-certificates/
-          docker exec  moodle-docker-webserver-1 update-ca-certificates
-          ```
-3. Login to moodle as "admin"
-4. If you run oCIS on `localhost` or any local IP address go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and delete the IP address and host-name you are using from the "cURL blocked hosts list" list. E.g if you have been following the examples above and using `https://host.docker.internal:9200` as the address for oCIS, you will have to delete `172.16.0.0/12` from the list. 
-5. If you run oCIS on any port other than `443` go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and add the port you are using to the "cURL allowed ports list" list. E.g. if you have been following the examples above add `9200` to the list.
-6. Go to the "OAuth 2 services" page ("Site administration" > "Server" > "OAuth 2 services")
-7. Create a new "Custom" service
+4. Login to moodle as "admin"
+5. If you run oCIS on `localhost` or any local IP address go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and delete the IP address and host-name you are using from the "cURL blocked hosts list" list. E.g if you have been following the examples above and using `https://host.docker.internal:9200` as the address for oCIS, you will have to delete `172.16.0.0/12` from the list. 
+6. If you run oCIS on any port other than `443` go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and add the port you are using to the "cURL allowed ports list" list. E.g. if you have been following the examples above add `9200` to the list.
+7. Go to the "OAuth 2 services" page ("Site administration" > "Server" > "OAuth 2 services")
+8. Create a new "Custom" service
    1. Choose any name you like
    2. Set "Client ID".
       If moodle runs on `localhost` the ID `xdXOt13JKxym1B1QcEncf2XDkLAexMBFwiT9j6EfhhHFJhs2KM9jbjTmf8JBXE69` can be used for testing, else another client need to be set up in the [oCIS IDP](https://owncloud.dev/services/idp/configuration/)
@@ -108,26 +107,30 @@ There are three different modes for the Moodle user to link files from oCIS to M
    4. Set "Service base URL" to the URL of your oCIS instance. An instance with a trusted TLS certificate is required, e.g. `https://host.docker.internal:9200`
    5. Set "Scopes included in a login request for offline access." to `openid offline_access email profile`
    6. Save the changes
-8. To use webfinger for discovery of the oCIS server that is assigned to a specific user:
+9. To use webfinger for discovery of the oCIS server that is assigned to a specific user:
     1. Click on the "Configure endpoints" icon of the newly created service
     2. Create a new endpoint with the name `webfinger_endpoint` and the webfinger URL e.g. `<service-base-url>/.well-known/webfinger`
-9. Go to the "Manage repositories" page ("Site administration" > "Plugins" > "Repositories" > "Manage repositories")
-10. Set the "ownCloud Infinite Scale repository" to "Enabled and visible"
-11. Save the settings
-12. Go again into the Settings page of the "ownCloud Infinite Scale repository"
-13. Create a new repository instance
-14. Choose a name you like
-15. Select the Oauth2 service you created before
-16. Save the settings
-17. Navigate to any page where there is a file picker e.g. "My courses" > "Create course" > "Course image"
-18. "Add" a new file
-19. Select the repository you have created earlier
-20. Click "Login in to your account"
-21. Go through the login / oauth process
-22. Now you should be able to see the content of your personal space and select files from there
+10. Go to the "Manage repositories" page ("Site administration" > "Plugins" > "Repositories" > "ownCloud Infinite Scale repository")
+11. Create a new repository instance
+12. Choose a name you like
+13. Select the Oauth2 service you created before
+14. Save the settings
+15. Navigate to any page where there is a file picker e.g. "My courses" > "Create course" > "Course image"
+16. "Add" a new file
+17. Select the repository you have created earlier
+18. Click "Login in to your account"
+19. Go through the login / oauth process
+20. Now you should be able to see the content of your personal space and select files from there
 
 
 ## Development
+
+### Auto-provisioning
+
+To reduce the setup steps specially when doing development and running automated tests these environment variables can be set to auto-provision the plugin:
+
+- `MOODLE_DISABLE_CURL_SECURITY="true"` to disable and delete all curl security checks, useful for testing on localhost or host.docker.internal
+- `MOODLE_OCIS_URL`, `MOODLE_OCIS_CLIENT_ID`, `MOODLE_OCIS_CLIENT_SECRET`, `MOODLE_OCIS_LOGO_URL` to create OAuth 2 services and repository instance during installation. Note: the auto-provisioning will be triggered only if all of `MOODLE_OCIS_URL`, `MOODLE_OCIS_CLIENT_ID`, `MOODLE_OCIS_CLIENT_SECRET` variables are set.
 
 ### Run tests
 
