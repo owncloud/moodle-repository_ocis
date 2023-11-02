@@ -7,6 +7,9 @@
     "@playwright/test": "^1.39.0"
   },
   "scripts": {
-    "test:e2e": "cucumber-js --require cucumber.conf.js --require tests/acceptance/stepDefinitions/**/*.js --format @cucumber/pretty-formatter"
+    "test:e2e": "cucumber-js --require cucumber.conf.js --require tests/cucumber/acceptance/stepDefinitions/**/*.js --format @cucumber/pretty-formatter"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
   }
 }

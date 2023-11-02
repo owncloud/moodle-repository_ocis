@@ -2,36 +2,37 @@ const {Given, When, Then} = require('@cucumber/cucumber')
 // import expect for assertion
 const { expect } = require("@playwright/test");
 const Login = require("../pageObjects/Login");
+const MyCourse = require("../pageObjects/MyCourse");
+const FilePicker = require("../pageObjects/FilePicker");
 
 const login = new Login();
-const pageExpandSelector = '//div[@class="d-print-block"]';
-const fileSelector = 'icon fa fa-file-o fa-fw';
-const ownCloudSelector = '.fp-repo nav-item even active';
-const items = '.ygtvitem';
-const mycourseSelector = '//li[@data-key = "mycourses"]';
-const createcourseSelector = '.nocourseslink';
+const myCourse = new MyCourse();
+const filePicker = new FilePicker();
+
+Given('a user has uploaded these <{string}> and <{string}> to the ownCloud', function (string, string2, dataTable) {
+    // Write code here that turns the phrase above into concrete actions
+    return 'pending';
+});
 
 Given('a user has logged in', async function () {
     await login.goToLoginPage();
+    await expect(page).toHaveURL(login.loginPageUrl);
     await login.loginUser();
+    await expect(page).toHaveURL(login.homePageUrl);
 });
 
-Given('a user has navigated to my course page', async function () {
-    await page.locator(mycourseSelector).click();
-    await page.click(createcourseSelector);
+Given('the user has navigated to add a new course page', async function () {
+    await myCourse.navigateToMyCourseMenu();
+    await expect(page).toHaveURL(myCourse.myCourseUrl);
 });
-
 When('the user clicks file-picker', async function () {
-    await page.locator(pageExpandSelector).click()
-    await page.locator(fileSelector).click();
+    await myCourse.navigateToFilePicker();
 });
 
-When('the user chooses own-cloud', async function () {
-    await page.click(ownCloudSelector);
+When('the user selects Owncloud from the sidebar menu', async function () {
+    await filePicker.selectRepositoryForUpload();
 });
 
-Then('files should be listed on the webUI', function () {
-    const locator = page.locator(items);
-    expect(locator).toBeVisible();
+Then('these files should be seen on the webUI', async function () {
+    await expect(page.locator(filePicker.fileListSelector)).toBeVisible();
 });
-

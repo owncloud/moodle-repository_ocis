@@ -1,12 +1,13 @@
+require('dotenv').config();
 class Login{
     constructor(){
-        this.baseUrl = 'http://localhost:8000';
-        this.loginPageUrl = this.baseUrl+'/login/index.php';
-        this.username = 'admin';
-        this.password = 'admin';
-        this.usernameSelector = '//div[@class="login-form-username form-group"]//input[@class="form-control form-control-lg"]';
-        this.passwordSelector = '//div[@class="login-form-password form-group"]//input[@class="form-control form-control-lg"]';
-        this.loginButton = '//button[@class = "btn btn-primary btn-lg"]';
+        this.loginPageUrl = process.env.BASE_URL+'/login/index.php';
+        this.homePageUrl = process.env.BASE_URL+'/my/';
+        this.username = process.env.USER_NAME;
+        this.password = process.env.USER_PASSWORD;
+        this.usernameSelector = '#username';
+        this.passwordSelector = '#password';
+        this.loginButton = '#loginbtn';
     }
     async goToLoginPage(){
         await page.goto(this.loginPageUrl);
