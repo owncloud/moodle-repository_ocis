@@ -4,6 +4,7 @@ class MyCourse{
         this.myCourseUrl = process.env.BASE_URL + '/course/edit.php';
         this.fileSelector = '.filemanager-toolbar .fp-btn-add'
     }
+
     async navigateToMyCourseMenu(){
         await page.goto(this.myCourseUrl);
     }
@@ -12,4 +13,5 @@ class MyCourse{
         await page.locator(this.fileSelector).click();
     }
 }
+
 module.exports = MyCourse;

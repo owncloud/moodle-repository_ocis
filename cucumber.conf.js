@@ -12,6 +12,7 @@ BeforeAll(async function () {
 AfterAll(async function () {
     await global.browser.close();
 });
+
 Before(async function () {
     global.context = await global.browser.newContext();
     global.page = await global.context.newPage();

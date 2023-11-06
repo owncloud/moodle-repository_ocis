@@ -9,11 +9,6 @@ const login = new Login();
 const myCourse = new MyCourse();
 const filePicker = new FilePicker();
 
-Given('a user has uploaded these <{string}> and <{string}> to the ownCloud', function (string, string2, dataTable) {
-    // Write code here that turns the phrase above into concrete actions
-    return 'pending';
-});
-
 Given('a user has logged in', async function () {
     await login.goToLoginPage();
     await expect(page).toHaveURL(login.loginPageUrl);
@@ -25,6 +20,7 @@ Given('the user has navigated to add a new course page', async function () {
     await myCourse.navigateToMyCourseMenu();
     await expect(page).toHaveURL(myCourse.myCourseUrl);
 });
+
 When('the user clicks file-picker', async function () {
     await myCourse.navigateToFilePicker();
 });

@@ -9,9 +9,11 @@ class Login{
         this.passwordSelector = '#password';
         this.loginButton = '#loginbtn';
     }
+
     async goToLoginPage(){
         await page.goto(this.loginPageUrl);
     }
+
     async loginUser(){
         await page.fill(this.usernameSelector,this.username);
         await page.fill(this.passwordSelector,this.password);
