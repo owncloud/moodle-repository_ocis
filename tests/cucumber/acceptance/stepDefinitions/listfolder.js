@@ -33,6 +33,7 @@ When('the user selects Owncloud from the sidebar menu', async function () {
     await filePicker.selectRepositoryForUpload();
 });
 
-Then('these files should be seen on the webUI', async function () {
+Then('the file list from owncloud should be seen on the webUI', async function () {
+    await filePicker.viewFilesByList();
     await expect(page.locator(filePicker.fileListSelector)).toBeVisible();
 });

@@ -17,7 +17,6 @@ Before(async function () {
     global.page = await global.context.newPage();
 });
 
-// Cleanup after each scenario
 After(async function () {
     await global.page.close();
     await global.context.close();
