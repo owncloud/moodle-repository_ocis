@@ -4,14 +4,20 @@ const { expect } = require("@playwright/test");
 const Login = require("../pageObjects/Login");
 const MyCourse = require("../pageObjects/MyCourse");
 const FilePicker = require("../pageObjects/FilePicker");
+const  httpHelper  = require("../helpers/HttpHelpers");
+const {create} = require("axios");
 
 const login = new Login();
 const myCourse = new MyCourse();
 const filePicker = new FilePicker();
 
-Given('a user has logged in', async function () {
-    await login.goToLoginPage();
-    await expect(page).toHaveURL(login.loginPageUrl);
+Given('administrator has created the following folders in oCIS server', async function (dataTable) {
+    for (const value of dataTable.rawTable){
+        httpHelper.createFolder(value);
+    }
+});
+
+Given('a user has logged into moodle', async function () {
     await login.loginUser();
     await expect(page).toHaveURL(login.homePageUrl);
 });
@@ -21,15 +27,15 @@ Given('the user has navigated to add a new course page', async function () {
     await expect(page).toHaveURL(myCourse.myCourseUrl);
 });
 
-When('the user clicks file-picker', async function () {
+When('the user opens file-picker', async function () {
     await myCourse.navigateToFilePicker();
 });
 
-When('the user selects Owncloud from the sidebar menu', async function () {
-    await filePicker.selectRepositoryForUpload();
+When('the user selects the repository {string}', async function (repository) {
+    await filePicker.selectRepository();
 });
 
-Then('the file list from owncloud should be seen on the webUI', async function () {
+Then('the following folder should be listed on the webUI', async function (string) {
     await filePicker.viewFilesByList();
     await expect(page.locator(filePicker.fileListSelector)).toBeVisible();
 });

@@ -4,12 +4,10 @@
   "devDependencies": {
     "@cucumber/cucumber": "^7.3.1",
     "@cucumber/pretty-formatter": "^1.0.0",
-    "@playwright/test": "^1.39.0"
+    "@playwright/test": "^1.39.0",
+    "axios": "^1.6.0"
   },
   "scripts": {
-    "test:e2e": "cucumber-js --require cucumber.conf.js --require tests/cucumber/acceptance/stepDefinitions/**/*.js --format @cucumber/pretty-formatter"
-  },
-  "dependencies": {
-    "dotenv": "^16.3.1"
+    "test:e2e": "NODE_TLS_REJECT_UNAUTHORIZED=0 cucumber-js --require cucumber.conf.js --require tests/cucumber/acceptance/stepDefinitions/**/*.js --format @cucumber/pretty-formatter"
   }
 }

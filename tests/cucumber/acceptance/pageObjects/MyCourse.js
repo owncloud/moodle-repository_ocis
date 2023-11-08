@@ -1,7 +1,7 @@
-require('dotenv').config();
+const { config } = require('../../../../config')
 class MyCourse{
     constructor() {
-        this.myCourseUrl = process.env.BASE_URL + '/course/edit.php';
+        this.myCourseUrl = config.hostUrl + '/course/edit.php';
         this.fileSelector = '.filemanager-toolbar .fp-btn-add'
     }
 

@@ -1,20 +1,17 @@
-require('dotenv').config();
+const { config } = require('../../../../config')
 class Login{
     constructor(){
-        this.loginPageUrl = process.env.BASE_URL+'/login/index.php';
-        this.homePageUrl = process.env.BASE_URL+'/my/';
-        this.username = process.env.USER_NAME;
-        this.password = process.env.USER_PASSWORD;
+        this.loginPageUrl = config.hostUrl+'/login/index.php';
+        this.homePageUrl = config.hostUrl+'/my/';
+        this.username = config.adminUser;
+        this.password = config.adminPassword;
         this.usernameSelector = '#username';
         this.passwordSelector = '#password';
         this.loginButton = '#loginbtn';
     }
 
-    async goToLoginPage(){
-        await page.goto(this.loginPageUrl);
-    }
-
     async loginUser(){
+        await page.goto(this.loginPageUrl);
         await page.fill(this.usernameSelector,this.username);
         await page.fill(this.passwordSelector,this.password);
         await page.click(this.loginButton);

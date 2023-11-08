@@ -5,7 +5,7 @@ class FilePicker {
         this.viewByListFileSelector = 'a[role="button"][title="Display folder with file details"]'
     }
 
-    async selectRepositoryForUpload(){
+    async selectRepository(){
         await page.locator(this.fileUploadSelector).click();
     }
 

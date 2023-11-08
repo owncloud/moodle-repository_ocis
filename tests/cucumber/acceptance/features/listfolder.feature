@@ -4,8 +4,15 @@ Feature: list the resources
   So that I can upload them to moodle
 
   Scenario: See the list
-    Given a user has logged in
+    Given administrator has created the following folders in oCIS server
+      | TEST1      |
+      | NEW FOLDER |
+      | TEST2      |
+    Given a user has logged into moodle
     And the user has navigated to add a new course page
-    When the user clicks file-picker
-    And the user selects Owncloud from the sidebar menu
-    Then the file list from owncloud should be seen on the webUI
+    When the user opens file-picker
+    And the user selects the repository "owncloud"
+    Then the following folder should be listed on the webUI
+      | FOLDER     |
+      | NEW FOLDER |
+      | TEST       |
