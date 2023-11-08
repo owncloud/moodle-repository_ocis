@@ -1,16 +1,17 @@
 const axios = require('axios');
 const {create} = require("axios");
-
 const fetch = axios.create({
         baseURL: 'https://host.docker.internal:9200',
 })
 
+const fileList = [];
 function getAdminAuthHeader(){
     return {
         Authorization: 'Basic ' + Buffer.from('admin:admin').toString('base64')
     }
 }
 async function createFolder(folderName){
+    fileList.push(folderName);
     return await fetch({
         url: `/dav/files/admin/${folderName}`,
         method: 'MKCOL',
@@ -18,13 +19,17 @@ async function createFolder(folderName){
     })
 }
 
-async function getResources(){
-    const listOfResources = await fetch.get()
-}
 async function deleteFolder() {
-    await fetch.delete(`/dav/files/admin/test`,{
-        headers:getAdminAuthHeader()}
-    );
+    for (value of fileList){
+        await fetch.delete(`/dav/files/admin/${value}`,{
+            headers:getAdminAuthHeader()}
+        );
+    }
 }
 
-module.exports = {createFolder};
+// (async() => {
+//     await createFolder();
+//     await deleteFolder()
+// })()
+
+module.exports = {createFolder, deleteFolder};

@@ -5,7 +5,9 @@
     "@cucumber/cucumber": "^7.3.1",
     "@cucumber/pretty-formatter": "^1.0.0",
     "@playwright/test": "^1.39.0",
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "playwright": "^1.39.0",
+    "prettier": "^3.0.3"
   },
   "scripts": {
     "test:e2e": "NODE_TLS_REJECT_UNAUTHORIZED=0 cucumber-js --require cucumber.conf.js --require tests/cucumber/acceptance/stepDefinitions/**/*.js --format @cucumber/pretty-formatter"

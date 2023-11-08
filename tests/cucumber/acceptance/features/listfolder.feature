@@ -13,6 +13,6 @@ Feature: list the resources
     When the user opens file-picker
     And the user selects the repository "owncloud"
     Then the following folder should be listed on the webUI
-      | FOLDER     |
+      | TEST1      |
       | NEW FOLDER |
-      | TEST       |
+      | TEST2      |

@@ -4,8 +4,9 @@ const { expect } = require("@playwright/test");
 const Login = require("../pageObjects/Login");
 const MyCourse = require("../pageObjects/MyCourse");
 const FilePicker = require("../pageObjects/FilePicker");
-const  httpHelper  = require("../helpers/HttpHelpers");
-const {create} = require("axios");
+const { createFolder }  = require("../helpers/HttpHelpers");
+const {format} = require("util");
+const assert = require("assert");
 
 const login = new Login();
 const myCourse = new MyCourse();
@@ -13,7 +14,7 @@ const filePicker = new FilePicker();
 
 Given('administrator has created the following folders in oCIS server', async function (dataTable) {
     for (const value of dataTable.rawTable){
-        httpHelper.createFolder(value);
+        await createFolder(value.toString());
     }
 });
 
@@ -35,7 +36,10 @@ When('the user selects the repository {string}', async function (repository) {
     await filePicker.selectRepository();
 });
 
-Then('the following folder should be listed on the webUI', async function (string) {
+Then('the following folder should be listed on the webUI', async function (dataTable) {
     await filePicker.viewFilesByList();
-    await expect(page.locator(filePicker.fileListSelector)).toBeVisible();
+    for (const value of dataTable.rawTable){
+        const isVisible = await filePicker.checkFileVisibility(value.toString());
+        expect(isVisible).toBe(true);
+    }
 });

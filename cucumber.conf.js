@@ -1,15 +1,17 @@
 const { Before, BeforeAll, AfterAll, After, setDefaultTimeout } = require("@cucumber/cucumber");
 const { chromium } = require("playwright");
+const {deleteFolder}  = require("./tests/cucumber/acceptance/helpers/HttpHelpers");
 
 setDefaultTimeout(60000)
 BeforeAll(async function () {
     global.browser = await chromium.launch({
-        headless: false,
-        slowMo: 1000,
+        headless: true,
+        slowMo: 10,
     });
 });
 
 AfterAll(async function () {
+    await deleteFolder();
     await global.browser.close();
 });
 
