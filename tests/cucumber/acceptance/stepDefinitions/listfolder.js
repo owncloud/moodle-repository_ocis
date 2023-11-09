@@ -1,12 +1,9 @@
 const { Given, When, Then } = require("@cucumber/cucumber");
-// import expect for assertion
 const { expect } = require("@playwright/test");
 const Login = require("../pageObjects/Login");
 const MyCourse = require("../pageObjects/MyCourse");
 const FilePicker = require("../pageObjects/FilePicker");
 const { createFolder } = require("../helpers/HttpHelpers");
-const { format } = require("util");
-const assert = require("assert");
 
 const login = new Login();
 const myCourse = new MyCourse();
@@ -36,16 +33,17 @@ When("the user opens file-picker", async function () {
 });
 
 When("the user selects the repository {string}", async function (repository) {
-  await filePicker.selectRepository();
+  await filePicker.selectRepository(repository);
 });
 
 Then(
   "the following folder should be listed on the webUI",
   async function (dataTable) {
     await filePicker.viewFilesByList();
+    const fileNameList = await filePicker.getFileName();
     for (const value of dataTable.rawTable) {
-      const isVisible = await filePicker.checkFileVisibility(value.toString());
-      expect(isVisible).toBe(true);
+      const checkForFileVisibility = fileNameList.includes(value.toString());
+      expect(checkForFileVisibility).toBe(true);
     }
   },
 );

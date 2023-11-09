@@ -1,7 +1,8 @@
 const axios = require("axios");
-const { create } = require("axios");
+const { config } = require("../../../../config");
+
 const fetch = axios.create({
-  baseURL: "https://host.docker.internal:9200",
+  baseURL: config.ocisUrl,
 });
 
 const fileList = [];
@@ -28,10 +29,5 @@ async function deleteFolder() {
     });
   }
 }
-
-// (async() => {
-//     await createFolder();
-//     await deleteFolder()
-// })()
 
 module.exports = { createFolder, deleteFolder };
