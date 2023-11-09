@@ -3,3 +3,4 @@ composer.lock
 node_modules
 .idea/
 .env
+package-lock.json
