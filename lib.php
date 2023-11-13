@@ -71,6 +71,7 @@ class repository_ocis extends repository {
      * @param int $repositoryid
      * @param bool|int|stdClass $context
      * @param array $options
+     * @throws coding_exception|dml_exception
      */
     public function __construct($repositoryid, $context = SYSCONTEXTID, $options = []) {
         if (strtolower(getenv('MOODLE_DISABLE_CURL_SECURITY')) === 'true') {
@@ -80,7 +81,13 @@ class repository_ocis extends repository {
         parent::__construct($repositoryid, $context, $options);
         // Issuer from repository instance config.
         $issuerid = $this->get_option('issuerid');
-        $this->oauth2issuer = oauth2_api::get_issuer($issuerid);
+        try {
+            $this->oauth2issuer = oauth2_api::get_issuer($issuerid);
+        } catch (dml_missing_record_exception $e) {
+            // A repository is marked as disabled when no issuer is present.
+            $this->disabled = true;
+            return;
+        }
 
         if (!$this->oauth2issuer) {
             $this->disabled = true;
