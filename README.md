@@ -21,10 +21,14 @@ The existing OAuth2 implementation in Moodle does support OpenID connect, so a c
 There are three different modes for the Moodle user to link files from oCIS to Moodle. Only files stored in the personal space will be accessible by Moodle.
 
 1. **Internal** (Make a copy of the file)
+
    In this case the file is copied from oCIS and stored within the Moodle file system.
-2. **Reference**: (Link to the file)
+3. **Reference**: (Link to the file) :construction: *This feature is not implemented yet* :woman_technologist:
+
    In this case a public link of the file is created in oCIS and Moodle stores this link
-3. **Controlled Link**: (Create an access controlled link to the file)
+5. **Controlled Link**: (Create an access controlled link to the file) :construction: *This feature is not implemented yet* :man_technologist:
+
+
    For this to work a special oCIS account needs to be connected to Moodle that will be used as a System account. If the user selects the "Controlled Link" option, the file will first be copied to a Moodle specific folder in oCIS, then shared to the System account and Moodle will access it through the System account.
 
 ## Installation
