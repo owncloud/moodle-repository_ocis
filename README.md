@@ -85,15 +85,15 @@ There are three different modes for the Moodle user to link files from oCIS to M
         - run `composer install` inside of the `repository/ocis` folder
 3. Install & run [oCIS](https://doc.owncloud.com/ocis/next/quickguide/quickguide.html)
    If you have created an own TLS certificate in point 1, run oCIS using this certificate: 
-        ```bash
-        OCIS_INSECURE=true \
-        PROXY_HTTP_ADDR=0.0.0.0:9200 \
-        OCIS_URL=https://host.docker.internal:9200 \
-        PROXY_TRANSPORT_TLS_KEY=</path/of/ocis.pem> \
-        PROXY_TRANSPORT_TLS_CERT=</path/of/ocis.crt> \
-        ./ocis server
-        ```
-        :exclamation: Having set `OCIS_INSECURE=true` is not recommended for production use! :exclamation:
+   ```bash
+   OCIS_INSECURE=true \
+   PROXY_HTTP_ADDR=0.0.0.0:9200 \
+   OCIS_URL=https://host.docker.internal:9200 \
+   PROXY_TRANSPORT_TLS_KEY=</path/of/ocis.pem> \
+   PROXY_TRANSPORT_TLS_CERT=</path/of/ocis.crt> \
+   ./ocis server
+   ```
+   :exclamation: Having set `OCIS_INSECURE=true` is not recommended for production use! :exclamation:
 4. Login to moodle as "admin"
 5. If you run oCIS on `localhost` or any local IP address go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and delete the IP address and host-name you are using from the "cURL blocked hosts list" list. E.g if you have been following the examples above and using `https://host.docker.internal:9200` as the address for oCIS, you will have to delete `172.16.0.0/12` from the list. 
 6. If you run oCIS on any port other than `443` go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and add the port you are using to the "cURL allowed ports list" list. E.g. if you have been following the examples above add `9200` to the list.
