@@ -25,6 +25,9 @@
 
 $string['pluginname'] = 'ownCloud Infinite Scale repository';
 $string['configplugin'] = 'ownCloud Infinite Scale repository configuration';
+$string['ocis'] = 'ownCloud Infinite Scale';
+$string['ocis:view'] = 'View ownCloud Infinite Scale';
+$string['pluginname_help'] = 'ownCloud Infinite Scale repository';
 
 // Settings.
 $string['chooseissuer'] = 'Issuer';
