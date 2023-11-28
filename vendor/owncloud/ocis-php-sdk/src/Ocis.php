@@ -7,12 +7,16 @@ use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use OpenAPI\Client\Api\DrivesApi;
 use OpenAPI\Client\Api\DrivesGetDrivesApi;
+use OpenAPI\Client\Api\DrivesPermissionsApi;
+use OpenAPI\Client\Api\GroupApi;
+use OpenAPI\Client\Api\MeDriveApi;
 use OpenAPI\Client\Api\MeDrivesApi;
 use OpenAPI\Client\Api\UsersApi;
 use OpenAPI\Client\ApiException;
 use OpenAPI\Client\Configuration;
 use OpenAPI\Client\Model\Drive as ApiDrive;
 use OpenAPI\Client\Model\OdataError;
+use OpenAPI\Client\Model\Quota;
 use Owncloud\OcisPhpSdk\Exception\BadRequestException;
 use Owncloud\OcisPhpSdk\Exception\ExceptionHelper;
 use Owncloud\OcisPhpSdk\Exception\ForbiddenException;
@@ -20,9 +24,11 @@ use Owncloud\OcisPhpSdk\Exception\HttpException;
 use Owncloud\OcisPhpSdk\Exception\NotFoundException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
-use Sabre\HTTP\ResponseInterface;
+use Sabre\HTTP\ClientException as SabreClientException;
+use Sabre\HTTP\ClientHttpException as SabreClientHttpException;
 use stdClass;
 use OpenAPI\Client\Api\GroupsApi;
+use OpenAPI\Client\Model\Group as OpenAPIGrop;
 
 /**
  * Basic class to establish the connection to an ownCloud Infinite Scale instance
@@ -114,6 +120,28 @@ class Ocis
     }
 
     /**
+     * Helper function to check if the variable is a DrivesPermissionsApi
+     * we need this because we want to call the check with call_user_func
+     *
+     * @phpstan-ignore-next-line phpstan does not understand that this method was called via call_user_func
+     */
+    private static function isDrivesPermissionsApi(mixed $api): bool
+    {
+        return $api instanceof DrivesPermissionsApi;
+    }
+
+    /**
+     * Helper function to check if the variable is a DrivesApi
+     * we need this because we want to call the check with call_user_func
+     *
+     * @phpstan-ignore-next-line phpstan does not understand that this method was called via call_user_func
+     */
+    private static function isDrivesApi(mixed $api): bool
+    {
+        return $api instanceof DrivesApi;
+    }
+
+    /**
      * @param array<mixed> $connectionConfig
      * @ignore This function is used for internal purposes only and should not be shown in the documentation.
      *         The function is public to make it testable and because its also used from other classes.
@@ -124,7 +152,9 @@ class Ocis
             'headers' => 'is_array',
             'verify' => 'is_bool',
             'webfinger' => 'is_bool',
-            'guzzle' => 'self::isGuzzleClient'
+            'guzzle' => 'self::isGuzzleClient',
+            'drivesPermissionsApi' => 'self::isDrivesPermissionsApi',
+            'drivesApi' => 'self::isDrivesApi'
         ];
         foreach ($connectionConfig as $key => $check) {
             if (!array_key_exists($key, $validConnectionConfigKeys)) {
@@ -264,7 +294,7 @@ class Ocis
      * @throws InvalidResponseException
      * @throws HttpException
      */
-    public function listAllDrives(
+    public function getAllDrives(
         DriveOrder     $orderBy = DriveOrder::NAME,
         OrderDirection $orderDirection = OrderDirection::ASC,
         DriveType      $type = null
@@ -326,7 +356,7 @@ class Ocis
      * @throws InvalidResponseException
      * @throws HttpException
      */
-    public function listMyDrives(
+    public function getMyDrives(
         DriveOrder     $orderBy = DriveOrder::NAME,
         OrderDirection $orderDirection = OrderDirection::ASC,
         DriveType      $type = null
@@ -459,7 +489,7 @@ class Ocis
             [
                 'description' => $description,
                 'name' => $name,
-                'quota' => ['total' => $quota]
+                'quota' => new Quota(['total' => $quota])
             ]
         );
         try {
@@ -524,14 +554,18 @@ class Ocis
         $apiGroups = $allGroupsList->getValue() ?? [];
         $groupList = [];
         foreach ($apiGroups as $group) {
-            $newGroup = new Group($group);
+            $newGroup = new Group(
+                $group,
+                $this->serviceUrl,
+                $this->connectionConfig,
+                $this->accessToken
+            );
             $groupList[] = $newGroup;
         }
         return $groupList;
     }
 
     /**
-     * Get the content of the file referenced by the unique id
      *
      * @throws BadRequestException
      * @throws ForbiddenException
@@ -539,40 +573,29 @@ class Ocis
      * @throws UnauthorizedException
      * @throws HttpException
      */
-    public function getFileById(string $fileId): string
+    public function getResourceById(string $fileId): OcisResource
     {
-        $response = $this->getFileResponseInterface($fileId);
-        return $response->getBodyAsString();
-    }
-
-    /**
-     * Get the file referenced by the unique id and return the stream
-     *
-     * @return resource
-     * @throws BadRequestException
-     * @throws ForbiddenException
-     * @throws NotFoundException
-     * @throws UnauthorizedException
-     * @throws HttpException
-     */
-    public function getFileStreamById(string $fileId)
-    {
-        $response = $this->getFileResponseInterface($fileId);
-        return $response->getBodyAsStream();
-    }
-
-    /**
-     * @throws BadRequestException
-     * @throws ForbiddenException
-     * @throws NotFoundException
-     * @throws UnauthorizedException
-     * @throws HttpException
-     */
-    private function getFileResponseInterface(string $fileId): ResponseInterface
-    {
-        $webDavClient = new WebDavClient(['baseUri' => $this->serviceUrl . '/dav/spaces/']);
+        $webDavClient = new WebDavClient(['baseUri' => $this->getServiceUrl() . '/dav/spaces/']);
         $webDavClient->setCustomSetting($this->connectionConfig, $this->accessToken);
-        return $webDavClient->sendRequest("GET", $fileId);
+        try {
+            $properties = [];
+            foreach (ResourceMetadata::cases() as $property) {
+                $properties[] = $property->value;
+            }
+            $responses = $webDavClient->propFind(rawurlencode($fileId), $properties);
+            $resource = new OcisResource(
+                $responses,
+                null,
+                $this->connectionConfig,
+                $this->serviceUrl,
+                $this->accessToken
+            );
+        } catch (SabreClientHttpException|SabreClientException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+
+        // make sure there is again an element with index 0
+        return $resource;
     }
 
     /**
@@ -738,5 +761,125 @@ class Ocis
             );
         }
         return $notifications;
+    }
+
+    /**
+    * Create a new group (if the user has the permission to do so)
+    *
+    * @param string $groupName
+    * @param string $description
+    * @return Group
+    * @throws BadRequestException
+    * @throws ForbiddenException
+    * @throws NotFoundException
+    * @throws UnauthorizedException
+    * @throws \InvalidArgumentException
+    * @throws InvalidResponseException
+    * @throws HttpException
+    */
+    public function createGroup(string $groupName, string $description = ""): Group
+    {
+        $apiInstance = new GroupsApi($this->guzzle, $this->graphApiConfig);
+        $group = new OpenAPIGrop(["display_name" => $groupName, "description" => $description]);
+        try {
+            $newlyCreatedGroup = $apiInstance->createGroup($group);
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+        if ($newlyCreatedGroup instanceof OdataError) {
+            throw new InvalidResponseException(
+                "createGroup returned an OdataError - " . $newlyCreatedGroup->getError()
+            );
+        }
+        return new Group(
+            $newlyCreatedGroup,
+            $this->serviceUrl,
+            $this->connectionConfig,
+            $this->accessToken
+        );
+    }
+
+    /**
+     * delete an existing group (if the user has the permission to do so)
+     *
+     * @param string $groupId
+     * @return void
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     * @throws \InvalidArgumentException
+     * @throws HttpException
+     */
+    public function deleteGroupByID(string $groupId): void
+    {
+        $apiInstance = new GroupApi($this->guzzle, $this->graphApiConfig);
+        try {
+            $apiInstance->deleteGroup($groupId);
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+    }
+
+    /**
+     * @return array<ShareCreated>
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     */
+    public function getSharedByMe(): array
+    {
+        $apiInstance = new MeDriveApi(
+            $this->guzzle,
+            $this->graphApiConfig
+        );
+        try {
+            $shareList = $apiInstance->listSharedByMe();
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+        if ($shareList instanceof OdataError) {
+            throw new InvalidResponseException(
+                "listSharedByMe returned an OdataError - " . $shareList->getError()
+            );
+        }
+        if ($shareList->getValue() === null) {
+            throw new InvalidResponseException(
+                "listSharedByMe returned 'null' where an array of data were expected"
+            );
+        }
+        $shares = [];
+        foreach ($shareList->getValue() as $share) {
+            $resourceId = empty($share->getId()) ?
+                throw new InvalidResponseException(
+                    "Invalid resource id '" . print_r($share->getId(), true) . "'"
+                )
+                : (string)$share->getId();
+
+            $driveId = empty($share->getParentReference()) || empty($share->getParentReference()->getDriveId()) ?
+                throw new InvalidResponseException(
+                    "Invalid driveId '" . print_r($share->getParentReference(), true) . "'"
+                )
+                : (string)$share->getParentReference()->getDriveId();
+
+            if (!is_iterable($share->getPermissions())) {
+                throw new InvalidResponseException("Invalid permissions provided");
+            }
+            foreach ($share->getPermissions() as $apiSharePermission) {
+
+                $shares[] = new ShareCreated(
+                    $apiSharePermission,
+                    $resourceId,
+                    $driveId,
+                    $this->connectionConfig,
+                    $this->serviceUrl,
+                    $this->accessToken
+                );
+            }
+        }
+        return $shares;
     }
 }

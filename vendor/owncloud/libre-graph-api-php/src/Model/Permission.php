@@ -95,7 +95,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
     protected static array $openAPINullables = [
         'id' => false,
 		'has_password' => false,
-		'expiration_date_time' => false,
+		'expiration_date_time' => true,
 		'granted_to_v2' => false,
 		'link' => false,
 		'roles' => false,
@@ -418,7 +418,14 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
     public function setExpirationDateTime(?\DateTime $expiration_date_time): static
     {
         if (is_null($expiration_date_time)) {
-            throw new InvalidArgumentException('non-nullable expiration_date_time cannot be null');
+            array_push($this->openAPINullablesSetToNull, 'expiration_date_time');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('expiration_date_time', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
         }
         $this->container['expiration_date_time'] = $expiration_date_time;
 

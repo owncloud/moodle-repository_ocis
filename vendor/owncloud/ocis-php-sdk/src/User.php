@@ -13,6 +13,8 @@ class User
     private string $onPremisesSamAccountName;
     /**
      * @param OpenAPIUser $openApiUser
+     * @ignore The developer using the SDK does not need to create User objects manually,
+     *         but should use the Ocis class to query the server for users
      */
     public function __construct(
         OpenAPIUser $openApiUser
@@ -21,21 +23,21 @@ class User
         throw new InvalidResponseException(
             "Invalid id returned for user '" . print_r($openApiUser->getid(), true) . "'"
         )
-        : $openApiUser->getId();
+        : (string)$openApiUser->getId();
         $this->displayName = empty($openApiUser->getDisplayName()) ?
         throw new InvalidResponseException(
             "Invalid displayName returned for user '" . print_r($openApiUser->getDisplayName(), true) . "'"
         )
-        : $openApiUser->getDisplayName();
+        : (string)$openApiUser->getDisplayName();
         $this->mail = empty($openApiUser->getMail()) ?
         throw new InvalidResponseException(
             "Invalid mail returned for user '" . print_r($openApiUser->getMail(), true) . "'"
         )
-        : $openApiUser->getMail();
+        : (string)$openApiUser->getMail();
         $this->onPremisesSamAccountName = empty($openApiUser->getOnPremisesSamAccountName()) ?
         throw new InvalidResponseException("Invalid onPremisesSamAccountName returned for user '" .
             print_r($openApiUser->getOnPremisesSamAccountName(), true) . "'")
-        : $openApiUser->getOnPremisesSamAccountName();
+        : (string)$openApiUser->getOnPremisesSamAccountName();
     }
 
     /**
