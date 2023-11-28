@@ -2,8 +2,25 @@
 
 namespace Owncloud\OcisPhpSdk;
 
+use GuzzleHttp\Client;
+use OpenAPI\Client\Api\DrivesApi;
+use OpenAPI\Client\Api\DrivesPermissionsApi;
+use OpenAPI\Client\ApiException;
+use OpenAPI\Client\Configuration;
+use OpenAPI\Client\Model\DriveItemCreateLink;
+use OpenAPI\Client\Model\DriveItemInvite;
+use OpenAPI\Client\Model\DriveRecipient;
+use OpenAPI\Client\Model\OdataError;
+use OpenAPI\Client\Model\SharingLinkType;
+use Owncloud\OcisPhpSdk\Exception\BadRequestException;
+use Owncloud\OcisPhpSdk\Exception\ExceptionHelper;
+use Owncloud\OcisPhpSdk\Exception\ForbiddenException;
+use Owncloud\OcisPhpSdk\Exception\HttpException;
 use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
+use Owncloud\OcisPhpSdk\Exception\NotFoundException;
+use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use Sabre\DAV\Xml\Property\ResourceType;
+use Sabre\HTTP\ResponseInterface;
 
 /**
  * Class representing a file or folder inside a Drive in ownCloud Infinite Scale
@@ -14,33 +31,95 @@ class OcisResource
      * @var array<mixed>
      */
     private array $metadata;
+    private string $accessToken;
+    private string $serviceUrl;
+    /**
+     * @phpstan-var array{
+     *                      'headers'?:array<string, mixed>,
+     *                      'verify'?:bool,
+     *                      'webfinger'?:bool,
+     *                      'guzzle'?:\GuzzleHttp\Client,
+     *                      'drivesPermissionsApi'?:\OpenAPI\Client\Api\DrivesPermissionsApi,
+     *                    }
+     */
+
+    private array $connectionConfig;
+    private Configuration $graphApiConfig;
+    private string $driveId;
 
     /**
      * @param array<mixed> $metadata of the resource
      *        the format of the array is directly taken from the PROPFIND response
      *        returned by Sabre\DAV\Client
-     *        e.g:
-     *        array (
-     *          '{http://owncloud.org/ns}id' => <string>,
-     *          '{http://owncloud.org/ns}fileid' => <string>,
-     *          '{http://owncloud.org/ns}spaceid' => <string>,
-     *          '{http://owncloud.org/ns}file-parent' => <string>,
-     *          '{http://owncloud.org/ns}name' => <string>,
-     *          '{DAV:}getetag' => <string>,
-     *          '{http://owncloud.org/ns}permissions' => <string>,
-     *          '{DAV:}resourcetype' => <ResourceType>,
-     *          '{http://owncloud.org/ns}size' => <string>,
-     *          '{DAV:}getlastmodified' => <string>,
-     *          '{http://owncloud.org/ns}tags' => <null|string>,
-     *          '{http://owncloud.org/ns}favorite' => <string>,
-     *        )
-     *
+     *        for details about accepted metadate see: ResourceMetadata
+     * @param string|null $driveId if null the driveId will be fetched from the server using the space-id
+     * @param array $connectionConfig
+     * @param string $serviceUrl
+     * @param string $accessToken
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     * @phpstan-param array{
+     *              'headers'?:array<string, mixed>,
+     *              'verify'?:bool,
+     *              'webfinger'?:bool,
+     *              'guzzle'?:Client,
+     *              'drivesPermissionsApi'?:DrivesPermissionsApi,
+     *              'drivesApi'?:DrivesApi
+     *             } $connectionConfig
      * @return void
+     * @ignore The developer using the SDK does not need to create OcisResource objects manually,
+     *         but should use the Drive class to query the server for resources
      */
-    public function __construct(array $metadata)
-    {
+    public function __construct(
+        array $metadata,
+        ?string $driveId,
+        array $connectionConfig,
+        string $serviceUrl,
+        string &$accessToken
+    ) {
         $this->metadata = $metadata;
+        $this->accessToken = &$accessToken;
+        $this->serviceUrl = $serviceUrl;
+        if (!Ocis::isConnectionConfigValid($connectionConfig)) {
+            throw new \InvalidArgumentException('connection configuration not valid');
+        }
+        $this->graphApiConfig = Configuration::getDefaultConfiguration()
+            ->setHost($this->serviceUrl . '/graph');
 
+        $this->connectionConfig = $connectionConfig;
+        if ($driveId === null) {
+            $guzzle = new Client(
+                Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
+            );
+
+            if (array_key_exists('drivesApi', $this->connectionConfig)) {
+                $apiInstance = $this->connectionConfig['drivesApi'];
+            } else {
+                $apiInstance = new DrivesApi(
+                    $guzzle,
+                    $this->graphApiConfig
+                );
+            }
+            try {
+                $drive = $apiInstance->getDrive($this->getSpaceId());
+            } catch (ApiException $e) {
+                throw ExceptionHelper::getHttpErrorException($e);
+            }
+            if ($drive instanceof OdataError) {
+                throw new InvalidResponseException(
+                    "getDrive returned an OdataError - " . $drive->getError()
+                );
+            }
+            $driveId = $drive->getId();
+            if ($driveId === null) {
+                throw new InvalidResponseException('Could not get drive id');
+            }
+        }
+        $this->driveId = $driveId;
     }
 
     /**
@@ -73,6 +152,188 @@ class OcisResource
         return $metadata[$property->getKey()];
     }
 
+    /**
+     * Gets all possible Roles for the resource
+     * @return array<SharingRole>
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     * @throws InvalidResponseException
+     */
+    public function getRoles(): array
+    {
+        $guzzle = new Client(
+            Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
+        );
+
+        if (array_key_exists('drivesPermissionsApi', $this->connectionConfig)) {
+            $apiInstance = $this->connectionConfig['drivesPermissionsApi'];
+        } else {
+            $apiInstance = new DrivesPermissionsApi(
+                $guzzle,
+                $this->graphApiConfig
+            );
+        }
+        try {
+            $collectionOfPermissions = $apiInstance->listPermissions($this->driveId, $this->getId());
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+        if ($collectionOfPermissions instanceof OdataError) {
+            throw new InvalidResponseException(
+                "listPermissions returned an OdataError - " . $collectionOfPermissions->getError()
+            );
+        }
+        $apiRoles = $collectionOfPermissions->getAtLibreGraphPermissionsRolesAllowedValues() ?? [];
+        $roles = [];
+        foreach ($apiRoles as $role) {
+            $roles[] = new SharingRole($role);
+        }
+        return $roles;
+    }
+
+    /**
+     * Invite one or multiple people(user/group) to the resource.
+     * Every recipient will result in an own ShareCreated object in the returned array.
+     *
+     * @param array<int, User|Group> $recipients
+     * @param SharingRole $role
+     * @param \DateTime|null $expiration
+     * @return array<ShareCreated>
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     */
+    public function invite($recipients, SharingRole $role, ?\DateTime $expiration = null): array
+    {
+        $driveItemInviteData = [];
+        $driveItemInviteData['recipients'] = [];
+        foreach ($recipients as $recipient) {
+            $recipientData = [];
+            $recipientData['object_id'] = $recipient->getId();
+            if ($recipient instanceof Group) {
+                $recipientData['at_libre_graph_recipient_type'] = "group";
+            }
+            $driveItemInviteData['recipients'][] = new DriveRecipient($recipientData);
+        }
+        $driveItemInviteData['roles'] = [$role->getId()];
+        if ($expiration !== null) {
+            $expiration->setTimezone(new \DateTimeZone('Z'));
+            $driveItemInviteData['expiration_date_time'] = $expiration->format('Y-m-d\TH:i:s:up');
+        }
+
+        if (array_key_exists('drivesPermissionsApi', $this->connectionConfig)) {
+            $apiInstance = $this->connectionConfig['drivesPermissionsApi'];
+        } else {
+            $guzzle = new Client(
+                Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
+            );
+            $apiInstance = new DrivesPermissionsApi(
+                $guzzle,
+                $this->graphApiConfig
+            );
+        }
+
+        $inviteData = new DriveItemInvite($driveItemInviteData);
+        try {
+            $permissions = $apiInstance->invite($this->driveId, $this->getId(), $inviteData);
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+        if ($permissions instanceof OdataError) {
+            throw new InvalidResponseException(
+                "invite returned an OdataError - " . $permissions->getError()
+            );
+        }
+        if ($permissions->getValue() === null) {
+            throw new InvalidResponseException(
+                "invite returned 'null' where an array of permissions were expected"
+            );
+        }
+
+        /**
+         * @var array<ShareCreated> $shares
+         */
+        $shares = [];
+        foreach ($permissions->getValue() as $permission) {
+            $shares[] = new ShareCreated(
+                $permission,
+                $this->getId(),
+                $this->driveId,
+                $this->connectionConfig,
+                $this->serviceUrl,
+                $this->accessToken
+            );
+        }
+        return $shares;
+    }
+
+    /**
+     * create a new (public) link
+     *
+     * @throws UnauthorizedException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     * @throws BadRequestException
+     * @throws NotFoundException
+     */
+    public function createSharingLink(
+        SharingLinkType $type = SharingLinkType::VIEW,
+        ?\DateTime $expiration = null,
+        ?string $password = null,
+        ?string $displayName = null
+    ): ShareLink {
+        if (array_key_exists('drivesPermissionsApi', $this->connectionConfig)) {
+            $apiInstance = $this->connectionConfig['drivesPermissionsApi'];
+        } else {
+            $guzzle = new Client(
+                Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
+            );
+            $apiInstance = new DrivesPermissionsApi(
+                $guzzle,
+                $this->graphApiConfig
+            );
+        }
+        if ($expiration !== null) {
+            $expiration->setTimezone(new \DateTimeZone('Z'));
+            $expirationString = $expiration->format('Y-m-d\TH:i:s:up');
+        } else {
+            $expirationString = null;
+        }
+
+        $createLinkData = new DriveItemCreateLink([
+            'type' => $type->value,
+            'password' => $password,
+            'expiration_date_time' => $expirationString,
+            'display_name' => $displayName
+        ]);
+        try {
+            $permission = $apiInstance->createLink($this->driveId, $this->getId(), $createLinkData);
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+        if ($permission instanceof OdataError) {
+            throw new InvalidResponseException(
+                "createLink returned an OdataError - " . $permission->getError()
+            );
+        }
+
+        return new ShareLink(
+            $permission,
+            $this->getId(),
+            $this->driveId,
+            $this->connectionConfig,
+            $this->serviceUrl,
+            $this->accessToken
+        );
+
+    }
     /**
      * @return string
      * @throws InvalidResponseException
@@ -259,5 +520,75 @@ class OcisResource
             }
         }
         return [];
+    }
+
+    /**
+     * Returns the private link to the resource.
+     * This link can be used by any user with the correct permissions to navigate to the resource in the web UI.
+     * The link is urldecoded.
+     * @return string
+     * @throws InvalidResponseException
+     */
+    public function getPrivatelink(): string
+    {
+        $privateLink = $this->getMetadata(ResourceMetadata::PRIVATELINK);
+        if (!is_string($privateLink)) {
+            throw new InvalidResponseException(
+                'Invalid private link in response from server: ' . print_r($privateLink, true)
+            );
+        }
+        return rawurldecode($privateLink);
+    }
+
+    /*
+     * returns the content of this resource
+     *
+     * @throws UnauthorizedException
+     * @throws ForbiddenException
+     * @throws InvalidResponseException
+     * @throws HttpException
+     * @throws BadRequestException
+     * @throws NotFoundException
+     */
+    public function getContent(): string
+    {
+        $response = $this->getFileResponseInterface($this->getId());
+        return $response->getBodyAsString();
+    }
+
+    /**
+     * returns a stream to get the content of this resource
+     *
+     * @return resource
+     * @throws UnauthorizedException
+     * @throws ForbiddenException
+     * @throws BadRequestException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     * @throws NotFoundException
+     */
+    public function getContentStream()
+    {
+        $response = $this->getFileResponseInterface($this->getId());
+        return $response->getBodyAsStream();
+    }
+
+    public function getDriveId(): string
+    {
+        return $this->driveId;
+    }
+
+    /**
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     * @throws HttpException
+     */
+    private function getFileResponseInterface(string $fileId): ResponseInterface
+    {
+        $webDavClient = new WebDavClient(['baseUri' => $this->serviceUrl . '/dav/spaces/']);
+        $webDavClient->setCustomSetting($this->connectionConfig, $this->accessToken);
+        return $webDavClient->sendRequest("GET", $fileId);
     }
 }

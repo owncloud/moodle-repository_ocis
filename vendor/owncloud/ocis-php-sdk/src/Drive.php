@@ -285,21 +285,32 @@ class Drive
      * @throws UnauthorizedException
      * @throws HttpException
      */
-    public function listResources(string $path = "/"): array
+    public function getResources(string $path = "/"): array
     {
         $resources = [];
         $webDavClient = $this->createWebDavClient();
         try {
-            $responses = $webDavClient->propFind(rawurlencode(ltrim($path, "/")), [], 1);
-            foreach ($responses as $response) {
-                $resources[] = new OcisResource($response);
+            $properties = [];
+            foreach (ResourceMetadata::cases() as $property) {
+                $properties[] = $property->value;
             }
-            unset($resources[0]);
+            $responses = $webDavClient->propFind(rawurlencode(ltrim($path, "/")), $properties, 1);
+            foreach ($responses as $response) {
+                $resources[] = new OcisResource(
+                    $response,
+                    $this->getId(),
+                    $this->connectionConfig,
+                    $this->serviceUrl,
+                    $this->accessToken
+                );
+            }
+            unset($resources[0]); // skip first propfind response, because its the parent folder
         } catch (SabreClientHttpException|SabreClientException $e) {
             throw ExceptionHelper::getHttpErrorException($e);
         }
 
-        return $resources;
+        // make sure there is again an element with index 0
+        return array_values($resources);
     }
 
     /**
