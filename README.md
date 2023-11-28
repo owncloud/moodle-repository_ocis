@@ -129,6 +129,8 @@ There are three different modes for the Moodle user to link files from oCIS to M
 
 ## Development
 
+:exclamation: If extra dependencies were installed for development, make sure not to commit them to the repository! :exclamation:
+
 ### Auto-provisioning
 
 To reduce the setup steps specially when doing development and running automated tests these environment variables can be set to auto-provision the plugin:

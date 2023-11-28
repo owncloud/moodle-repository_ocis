@@ -8,7 +8,11 @@
     }
   ],
   "require": {
-    "owncloud/ocis-php-sdk": "*@dev"
+    "owncloud/ocis-php-sdk": "dev-main#e61c3d615ba4a5b7f8ac18f7279e004baf120ffc"
+  },
+  "replace": {
+    "guzzlehttp/guzzle": "*",
+    "guzzlehttp/psr7": "*"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
@@ -20,5 +24,9 @@
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
     }
+  },
+  "scripts": {
+    "post-update-cmd": "if [ $COMPOSER_DEV_MODE -eq 0 ]; then find vendor/ \\( -name bin -o -name docs -o -name \"*tests*\" -o -name \".*\" \\) -exec rm -rf \"{}\" +; fi",
+    "post-install-cmd": "if [ $COMPOSER_DEV_MODE -eq 0 ]; then find vendor/ \\( -name bin -o -name docs -o -name \"*tests*\" -o -name \".*\" \\) -exec rm -rf \"{}\" +; fi"
   }
 }

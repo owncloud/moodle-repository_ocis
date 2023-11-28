@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>vendor/owncloud/ocis-php-sdk</location>
+        <name>ocis-php-sdk</name>
+        <version>dev-main e61c3d6</version>
+        <license>Apache</license>
+        <licenseversion>2.0</licenseversion>
+    </library>
+    <library>
+        <location>vendor/owncloud/libre-graph-api-php</location>
+        <name>libre-graph-api-php</name>
+        <version>dev-main 451de8f</version>
+        <license>Apache</license>
+        <licenseversion>2.0</licenseversion>
+    </library>
+    <library>
+        <location>vendor/sabre/dav</location>
+        <name>sabre/dav</name>
+        <version>4.5.1</version>
+        <license>BSD-3-Clause</license>
+        <licenseversion/>
+    </library>
+    <library>
+        <location>vendor/sabre/http</location>
+        <name>sabre/http</name>
+        <version>5.1.10</version>
+        <license>BSD-3-Clause</license>
+        <licenseversion/>
+    </library>
+    <library>
+        <location>vendor/sabre/event</location>
+        <name>sabre/event</name>
+        <version>5.1.4</version>
+        <license>BSD-3-Clause</license>
+        <licenseversion/>
+    </library>
+    <library>
+        <location>vendor/sabre/vobject</location>
+        <name>sabre/vobject</name>
+        <version>4.5.4</version>
+        <license>BSD-3-Clause</license>
+        <licenseversion/>
+    </library>
+    <library>
+        <location>vendor/sabre/xml</location>
+        <name>sabre/xml</name>
+        <version>2.2.6</version>
+        <license>BSD-3-Clause</license>
+        <licenseversion/>
+    </library>
+    <library>
+        <location>vendor/sabre/uri</location>
+        <name>sabre/uri</name>
+        <version>2.3.3</version>
+        <license>BSD-3-Clause</license>
+        <licenseversion/>
+    </library>
+    <library>
+        <location>vendor/psr/log</location>
+        <name>psr/log</name>
+        <version>3.0.0</version>
+        <license>MIT</license>
+        <licenseversion/>
+    </library>
+    <library>
+        <location>vendor/composer</location>
+        <location>vendor/autoload.php</location>
+        <name>Composer auto loading</name>
+        <license>MIT</license>
+    </library>
+
+</libraries>
