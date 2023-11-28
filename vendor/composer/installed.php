@@ -3,7 +3,7 @@
         'name' => 'owncloud/moodle-repository_ocis',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '8ad6e0498035d1d179cd0b0b52860ecff97f923a',
+        'reference' => 'f96bc6cd07608d8df1b3c8ae6cdf2e131ddacffb',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -36,7 +36,7 @@
         'owncloud/moodle-repository_ocis' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '8ad6e0498035d1d179cd0b0b52860ecff97f923a',
+            'reference' => 'f96bc6cd07608d8df1b3c8ae6cdf2e131ddacffb',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

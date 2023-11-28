@@ -26,7 +26,7 @@
     }
   },
   "scripts": {
-    "post-update-cmd": "find vendor/ \\( -name \"*tests*\" -o -name \".*\" \\) -exec rm -r \"{}\" +",
-    "post-install-cmd": "find vendor/ \\( -name \"*tests*\" -o -name \".*\" \\) -exec rm -r \"{}\" +"
+    "post-update-cmd": "find vendor/ \\( -name bin -o -name docs -o -name \"*tests*\" -o -name \".*\" \\) -exec rm -r \"{}\" +",
+    "post-install-cmd": "find vendor/ \\( -name bin -o -name docs -o com-name \"*tests*\" -o -name \".*\" \\) -exec rm -r \"{}\" +"
   }
 }
