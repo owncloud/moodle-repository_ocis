@@ -63,4 +63,11 @@
         <license>MIT</license>
         <licenseversion/>
     </library>
+    <library>
+        <location>vendor/composer</location>
+        <location>vendor/autoload.php</location>
+        <name>Composer auto loading</name>
+        <license>MIT</license>
+    </library>
+
 </libraries>
