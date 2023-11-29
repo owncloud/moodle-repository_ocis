@@ -35,7 +35,7 @@ $string['right_issuers'] = 'The following issuers implement the required endpoin
 $string['no_right_issuers'] = 'None of the existing issuers implement all required endpoints. Please register an appropriate issuer.';
 $string['chooseissuer_help'] = 'To add a new issuer, go to Site administration / Server / OAuth 2 services.';
 $string['oauth2serviceslink'] = '<a href="{$a}" title="Link to OAuth 2 services configuration">OAuth 2 services configuration</a>';
-
+$string['privacy:metadata'] = 'The ownCloud Infinite Scale repository plugin neither stores any personal data nor transmits user data to the remote system.';
 
 // Filepicker.
 $string['no_personal_drive_found'] = 'No personal drive found';
