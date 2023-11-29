@@ -188,73 +188,104 @@ class repository_ocis extends repository {
      *
      * See repository::get_listing() for details.
      *
-     * @param string $path
+     * @param string $drive_id_and_path The drive it is seperated by ":" from the path
      * @param string $page
      * @return array the list of files, including meta information
      * @throws Exception
      */
-    public function get_listing($path = '', $page = '') {
+    public function get_listing($drive_id_and_path = '', $page = '') {
         global $OUTPUT;
-        if ($path === "") {
-            $path = '/';
-        }
 
         $ocis = $this->getOcisClient();
         $drives = $ocis->getMyDrives();
 
-        /** @var ?Drive $personaldrive */
-        $personaldrive = null;
-        /** @var Drive $drive */
-        foreach ($drives as $drive) {
-            if ($drive->getType() === DriveType::PERSONAL) {
-                $personaldrive = $drive;
-                break;
-            }
-        }
-        if ($personaldrive === null) {
-            throw new Exception(get_string('no_personal_drive_found', 'repository_ocis'));
-        }
-        $resources = $personaldrive->getResources($path);
-
         $list = [];
-        /** @var OcisResource $resource */
-        foreach ($resources as $resource) {
-            $lastmodifiedtime = new DateTime($resource->getLastModifiedTime());
-            $listitem = [
-                'title' => $resource->getName(),
-                'date' => $lastmodifiedtime->getTimestamp(),
-                'size' => $resource->getSize(),
-                'source' => $resource->getId(),
-            ];
-            if ($resource->getType() === 'folder') {
-                $listitem['children'] = [];
-                $listitem['path'] = $path . "/" . $resource->getName();
-                $listitem['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
-
-                // This is to help with sorting, `0` is to make sure folders are on top
-                // then the name in uppercase to sort everything alphabetically with ksort.
-                $list["0" . strtoupper($resource->getName())] = $listitem;
-            } else {
-                $listitem['thumbnail'] = $OUTPUT->image_url(
-                    file_extension_icon($resource->getName(), 90)
-                )->out(false);
-
-                // This is to help with sorting, for sorting, `1` to make sure files are listed after folders.
-                $list["1" . strtoupper($resource->getName())] = $listitem;
-            }
-        }
-
         $breadcrumbpath = [
             [
                 'name' => $this->get_meta()->name,
                 'path' => '/',
             ],
         ];
-        if ($path !== '/') {
+
+        if ($drive_id_and_path === '' || $drive_id_and_path === '/')
+        {
+            /** @var Drive $drive */
+            foreach ($drives as $drive) {
+                // skip mountpoints, we will show them inside of the Shares drive
+                if ($drive->getType() === DriveType::MOUNTPOINT) {
+                    continue;
+                }
+                if ($drive->getType() === DriveType::PERSONAL) {
+                    $drive_title = get_string('personal_drive', 'repository_ocis');
+                } else {
+                    $drive_title = $drive->getName();
+                }
+                $listitem = [
+                    'title' =>  $drive_title,
+                    'date' => '',
+                    'source' => $drive->getId(),
+                    'children' => [],
+                    'path' => $drive->getId()
+                ];
+                $list["0" . strtoupper($drive->getId())] = $listitem;
+            }
+        } else {
+            // : is the seperator between drive_id and path
+            $matches = explode(":", $drive_id_and_path, 2);
+            $drive_id = $matches[0];
+            if (array_key_exists(1, $matches)) {
+                $path = $matches[1];
+            } else {
+                $path = '';
+            }
+            $drive = $ocis->getDriveById($drive_id);
+            $resources = $drive->getResources($path);
+            /** @var OcisResource $resource */
+            foreach ($resources as $resource) {
+                $lastmodifiedtime = new DateTime($resource->getLastModifiedTime());
+                $listitem = [
+                    'title' => $resource->getName(),
+                    'date' => $lastmodifiedtime->getTimestamp(),
+                    'size' => $resource->getSize(),
+                    'source' => $resource->getId(),
+                ];
+                if ($resource->getType() === 'folder') {
+                    $listitem['children'] = [];
+                    // : is the seperator between drive_id and path
+                    $listitem['path'] = $drive_id . ":" . $path . "/" . $resource->getName();
+                    $listitem['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
+
+                    // This is to help with sorting, `0` is to make sure folders are on top
+                    // then the name in uppercase to sort everything alphabetically with ksort.
+                    $list["0" . strtoupper($resource->getName())] = $listitem;
+                } else {
+                    $listitem['thumbnail'] = $OUTPUT->image_url(
+                        file_extension_icon($resource->getName(), 90)
+                    )->out(false);
+
+                    // This is to help with sorting, for sorting, `1` to make sure files are listed after folders.
+                    $list["1" . strtoupper($resource->getName())] = $listitem;
+                }
+            }
+
+            // the first breadcrumb is the drive
+            if ($drive->getType() === DriveType::PERSONAL) {
+                $drive_name = get_string('personal_drive', 'repository_ocis');
+            } else {
+                $drive_name = $drive->getName();
+            }
+            $breadcrumbpath[] = [
+                'name' => urldecode($drive_name),
+                'path' => $drive_id,
+            ];
             $chunks = explode('/', trim($path, '/'));
-            $parent = '/';
+
+            $parent = $drive_id . ':';
             // Every sub-path to the last part of the current path is a parent path.
             foreach ($chunks as $chunk) {
+                if ($chunk === '') {
+                    continue;
+                }
                 $subpath = $parent . $chunk . '/';
                 $breadcrumbpath[] = [
                     'name' => urldecode($chunk),
@@ -264,13 +295,14 @@ class repository_ocis extends repository {
                 $parent = $subpath;
             }
         }
+
         ksort($list);
         return [
             // This will be used to build navigation bar.
             'dynload' => true,
             'nosearch' => true,
             'path' => $breadcrumbpath,
-            'manage' => $personaldrive->getWebUrl(),
+            'manage' => $drive->getWebUrl(),
             'list' => $list,
         ];
     }
@@ -459,5 +491,17 @@ class repository_ocis extends repository {
         $file = $ocis->getResourceById($fileid);
         file_put_contents($localpath, $file->getContentStream());
         return ['path' => $localpath, 'url' => $fileid];
+    }
+
+    private function get_drive_id_regex(): string
+    {
+        return '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}\\$' .
+               '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}';
+    }
+    private function is_valid_drive_id(string $path)
+    {
+        $regex = '/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}\\$' .
+                 '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$/';
+        return preg_match($regex, $path) === 1;
     }
 }

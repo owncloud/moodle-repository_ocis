@@ -40,3 +40,4 @@ $string['privacy:metadata'] = 'The ownCloud Infinite Scale repository plugin nei
 // Filepicker.
 $string['no_personal_drive_found'] = 'No personal drive found';
 $string['webfinger_error'] = 'Could not get user-information from webfinger service.';
+$string['personal_drive'] = 'Personal';
