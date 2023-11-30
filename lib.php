@@ -29,6 +29,7 @@ use core\oauth2\client as oauth2_client;
 use core\oauth2\issuer as oauth2_issuer;
 use Owncloud\OcisPhpSdk\Drive;
 use Owncloud\OcisPhpSdk\DriveType;
+use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
 use Owncloud\OcisPhpSdk\Ocis;
 use Owncloud\OcisPhpSdk\OcisResource;
 use repository_ocis\issuer_management;
@@ -220,12 +221,20 @@ class repository_ocis extends repository {
                 } else {
                     $drive_title = $drive->getName();
                 }
+                try {
+                    $size = (int)$drive->getQuota()->getUsed();
+                } catch (InvalidResponseException $e) {
+                    // The Share drive does not return a Quota
+                    $size = 0;
+                }
                 $listitem = [
                     'title' =>  $drive_title,
-                    'date' => '',
+                    'datemodified' => $drive->getLastModifiedDateTime()->getTimestamp(),
                     'source' => $drive->getId(),
                     'children' => [],
-                    'path' => $drive->getId()
+                    'path' => $drive->getId(),
+                    'thumbnail' => $OUTPUT->image_url(file_folder_icon(90))->out(false),
+                    'size' => $size
                 ];
                 $list["0" . strtoupper($drive->getId())] = $listitem;
             }
