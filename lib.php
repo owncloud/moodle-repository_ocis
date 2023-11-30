@@ -216,6 +216,10 @@ class repository_ocis extends repository {
                 if ($drive->getType() === DriveType::MOUNTPOINT) {
                     continue;
                 }
+                // skip disabled drives
+                if ($drive->isDisabled()) {
+                    continue;
+                }
                 if ($drive->getType() === DriveType::PERSONAL) {
                     $drive_title = get_string('personal_drive', 'repository_ocis');
                 } else {
