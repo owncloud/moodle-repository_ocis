@@ -250,11 +250,11 @@ class repository_ocis extends repository {
         if ($driveidandpath === '' || $driveidandpath === '/') {
             /** @var Drive $drive */
             foreach ($drives as $drive) {
-                // skip mountpoints, we will show them inside of the Shares drive
+                // Skip mountpoints, we will show them inside of the Shares drive.
                 if ($drive->getType() === DriveType::MOUNTPOINT) {
                     continue;
                 }
-                // skip disabled drives
+                // Skip disabled drives.
                 if ($drive->isDisabled()) {
                     continue;
                 }
@@ -266,7 +266,7 @@ class repository_ocis extends repository {
                 try {
                     $size = (int)$drive->getQuota()->getUsed();
                 } catch (InvalidResponseException $e) {
-                    // The Share drive does not return a Quota
+                    // The Share drive does not return a Quota.
                     $size = 0;
                 }
                 $listitem = [
@@ -281,7 +281,7 @@ class repository_ocis extends repository {
                 $list["0" . strtoupper($drive->getId())] = $listitem;
             }
         } else {
-            // : is the seperator between drive_id and path
+            // The colon ":" is the seperator between drive_id and path.
             $matches = explode(":", $driveidandpath, 2);
             $driveid = $matches[0];
             if (array_key_exists(1, $matches)) {
@@ -302,7 +302,7 @@ class repository_ocis extends repository {
                 ];
                 if ($resource->getType() === 'folder') {
                     $listitem['children'] = [];
-                    // : is the seperator between drive_id and path
+                    // The colon ":" is the seperator between drive_id and path.
                     $listitem['path'] = $driveid . ":" . $path . "/" . $resource->getName();
                     $listitem['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
 
@@ -319,7 +319,7 @@ class repository_ocis extends repository {
                 }
             }
 
-            // the first breadcrumb is the drive
+            // The first breadcrumb is the drive.
             if ($drive->getType() === DriveType::PERSONAL) {
                 $drivename = get_string('personal_drive', 'repository_ocis');
             } else {
