@@ -28,10 +28,12 @@ use core\oauth2\api as oauth2_api;
 use core\oauth2\client as oauth2_client;
 use core\oauth2\issuer as oauth2_issuer;
 use Owncloud\OcisPhpSdk\Drive;
+use Owncloud\OcisPhpSdk\DriveOrder;
 use Owncloud\OcisPhpSdk\DriveType;
 use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
 use Owncloud\OcisPhpSdk\Ocis;
 use Owncloud\OcisPhpSdk\OcisResource;
+use Owncloud\OcisPhpSdk\OrderDirection;
 use repository_ocis\issuer_management;
 
 defined('MOODLE_INTERNAL') || die();
@@ -65,6 +67,9 @@ class repository_ocis extends repository {
      * @var ?Ocis
      */
     private ?Ocis $ocis = null;
+    /**
+     * @var array|mixed|null
+     */
 
     /**
      * repository_ocis constructor.
@@ -89,7 +94,6 @@ class repository_ocis extends repository {
             $this->disabled = true;
             return;
         }
-
         if (!$this->oauth2issuer) {
             $this->disabled = true;
             return;
@@ -194,12 +198,47 @@ class repository_ocis extends repository {
      * @return array the list of files, including meta information
      * @throws Exception
      */
-    public function get_listing($drive_id_and_path = '', $page = '') {
+    public function get_listing($driveidandpath = '', $page = '') {
         global $OUTPUT;
 
         $ocis = $this->getOcisClient();
-        $drives = $ocis->getMyDrives();
+        $drives = [];
+        if ($this->get_option('show_personal_drive') === '1') {
+            $drives = $ocis->getMyDrives(
+                DriveOrder::NAME,
+                OrderDirection::ASC,
+                DriveType::PERSONAL
+            );
+        }
+        if ($this->get_option('show_shares') === '1') {
+            $drives = array_merge(
+                $drives,
+                $ocis->getMyDrives(
+                    DriveOrder::NAME,
+                    OrderDirection::ASC,
+                    DriveType::VIRTUAL
+                )
+            );
+        }
+        if ($this->get_option('show_project_drives') === '1') {
+            $drives = array_merge(
+                $drives,
+                $ocis->getMyDrives(
+                    DriveOrder::NAME,
+                    OrderDirection::ASC,
+                    DriveType::PROJECT
+                )
+            );
+        }
 
+        if (empty($drives)) {
+            throw new \moodle_exception(
+                'no_drives_error',
+                'repository_ocis',
+                '',
+                null
+            );
+        }
         $list = [];
         $breadcrumbpath = [
             [
@@ -208,8 +247,7 @@ class repository_ocis extends repository {
             ],
         ];
 
-        if ($drive_id_and_path === '' || $drive_id_and_path === '/')
-        {
+        if ($driveidandpath === '' || $driveidandpath === '/') {
             /** @var Drive $drive */
             foreach ($drives as $drive) {
                 // skip mountpoints, we will show them inside of the Shares drive
@@ -221,9 +259,9 @@ class repository_ocis extends repository {
                     continue;
                 }
                 if ($drive->getType() === DriveType::PERSONAL) {
-                    $drive_title = get_string('personal_drive', 'repository_ocis');
+                    $drivetitle = get_string('personal_drive', 'repository_ocis');
                 } else {
-                    $drive_title = $drive->getName();
+                    $drivetitle = $drive->getName();
                 }
                 try {
                     $size = (int)$drive->getQuota()->getUsed();
@@ -232,26 +270,26 @@ class repository_ocis extends repository {
                     $size = 0;
                 }
                 $listitem = [
-                    'title' =>  $drive_title,
+                    'title' => $drivetitle,
                     'datemodified' => $drive->getLastModifiedDateTime()->getTimestamp(),
                     'source' => $drive->getId(),
                     'children' => [],
                     'path' => $drive->getId(),
                     'thumbnail' => $OUTPUT->image_url(file_folder_icon(90))->out(false),
-                    'size' => $size
+                    'size' => $size,
                 ];
                 $list["0" . strtoupper($drive->getId())] = $listitem;
             }
         } else {
             // : is the seperator between drive_id and path
-            $matches = explode(":", $drive_id_and_path, 2);
-            $drive_id = $matches[0];
+            $matches = explode(":", $driveidandpath, 2);
+            $driveid = $matches[0];
             if (array_key_exists(1, $matches)) {
                 $path = $matches[1];
             } else {
                 $path = '';
             }
-            $drive = $ocis->getDriveById($drive_id);
+            $drive = $ocis->getDriveById($driveid);
             $resources = $drive->getResources($path);
             /** @var OcisResource $resource */
             foreach ($resources as $resource) {
@@ -265,7 +303,7 @@ class repository_ocis extends repository {
                 if ($resource->getType() === 'folder') {
                     $listitem['children'] = [];
                     // : is the seperator between drive_id and path
-                    $listitem['path'] = $drive_id . ":" . $path . "/" . $resource->getName();
+                    $listitem['path'] = $driveid . ":" . $path . "/" . $resource->getName();
                     $listitem['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
 
                     // This is to help with sorting, `0` is to make sure folders are on top
@@ -283,17 +321,17 @@ class repository_ocis extends repository {
 
             // the first breadcrumb is the drive
             if ($drive->getType() === DriveType::PERSONAL) {
-                $drive_name = get_string('personal_drive', 'repository_ocis');
+                $drivename = get_string('personal_drive', 'repository_ocis');
             } else {
-                $drive_name = $drive->getName();
+                $drivename = $drive->getName();
             }
             $breadcrumbpath[] = [
-                'name' => urldecode($drive_name),
-                'path' => $drive_id,
+                'name' => urldecode($drivename),
+                'path' => $driveid,
             ];
             $chunks = explode('/', trim($path, '/'));
 
-            $parent = $drive_id . ':';
+            $parent = $driveid . ':';
             // Every sub-path to the last part of the current path is a parent path.
             foreach ($chunks as $chunk) {
                 if ($chunk === '') {
@@ -323,7 +361,7 @@ class repository_ocis extends repository {
     /**
      * This method adds a select form and additional information to the settings form..
      *
-     * @param \moodleform $mform Moodle form (passed by reference)
+     * @param MoodleQuickForm $mform Moodle form (passed by reference)
      * @return bool|void
      * @throws coding_exception
      * @throws dml_exception
@@ -369,6 +407,22 @@ class repository_ocis extends repository {
                 implode(', ', $validissuers)
             ));
         }
+
+        $mform->addElement(
+            'selectyesno',
+            'show_personal_drive',
+            get_string('show_personal_drive', 'repository_ocis')
+        );
+        $mform->addElement(
+            'selectyesno',
+            'show_shares',
+            get_string('show_shares', 'repository_ocis')
+        );
+        $mform->addElement(
+            'selectyesno',
+            'show_project_drives',
+            get_string('show_project_drives', 'repository_ocis')
+        );
     }
 
     /**
@@ -478,7 +532,8 @@ class repository_ocis extends repository {
      */
     public static function get_instance_option_names() {
         return ['issuerid', 'controlledlinkfoldername',
-            'defaultreturntype', 'supportedreturntypes', ];
+            'defaultreturntype', 'supportedreturntypes',
+            'show_personal_drive', 'show_shares', 'show_project_drives'];
     }
 
     /**
@@ -506,13 +561,11 @@ class repository_ocis extends repository {
         return ['path' => $localpath, 'url' => $fileid];
     }
 
-    private function get_drive_id_regex(): string
-    {
+    private function get_drive_id_regex(): string {
         return '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}\\$' .
                '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}';
     }
-    private function is_valid_drive_id(string $path)
-    {
+    private function is_valid_drive_id(string $path) {
         $regex = '/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}\\$' .
                  '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$/';
         return preg_match($regex, $path) === 1;
