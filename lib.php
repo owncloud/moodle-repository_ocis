@@ -112,13 +112,56 @@ class repository_ocis extends repository {
      * @throws \Exception
      */
     private function getocisclient(): Ocis {
+        global $CFG;
+
+        if (empty($CFG->proxyhost)) {
+            $proxysetting = [];
+        } else {
+            $proxyhost = $CFG->proxyhost;
+            if (!empty($CFG->proxyport)) {
+                $proxyhost = "{$CFG->proxyhost}:{$CFG->proxyport}";
+            }
+
+            $proxyauth = "";
+            if (!empty($CFG->proxyuser) && !empty($CFG->proxypassword)) {
+                $proxyauth = "{$CFG->proxyuser}:{$CFG->proxypassword}@";
+            }
+
+            $protocol = "http://";
+            if (!empty($CFG->proxytype) && $CFG->proxytype === 'SOCKS5') {
+                $protocol = "socks5://";
+            }
+
+            $proxystring = "{$protocol}{$proxyauth}{$proxyhost}";
+            $noproxy = [];
+
+            if (!empty($CFG->proxybypass)) {
+                $noproxy = array_map(function (string $hostname): string {
+                    return trim($hostname);
+                }, explode(',', $CFG->proxybypass));
+            }
+
+            $proxysetting = [
+                'http' => $proxystring,
+                'https' => $proxystring,
+                'no' => $noproxy,
+            ];
+        }
+
         $accesstoken = $this->get_user_oauth_client()->get_accesstoken();
 
         if ($this->ocis === null) {
             $webfingerurl = issuer_management::get_webfinger_url($this->oauth2issuer);
             if ($webfingerurl) {
                 try {
-                    $this->ocis = new Ocis($webfingerurl, $accesstoken->token, ['webfinger' => true]);
+                    $this->ocis = new Ocis(
+                        $webfingerurl,
+                        $accesstoken->token,
+                        [
+                            'webfinger' => true,
+                            'proxy' => $proxysetting,
+                        ]
+                    );
                 } catch (\Exception $e) {
                     throw new \moodle_exception(
                         'webfinger_error',
@@ -130,7 +173,7 @@ class repository_ocis extends repository {
                 }
             } else {
                 $baseurl = $this->oauth2issuer->get('baseurl');
-                $this->ocis = new Ocis($baseurl, $accesstoken->token);
+                $this->ocis = new Ocis($baseurl, $accesstoken->token, ['proxy' => $proxysetting]);
             }
         } else {
             // Update the token for the ocis client, just in case it changed.
