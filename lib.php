@@ -269,9 +269,15 @@ class repository_ocis extends repository {
                     // The Share drive does not return a Quota.
                     $size = 0;
                 }
+                try {
+                    $datemodified = $drive->getLastModifiedDateTime()->getTimestamp();
+                } catch (InvalidResponseException $e) {
+                    $datemodified = "";
+                }
+
                 $listitem = [
                     'title' => $drivetitle,
-                    'datemodified' => $drive->getLastModifiedDateTime()->getTimestamp(),
+                    'datemodified' => $datemodified,
                     'source' => $drive->getId(),
                     'children' => [],
                     'path' => $drive->getId(),
