@@ -66,23 +66,23 @@
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "dev-proxy",
-            "version_normalized": "dev-proxy",
+            "version": "dev-main",
+            "version_normalized": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "1bd6df59e6564e162ac972c35f668bf8002ab459"
+                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/1bd6df59e6564e162ac972c35f668bf8002ab459",
-                "reference": "1bd6df59e6564e162ac972c35f668bf8002ab459",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/f5702c34ed214a7dde98fd9d72cc60f6744268d0",
+                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
-                "owncloud/libre-graph-api-php": "dev-main#73c46add374372d419043df93f9d19a1c3b72976",
+                "owncloud/libre-graph-api-php": "dev-main#eaa85a34b43ecad81908c189556c437ac18f7d19",
                 "php": "^8.1",
                 "sabre/dav": "^4.4"
             },
@@ -92,7 +92,8 @@
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^9.6"
             },
-            "time": "2023-12-08T08:40:40+00:00",
+            "time": "2023-12-08T11:31:14+00:00",
+            "default-branch": true,
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -104,7 +105,7 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/proxy",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/main",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
             "install-path": "../owncloud/ocis-php-sdk"

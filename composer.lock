@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "feae00ead7a600abc3a60d41ffe54557",
+    "content-hash": "cbf51412486b64b2076c37f00c4eb7d1",
     "packages": [
         {
             "name": "owncloud/libre-graph-api-php",
@@ -69,22 +69,22 @@
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "dev-proxy",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "1bd6df59e6564e162ac972c35f668bf8002ab459"
+                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/1bd6df59e6564e162ac972c35f668bf8002ab459",
-                "reference": "1bd6df59e6564e162ac972c35f668bf8002ab459",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/f5702c34ed214a7dde98fd9d72cc60f6744268d0",
+                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
-                "owncloud/libre-graph-api-php": "dev-main#73c46add374372d419043df93f9d19a1c3b72976",
+                "owncloud/libre-graph-api-php": "dev-main#eaa85a34b43ecad81908c189556c437ac18f7d19",
                 "php": "^8.1",
                 "sabre/dav": "^4.4"
             },
@@ -94,6 +94,7 @@
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^9.6"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -104,10 +105,10 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/proxy",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/main",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
-            "time": "2023-12-08T08:40:40+00:00"
+            "time": "2023-12-08T11:31:14+00:00"
         },
         {
             "name": "psr/log",
