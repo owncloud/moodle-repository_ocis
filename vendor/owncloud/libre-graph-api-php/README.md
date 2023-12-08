@@ -80,6 +80,7 @@ Class | Method | HTTP request | Description
 *DrivesApi* | [**getDrive**](docs/Api/DrivesApi.md#getdrive) | **GET** /v1.0/drives/{drive-id} | Get drive by id
 *DrivesApi* | [**updateDrive**](docs/Api/DrivesApi.md#updatedrive) | **PATCH** /v1.0/drives/{drive-id} | Update the drive
 *DrivesGetDrivesApi* | [**listAllDrives**](docs/Api/DrivesGetDrivesApi.md#listalldrives) | **GET** /v1.0/drives | Get all available drives
+*DrivesGetDrivesApi* | [**listAllDrivesBeta**](docs/Api/DrivesGetDrivesApi.md#listalldrivesbeta) | **GET** /v1beta1/drives | Alias for &#39;/v1.0/drives&#39;, the difference is that grantedtoV2 is used and roles contain unified roles instead of cs3 roles
 *DrivesPermissionsApi* | [**createLink**](docs/Api/DrivesPermissionsApi.md#createlink) | **POST** /v1beta1/drives/{drive-id}/items/{item-id}/createLink | Create a sharing link for a DriveItem
 *DrivesPermissionsApi* | [**deletePermission**](docs/Api/DrivesPermissionsApi.md#deletepermission) | **DELETE** /v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id} | Remove access to a DriveItem
 *DrivesPermissionsApi* | [**getPermission**](docs/Api/DrivesPermissionsApi.md#getpermission) | **GET** /v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id} | Get sharing permission for a file or folder
@@ -130,6 +131,7 @@ Class | Method | HTTP request | Description
 *MeDriveRootApi* | [**homeGetRoot**](docs/Api/MeDriveRootApi.md#homegetroot) | **GET** /v1.0/me/drive/root | Get root from personal space
 *MeDriveRootChildrenApi* | [**homeGetChildren**](docs/Api/MeDriveRootChildrenApi.md#homegetchildren) | **GET** /v1.0/me/drive/root/children | Get children from drive
 *MeDrivesApi* | [**listMyDrives**](docs/Api/MeDrivesApi.md#listmydrives) | **GET** /v1.0/me/drives | Get all drives where the current user is a regular member of
+*MeDrivesApi* | [**listMyDrivesBeta**](docs/Api/MeDrivesApi.md#listmydrivesbeta) | **GET** /v1beta1/me/drives | Alias for &#39;/v1.0/drives&#39;, the difference is that grantedtoV2 is used and roles contain unified roles instead of cs3 roles
 *MeUserApi* | [**getOwnUser**](docs/Api/MeUserApi.md#getownuser) | **GET** /v1.0/me | Get current user
 *MeUserApi* | [**updateOwnUser**](docs/Api/MeUserApi.md#updateownuser) | **PATCH** /v1.0/me | Update the current user
 *RoleManagementApi* | [**getPermissionRoleDefinition**](docs/Api/RoleManagementApi.md#getpermissionroledefinition) | **GET** /v1beta1/roleManagement/permissions/roleDefinitions/{role-id} | Get unifiedRoleDefinition
@@ -220,6 +222,7 @@ Class | Method | HTTP request | Description
 - [UnifiedRoleDefinition](docs/Model/UnifiedRoleDefinition.md)
 - [UnifiedRolePermission](docs/Model/UnifiedRolePermission.md)
 - [User](docs/Model/User.md)
+- [Video](docs/Model/Video.md)
 
 ## Authorization
 

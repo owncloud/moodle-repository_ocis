@@ -11,6 +11,7 @@ use OpenAPI\Client\Api\DrivesPermissionsApi;
 use OpenAPI\Client\Api\GroupApi;
 use OpenAPI\Client\Api\MeDriveApi;
 use OpenAPI\Client\Api\MeDrivesApi;
+use OpenAPI\Client\Api\UserApi;
 use OpenAPI\Client\Api\UsersApi;
 use OpenAPI\Client\ApiException;
 use OpenAPI\Client\Configuration;
@@ -28,7 +29,7 @@ use Sabre\HTTP\ClientException as SabreClientException;
 use Sabre\HTTP\ClientHttpException as SabreClientHttpException;
 use stdClass;
 use OpenAPI\Client\Api\GroupsApi;
-use OpenAPI\Client\Model\Group as OpenAPIGrop;
+use OpenAPI\Client\Model\Group as OpenAPIGroup;
 
 /**
  * Basic class to establish the connection to an ownCloud Infinite Scale instance
@@ -40,31 +41,32 @@ class Ocis
         'This function is not implemented yet! Place, name and signature of the function might change!';
     private string $serviceUrl;
     private string $accessToken;
-    private ?DrivesApi $drivesApiInstance = null;
-    private ?DrivesGetDrivesApi $drivesGetDrivesApiInstance = null;
     private Configuration $graphApiConfig;
     private Client $guzzle;
     private string $notificationsEndpoint = '/ocs/v2.php/apps/notifications/api/v1/notifications?format=json';
 
     /**
-     * @phpstan-var array{'headers'?:array<string, mixed>, 'verify'?:bool, 'webfinger'?:bool, 'guzzle'?:Client}
+     * @phpstan-var array{'headers'?:array<string, mixed>, 'verify'?:bool, 'webfinger'?:bool, 'guzzle'?:Client,'drivesApi'?:DrivesApi,'drivesGetDrivesApi'?:DrivesGetDrivesApi}
      */
     private array $connectionConfig;
 
     /**
      * @phpstan-param array{
      *                        'headers'?:array<string, mixed>,
+     *                        'proxy'?:array{'http'?:string, 'https'?:string, 'no'?:array<string>}|string,
      *                        'verify'?:bool,
      *                        'webfinger'?:bool,
      *                        'guzzle'?:Client
      *                        } $connectionConfig
-     *        valid config keys are: headers, verify, webfinger, guzzle
+     *        valid config keys are: headers, proxy, verify, webfinger, guzzle
      *        headers has to be an array in the form like
      *        [
      *            'User-Agent' => 'testing/1.0',
      *            'Accept'     => 'application/json',
      *            'X-Foo'      => ['Bar', 'Baz']
      *        ]
+     *        proxy is an array or a string that defines the proxy configuration, the schema is the same as for guzzle 7
+     *              https://docs.guzzlephp.org/en/stable/request-options.html#proxy
      *        verify is a boolean to disable SSL checking
      *        webfinger is a boolean to enable webfinger discovery, in that case $serviceUrl is the webfinger url
      *        guzzle is a guzzle client instance that can be injected e.g. to be used for unit tests
@@ -141,6 +143,11 @@ class Ocis
         return $api instanceof DrivesApi;
     }
 
+    public static function isDrivesGetDrivesApi(mixed $api): bool
+    {
+        return $api instanceof DrivesGetDrivesApi;
+    }
+
     /**
      * @param array<mixed> $connectionConfig
      * @ignore This function is used for internal purposes only and should not be shown in the documentation.
@@ -154,7 +161,9 @@ class Ocis
             'webfinger' => 'is_bool',
             'guzzle' => 'self::isGuzzleClient',
             'drivesPermissionsApi' => 'self::isDrivesPermissionsApi',
-            'drivesApi' => 'self::isDrivesApi'
+            'drivesApi' => 'self::isDrivesApi',
+            'drivesGetDrivesApi' => 'self::isDrivesGetDrivesApi',
+            'proxy' => 'is_array',
         ];
         foreach ($connectionConfig as $key => $check) {
             if (!array_key_exists($key, $validConnectionConfigKeys)) {
@@ -180,6 +189,7 @@ class Ocis
      *         The function is public to make it testable.
      * @phpstan-param array{
      *                       'headers'?:array<string, mixed>,
+     *                       'proxy'?:array{'http'?:string, 'https'?:string, 'no'?:array<string>}|string,
      *                       'verify'?:bool,
      *                       'webfinger'?:bool,
      *                       'guzzle'?:Client
@@ -201,22 +211,6 @@ class Ocis
     }
 
     /**
-     * @ignore This function is mainly for unit tests and should not be shown in the documentation
-     */
-    public function setDrivesApiInstance(DrivesApi|null $apiInstance): void
-    {
-        $this->drivesApiInstance = $apiInstance;
-    }
-
-    /**
-     * @ignore This function is mainly for unit tests and should not be shown in the documentation
-     */
-    public function setDrivesGetDrivesApiInstance(DrivesGetDrivesApi|null $apiInstance): void
-    {
-        $this->drivesGetDrivesApiInstance = $apiInstance;
-    }
-
-    /**
      * Update the access token. Call this function after refreshing the access token.
      *
      * @throws \InvalidArgumentException
@@ -225,8 +219,6 @@ class Ocis
     {
         $this->accessToken = $accessToken;
         $this->guzzle = new Client(Ocis::createGuzzleConfig($this->connectionConfig, $accessToken));
-        $this->drivesApiInstance = null;
-        $this->drivesGetDrivesApiInstance = null;
     }
 
     /**
@@ -299,13 +291,13 @@ class Ocis
         OrderDirection $orderDirection = OrderDirection::ASC,
         DriveType      $type = null
     ): array {
-        if ($this->drivesGetDrivesApiInstance === null) {
+        if (array_key_exists('drivesGetDrivesApi', $this->connectionConfig)) {
+            $apiInstance = $this->connectionConfig['drivesGetDrivesApi'];
+        } else {
             $apiInstance = new DrivesGetDrivesApi(
                 $this->guzzle,
                 $this->graphApiConfig
             );
-        } else {
-            $apiInstance = $this->drivesGetDrivesApiInstance;
         }
         $order = $this->getListDrivesOrderString($orderBy, $orderDirection);
         $filter = $this->getListDrivesFilterString($type);
@@ -476,15 +468,14 @@ class Ocis
         if ($quota < 0) {
             throw new \InvalidArgumentException('Quota cannot be less than 0');
         }
-        if ($this->drivesApiInstance === null) {
+        if (array_key_exists('drivesApi', $this->connectionConfig)) {
+            $apiInstance = $this->connectionConfig['drivesApi'];
+        } else {
             $apiInstance = new DrivesApi(
                 $this->guzzle,
                 $this->graphApiConfig
             );
-        } else {
-            $apiInstance = $this->drivesApiInstance;
         }
-
         $apiDrive = new ApiDrive(
             [
                 'description' => $description,
@@ -636,6 +627,67 @@ class Ocis
     }
 
     /**
+     * @throws UnauthorizedException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     * @throws BadRequestException
+     * @throws NotFoundException
+     */
+    public function getUserById(string $userId): User
+    {
+        $apiInstance = new UserApi(
+            $this->guzzle,
+            $this->graphApiConfig
+        );
+        try {
+            $apiUser = $apiInstance->getUser($userId);
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+
+        if ($apiUser instanceof OdataError) {
+            throw new InvalidResponseException(
+                "getUser returned an OdataError - " . $apiUser->getError()
+            );
+        }
+        return new User($apiUser);
+    }
+
+    /**
+     * @throws UnauthorizedException
+     * @throws ForbiddenException
+     * @throws BadRequestException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     * @throws NotFoundException
+     */
+    public function getGroupById(string $groupId): Group
+    {
+        $apiInstance = new GroupApi(
+            $this->guzzle,
+            $this->graphApiConfig
+        );
+        try {
+            $apiGroup = $apiInstance->getGroup($groupId);
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+
+        if ($apiGroup instanceof OdataError) {
+            throw new InvalidResponseException(
+                "getGroup returned an OdataError - " . $apiGroup->getError()
+            );
+        }
+        return new Group(
+            $apiGroup,
+            $this->serviceUrl,
+            $this->connectionConfig,
+            $this->accessToken
+        );
+    }
+
+    /**
      * @param array<mixed> $ocsResponse
      * @return bool
      */
@@ -780,7 +832,7 @@ class Ocis
     public function createGroup(string $groupName, string $description = ""): Group
     {
         $apiInstance = new GroupsApi($this->guzzle, $this->graphApiConfig);
-        $group = new OpenAPIGrop(["display_name" => $groupName, "description" => $description]);
+        $group = new OpenAPIGroup(["display_name" => $groupName, "description" => $description]);
         try {
             $newlyCreatedGroup = $apiInstance->createGroup($group);
         } catch (ApiException $e) {
@@ -819,6 +871,41 @@ class Ocis
         } catch (ApiException $e) {
             throw ExceptionHelper::getHttpErrorException($e);
         }
+    }
+
+    /**
+     * @return array<ShareReceived>
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     */
+    public function getSharedWithMe(): array
+    {
+        $apiInstance = new MeDriveApi(
+            $this->guzzle,
+            $this->graphApiConfig
+        );
+        try {
+            $shareList = $apiInstance->listSharedWithMe();
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+        if ($shareList instanceof OdataError) {
+            throw new InvalidResponseException(
+                "listSharedWithMe returned an OdataError - " . $shareList->getError()
+            );
+        }
+        $apiShares = $shareList->getValue() ?? [];
+        $shares = [];
+        foreach ($apiShares as $share) {
+            $shares[] = new ShareReceived(
+                $share
+            );
+        }
+        return $shares;
     }
 
     /**

@@ -152,7 +152,7 @@ class EducationClassApi
      * @param  \OpenAPI\Client\Model\ClassMemberReference $class_member_reference educationUser to be added as member (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['addUserToClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return void
      */
@@ -174,7 +174,7 @@ class EducationClassApi
      * @param  \OpenAPI\Client\Model\ClassMemberReference $class_member_reference educationUser to be added as member (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['addUserToClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
@@ -431,7 +431,7 @@ class EducationClassApi
      * @param  \OpenAPI\Client\Model\EducationClass $education_class New entity (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return \OpenAPI\Client\Model\EducationClass|\OpenAPI\Client\Model\OdataError
      */
@@ -452,7 +452,7 @@ class EducationClassApi
      * @param  \OpenAPI\Client\Model\EducationClass $education_class New entity (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\EducationClass|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
@@ -505,7 +505,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\EducationClass' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -520,7 +532,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -537,7 +561,19 @@ class EducationClassApi
             } else {
                 $content = (string) $response->getBody();
                 if ($returnType !== 'string') {
-                    $content = json_decode($content);
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
                 }
             }
 
@@ -755,7 +791,7 @@ class EducationClassApi
      * @param  string $class_id key: id or externalId of class (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return void
      */
@@ -775,7 +811,7 @@ class EducationClassApi
      * @param  string $class_id key: id or externalId of class (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
@@ -1012,7 +1048,7 @@ class EducationClassApi
      * @param  string $user_id key: id or username of the user to unassign from class (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteUserFromClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return void
      */
@@ -1034,7 +1070,7 @@ class EducationClassApi
      * @param  string $user_id key: id or username of the user to unassign from class (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteUserFromClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
@@ -1292,7 +1328,7 @@ class EducationClassApi
      * @param  string $class_id key: id or externalId of class (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return \OpenAPI\Client\Model\EducationClass|\OpenAPI\Client\Model\OdataError
      */
@@ -1313,7 +1349,7 @@ class EducationClassApi
      * @param  string $class_id key: id or externalId of class (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\EducationClass|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
@@ -1366,7 +1402,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\EducationClass' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -1381,7 +1429,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -1398,7 +1458,19 @@ class EducationClassApi
             } else {
                 $content = (string) $response->getBody();
                 if ($returnType !== 'string') {
-                    $content = json_decode($content);
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
                 }
             }
 
@@ -1617,7 +1689,7 @@ class EducationClassApi
      * @param  string $class_id key: id or externalId of class (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listClassMembers'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return \OpenAPI\Client\Model\CollectionOfEducationUser|\OpenAPI\Client\Model\OdataError
      */
@@ -1638,7 +1710,7 @@ class EducationClassApi
      * @param  string $class_id key: id or externalId of class (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listClassMembers'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\CollectionOfEducationUser|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
@@ -1691,7 +1763,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\CollectionOfEducationUser' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -1706,7 +1790,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -1723,7 +1819,19 @@ class EducationClassApi
             } else {
                 $content = (string) $response->getBody();
                 if ($returnType !== 'string') {
-                    $content = json_decode($content);
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
                 }
             }
 
@@ -1941,7 +2049,7 @@ class EducationClassApi
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listClasses'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return \OpenAPI\Client\Model\CollectionOfClass|\OpenAPI\Client\Model\OdataError
      */
@@ -1960,7 +2068,7 @@ class EducationClassApi
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listClasses'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\CollectionOfClass|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
@@ -2012,7 +2120,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\CollectionOfClass' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -2027,7 +2147,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -2044,7 +2176,19 @@ class EducationClassApi
             } else {
                 $content = (string) $response->getBody();
                 if ($returnType !== 'string') {
-                    $content = json_decode($content);
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
                 }
             }
 
@@ -2243,7 +2387,7 @@ class EducationClassApi
      * @param  \OpenAPI\Client\Model\EducationClass $education_class New property values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return \OpenAPI\Client\Model\EducationClass|\OpenAPI\Client\Model\OdataError
      */
@@ -2266,7 +2410,7 @@ class EducationClassApi
      * @param  \OpenAPI\Client\Model\EducationClass $education_class New property values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateClass'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\EducationClass|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
@@ -2320,7 +2464,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\EducationClass' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -2335,7 +2491,19 @@ class EducationClassApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -2352,7 +2520,19 @@ class EducationClassApi
             } else {
                 $content = (string) $response->getBody();
                 if ($returnType !== 'string') {
-                    $content = json_decode($content);
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
                 }
             }
 

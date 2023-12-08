@@ -137,7 +137,7 @@ class UserAppRoleAssignmentApi
      * @param  \OpenAPI\Client\Model\AppRoleAssignment $app_role_assignment New app role assignment value (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['userCreateAppRoleAssignments'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return \OpenAPI\Client\Model\AppRoleAssignment|\OpenAPI\Client\Model\OdataError
      */
@@ -160,7 +160,7 @@ class UserAppRoleAssignmentApi
      * @param  \OpenAPI\Client\Model\AppRoleAssignment $app_role_assignment New app role assignment value (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['userCreateAppRoleAssignments'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\AppRoleAssignment|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
@@ -214,7 +214,19 @@ class UserAppRoleAssignmentApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\AppRoleAssignment' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -229,7 +241,19 @@ class UserAppRoleAssignmentApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -246,7 +270,19 @@ class UserAppRoleAssignmentApi
             } else {
                 $content = (string) $response->getBody();
                 if ($returnType !== 'string') {
-                    $content = json_decode($content);
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
                 }
             }
 
@@ -483,7 +519,7 @@ class UserAppRoleAssignmentApi
      * @param  string|null $if_match ETag (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['userDeleteAppRoleAssignments'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return void
      */
@@ -507,7 +543,7 @@ class UserAppRoleAssignmentApi
      * @param  string|null $if_match ETag (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['userDeleteAppRoleAssignments'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
@@ -773,7 +809,7 @@ class UserAppRoleAssignmentApi
      * @param  string $user_id key: id of user (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['userListAppRoleAssignments'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return \OpenAPI\Client\Model\CollectionOfAppRoleAssignments|\OpenAPI\Client\Model\OdataError
      */
@@ -794,7 +830,7 @@ class UserAppRoleAssignmentApi
      * @param  string $user_id key: id of user (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['userListAppRoleAssignments'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\CollectionOfAppRoleAssignments|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
@@ -847,7 +883,19 @@ class UserAppRoleAssignmentApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\CollectionOfAppRoleAssignments' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -862,7 +910,19 @@ class UserAppRoleAssignmentApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -879,7 +939,19 @@ class UserAppRoleAssignmentApi
             } else {
                 $content = (string) $response->getBody();
                 if ($returnType !== 'string') {
-                    $content = json_decode($content);
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
                 }
             }
 

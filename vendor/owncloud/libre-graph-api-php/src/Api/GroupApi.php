@@ -146,7 +146,7 @@ class GroupApi
      * @param  \OpenAPI\Client\Model\MemberReference $member_reference Object to be added as member (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['addMember'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return void
      */
@@ -168,7 +168,7 @@ class GroupApi
      * @param  \OpenAPI\Client\Model\MemberReference $member_reference Object to be added as member (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['addMember'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
@@ -422,7 +422,7 @@ class GroupApi
      * @param  string|null $if_match ETag (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteGroup'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return void
      */
@@ -444,7 +444,7 @@ class GroupApi
      * @param  string|null $if_match ETag (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteGroup'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
@@ -690,7 +690,7 @@ class GroupApi
      * @param  string|null $if_match ETag (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteMember'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return void
      */
@@ -714,7 +714,7 @@ class GroupApi
      * @param  string|null $if_match ETag (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteMember'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
@@ -982,7 +982,7 @@ class GroupApi
      * @param  string[]|null $expand Expand related entities (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getGroup'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return \OpenAPI\Client\Model\Group|\OpenAPI\Client\Model\OdataError
      */
@@ -1007,7 +1007,7 @@ class GroupApi
      * @param  string[]|null $expand Expand related entities (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getGroup'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\Group|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
@@ -1062,7 +1062,19 @@ class GroupApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\Group' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -1077,7 +1089,19 @@ class GroupApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -1094,7 +1118,19 @@ class GroupApi
             } else {
                 $content = (string) $response->getBody();
                 if ($returnType !== 'string') {
-                    $content = json_decode($content);
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
                 }
             }
 
@@ -1341,7 +1377,7 @@ class GroupApi
      * @param  string $group_id key: id or name of group (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listMembers'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return \OpenAPI\Client\Model\CollectionOfUsers|\OpenAPI\Client\Model\OdataError
      */
@@ -1362,7 +1398,7 @@ class GroupApi
      * @param  string $group_id key: id or name of group (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listMembers'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\CollectionOfUsers|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
@@ -1415,7 +1451,19 @@ class GroupApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\CollectionOfUsers' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -1430,7 +1478,19 @@ class GroupApi
                     } else {
                         $content = (string) $response->getBody();
                         if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
-                            $content = json_decode($content);
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
                         }
                     }
 
@@ -1447,7 +1507,19 @@ class GroupApi
             } else {
                 $content = (string) $response->getBody();
                 if ($returnType !== 'string') {
-                    $content = json_decode($content);
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
                 }
             }
 
@@ -1663,7 +1735,7 @@ class GroupApi
      * @param  \OpenAPI\Client\Model\Group $group New property values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateGroup'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return void
      */
@@ -1685,7 +1757,7 @@ class GroupApi
      * @param  \OpenAPI\Client\Model\Group $group New property values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateGroup'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */

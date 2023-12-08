@@ -8,7 +8,7 @@
     }
   ],
   "require": {
-    "owncloud/ocis-php-sdk": "dev-main#96c7bb86a41e311c726764e8b18f1a488504cdc4"
+    "owncloud/ocis-php-sdk": "dev-proxy#1bd6df59e6564e162ac972c35f668bf8002ab459"
   },
   "replace": {
     "guzzlehttp/guzzle": "*",
