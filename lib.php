@@ -299,10 +299,16 @@ class repository_ocis extends repository {
             $resources = $drive->getResources($path);
             /** @var OcisResource $resource */
             foreach ($resources as $resource) {
-                $lastmodifiedtime = new DateTime($resource->getLastModifiedTime());
+                try {
+                    $lastmodifiedtime = new DateTime($resource->getLastModifiedTime());
+                    $datemodified = $lastmodifiedtime->getTimestamp();
+                } catch (InvalidResponseException $e) {
+                    $datemodified = "";
+                }
+
                 $listitem = [
                     'title' => $resource->getName(),
-                    'date' => $lastmodifiedtime->getTimestamp(),
+                    'date' => $datemodified,
                     'size' => $resource->getSize(),
                     'source' => $resource->getId(),
                 ];
