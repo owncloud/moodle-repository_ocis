@@ -66,6 +66,9 @@ function xmldb_repository_ocis_install() {
             [
                 'name' => 'oCIS',
                 'issuerid' => $issuer->get('id'),
+                'show_personal_drive' => 1,
+                'show_shares' => 1,
+                'show_project_drives' => 1,
             ]
         );
         if ($repo === null) {

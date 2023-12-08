@@ -413,16 +413,21 @@ class repository_ocis extends repository {
             'show_personal_drive',
             get_string('show_personal_drive', 'repository_ocis')
         );
+        $mform->setDefault('show_personal_drive', 1);
         $mform->addElement(
             'selectyesno',
             'show_shares',
             get_string('show_shares', 'repository_ocis')
         );
+        $mform->setDefault('show_shares', 1);
+
         $mform->addElement(
             'selectyesno',
             'show_project_drives',
             get_string('show_project_drives', 'repository_ocis')
         );
+
+        $mform->setDefault('show_project_drives', 1);
     }
 
     /**
