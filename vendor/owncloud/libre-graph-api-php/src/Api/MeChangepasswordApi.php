@@ -130,7 +130,7 @@ class MeChangepasswordApi
      * @param  \OpenAPI\Client\Model\PasswordChange $password_change Password change request (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['changeOwnPassword'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return void
      */
@@ -150,7 +150,7 @@ class MeChangepasswordApi
      * @param  \OpenAPI\Client\Model\PasswordChange $password_change Password change request (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['changeOwnPassword'] to see the possible values for this operation
      *
-     * @throws ApiException on non-2xx response
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
      * @throws InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */

@@ -7,12 +7,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/libre-graph-api-php.git",
-                "reference": "73c46add374372d419043df93f9d19a1c3b72976"
+                "reference": "eaa85a34b43ecad81908c189556c437ac18f7d19"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/73c46add374372d419043df93f9d19a1c3b72976",
-                "reference": "73c46add374372d419043df93f9d19a1c3b72976",
+                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/eaa85a34b43ecad81908c189556c437ac18f7d19",
+                "reference": "eaa85a34b43ecad81908c189556c437ac18f7d19",
                 "shasum": ""
             },
             "require": {
@@ -28,7 +28,7 @@
                 "overtrue/phplint": "^9.0",
                 "phpunit/phpunit": "^9.0"
             },
-            "time": "2023-11-28T07:40:52+00:00",
+            "time": "2023-12-07T08:36:22+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
@@ -71,18 +71,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "96c7bb86a41e311c726764e8b18f1a488504cdc4"
+                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/96c7bb86a41e311c726764e8b18f1a488504cdc4",
-                "reference": "96c7bb86a41e311c726764e8b18f1a488504cdc4",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/f5702c34ed214a7dde98fd9d72cc60f6744268d0",
+                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
-                "owncloud/libre-graph-api-php": "dev-main#73c46add374372d419043df93f9d19a1c3b72976",
+                "owncloud/libre-graph-api-php": "dev-main#eaa85a34b43ecad81908c189556c437ac18f7d19",
                 "php": "^8.1",
                 "sabre/dav": "^4.4"
             },
@@ -92,7 +92,7 @@
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^9.6"
             },
-            "time": "2023-11-28T08:44:36+00:00",
+            "time": "2023-12-08T11:31:14+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",

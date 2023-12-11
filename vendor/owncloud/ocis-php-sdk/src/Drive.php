@@ -9,6 +9,7 @@ use OpenAPI\Client\ApiException;
 use OpenAPI\Client\Configuration;
 use OpenAPI\Client\Model\Drive as ApiDrive;
 use OpenAPI\Client\Model\DriveItem;
+use OpenAPI\Client\Model\OdataError;
 use OpenAPI\Client\Model\Quota;
 use Owncloud\OcisPhpSdk\Exception\BadRequestException;
 use Owncloud\OcisPhpSdk\Exception\ExceptionHelper;
@@ -172,10 +173,50 @@ class Drive
         return $this->apiDrive->jsonSerialize();
     }
 
+    public function isDisabled(): bool
+    {
+        $guzzle = new Client(
+            Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
+        );
+
+        $apiInstance = new DrivesApi(
+            $guzzle,
+            $this->graphApiConfig
+        );
+        // need to re-read the drive data, because it might have changed by now
+        try {
+            $apiDrive = $apiInstance->getDrive($this->getId());
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+
+        if ($apiDrive instanceof OdataError) {
+            throw new InvalidResponseException(
+                "getDrive returned an OdataError - " . $apiDrive->getError()
+            );
+        }
+        $this->apiDrive = $apiDrive;
+        $root = $this->apiDrive->getRoot();
+        if (!($root instanceof DriveItem)) {
+            throw new InvalidResponseException(
+                'Could not get root of drive "' . print_r($root, true) . '"'
+            );
+        }
+        $deleted = $root->getDeleted();
+        if ($deleted === null) {
+            return false;
+        }
+        if ($deleted->getState() === 'trashed') {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Deletes the current drive irreversibly.
      * A drive can only be deleted if it has already been disabled.
      * Calling this function on a drive that is not disabled will have no effect.
+     * Only project spaces can be deleted.
      *
      * @throws UnauthorizedException
      * @throws ForbiddenException
@@ -208,6 +249,7 @@ class Drive
      * Disables the current drive without deleting it.
      * Disabling a drive is the prerequisite for deleting it.
      * Calling this function on a drive that is already disabled will have no effect.
+     * Only project spaces can be disabled.
      *
      * @throws UnauthorizedException
      * @throws ForbiddenException
@@ -226,6 +268,38 @@ class Drive
         );
         try {
             $apiInstance->deleteDrive($this->getId());
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+    }
+
+    /**
+     * Enables the current drive.
+     * Calling this function on a drive that is already enabled will have no effect.
+     * Only project spaces can be enabled.
+     *
+     * @throws UnauthorizedException
+     * @throws ForbiddenException
+     * @throws BadRequestException
+     * @throws HttpException
+     * @throws NotFoundException
+     */
+    public function enable(): void
+    {
+        $connectionConfig = array_merge(
+            $this->connectionConfig,
+            ['headers' => ['Restore' => 'true']]
+        );
+        $guzzle = new Client(
+            Ocis::createGuzzleConfig($connectionConfig, $this->accessToken)
+        );
+
+        $apiInstance = new DrivesApi(
+            $guzzle,
+            $this->graphApiConfig
+        );
+        try {
+            $apiInstance->updateDrive($this->getId(), new ApiDrive(['name' => $this->getName()]));
         } catch (ApiException $e) {
             throw ExceptionHelper::getHttpErrorException($e);
         }

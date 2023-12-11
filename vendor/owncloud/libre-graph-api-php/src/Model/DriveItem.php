@@ -86,7 +86,8 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'web_dav_url' => 'string',
         'children' => '\OpenAPI\Client\Model\DriveItem[]',
         'permissions' => '\OpenAPI\Client\Model\Permission[]',
-        'audio' => '\OpenAPI\Client\Model\Audio'
+        'audio' => '\OpenAPI\Client\Model\Audio',
+        'video' => '\OpenAPI\Client\Model\Video'
     ];
 
     /**
@@ -122,7 +123,8 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'web_dav_url' => null,
         'children' => null,
         'permissions' => null,
-        'audio' => null
+        'audio' => null,
+        'video' => null
     ];
 
     /**
@@ -158,7 +160,8 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
 		'web_dav_url' => false,
 		'children' => false,
 		'permissions' => false,
-		'audio' => false
+		'audio' => false,
+		'video' => false
     ];
 
     /**
@@ -274,7 +277,8 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'web_dav_url' => 'webDavUrl',
         'children' => 'children',
         'permissions' => 'permissions',
-        'audio' => 'audio'
+        'audio' => 'audio',
+        'video' => 'video'
     ];
 
     /**
@@ -310,7 +314,8 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'web_dav_url' => 'setWebDavUrl',
         'children' => 'setChildren',
         'permissions' => 'setPermissions',
-        'audio' => 'setAudio'
+        'audio' => 'setAudio',
+        'video' => 'setVideo'
     ];
 
     /**
@@ -346,7 +351,8 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'web_dav_url' => 'getWebDavUrl',
         'children' => 'getChildren',
         'permissions' => 'getPermissions',
-        'audio' => 'getAudio'
+        'audio' => 'getAudio',
+        'video' => 'getVideo'
     ];
 
     /**
@@ -433,6 +439,7 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         $this->setIfExists('children', $data ?? [], null);
         $this->setIfExists('permissions', $data ?? [], null);
         $this->setIfExists('audio', $data ?? [], null);
+        $this->setIfExists('video', $data ?? [], null);
     }
 
     /**
@@ -1247,6 +1254,33 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
             throw new InvalidArgumentException('non-nullable audio cannot be null');
         }
         $this->container['audio'] = $audio;
+
+        return $this;
+    }
+
+    /**
+     * Gets video
+     *
+     * @return \OpenAPI\Client\Model\Video|null
+     */
+    public function getVideo(): ?\OpenAPI\Client\Model\Video
+    {
+        return $this->container['video'];
+    }
+
+    /**
+     * Sets video
+     *
+     * @param \OpenAPI\Client\Model\Video|null $video video
+     *
+     * @return $this
+     */
+    public function setVideo(?\OpenAPI\Client\Model\Video $video): static
+    {
+        if (is_null($video)) {
+            throw new InvalidArgumentException('non-nullable video cannot be null');
+        }
+        $this->container['video'] = $video;
 
         return $this;
     }
