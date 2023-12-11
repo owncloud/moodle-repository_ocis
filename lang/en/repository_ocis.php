@@ -36,7 +36,12 @@ $string['no_right_issuers'] = 'None of the existing issuers implement all requir
 $string['chooseissuer_help'] = 'To add a new issuer, go to Site administration / Server / OAuth 2 services.';
 $string['oauth2serviceslink'] = '<a href="{$a}" title="Link to OAuth 2 services configuration">OAuth 2 services configuration</a>';
 $string['privacy:metadata'] = 'The ownCloud Infinite Scale repository plugin neither stores any personal data nor transmits user data to the remote system.';
+$string['show_personal_drive'] = 'Show Personal Drive';
+$string['show_shares'] = 'Show Shares';
+$string['show_project_drives'] = 'Show Project Drives';
+
 
 // Filepicker.
-$string['no_personal_drive_found'] = 'No personal drive found';
+$string['no_drives_error'] = 'No drives found';
 $string['webfinger_error'] = 'Could not get user-information from webfinger service.';
+$string['personal_drive'] = 'Personal';

@@ -10,7 +10,7 @@
     <library>
         <location>vendor/owncloud/libre-graph-api-php</location>
         <name>libre-graph-api-php</name>
-        <version>dev-main 73c46ad</version>
+        <version>dev-main eaa85a3</version>
         <license>Apache</license>
         <licenseversion>2.0</licenseversion>
     </library>

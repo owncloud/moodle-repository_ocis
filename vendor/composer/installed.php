@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'owncloud/moodle-repository_ocis',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => 'cc1f2fd2cb9d96fe9a12faa949fb480680e41eef',
+        'pretty_version' => '1.0.0+no-version-set',
+        'version' => '1.0.0.0',
+        'reference' => NULL,
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -34,9 +34,9 @@
             'dev_requirement' => false,
         ),
         'owncloud/moodle-repository_ocis' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => 'cc1f2fd2cb9d96fe9a12faa949fb480680e41eef',
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
+            'reference' => NULL,
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
