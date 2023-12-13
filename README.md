@@ -8,8 +8,7 @@ A [Moodle repository](https://docs.moodle.org/402/en/Repositories) that makes fi
 - [oCIS PHP SDK](https://github.com/owncloud/ocis-php-sdk/)
 - moodle 4.2
 - PHP 8.1
-- with oCIS 4.0 only the "internal" linking mode is supported
-- a version of oCIS that implements the new sharing API will be needed for the "reference" and "controlled link" modes
+- oCIS 5.0
 
 ## Main features
 
@@ -29,7 +28,7 @@ There are three different modes for the Moodle user to link files from oCIS to M
 5. **Controlled Link**: (Create an access controlled link to the file) :construction: *This feature is not implemented yet* :man_technologist:
 
 
-   For this to work a special oCIS account needs to be connected to Moodle that will be used as a System account. If the user selects the "Controlled Link" option, the file will first be copied to a Moodle specific folder in oCIS, then shared to the System account and Moodle will access it through the System account.
+   For this to work a special oCIS account needs to be connected to Moodle that will be used as a System account. If the user selects the "Controlled Link" option, the file will be shared to the System account and Moodle will access it through the System account.
 
 ## Installation
 1. TLS certificate
