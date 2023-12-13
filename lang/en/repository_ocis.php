@@ -42,6 +42,9 @@ $string['show_project_drives'] = 'Show Project Drives';
 
 
 // Filepicker.
-$string['no_drives_error'] = 'No drives found';
+$string['no_drives_error'] = 'No drives found.';
+$string['drive_not_found_error'] = 'Could not find this drive.';
+$string['not_found_error'] = 'Could not find "{$a}".';
+$string['could_not_connect_error'] = 'Could not connect to ownCloud Infinite Scale server.';
 $string['webfinger_error'] = 'Could not get user-information from webfinger service.';
 $string['personal_drive'] = 'Personal';
