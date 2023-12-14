@@ -45,3 +45,4 @@ $string['show_project_drives'] = 'Show Project Drives';
 $string['no_drives_error'] = 'No drives found';
 $string['webfinger_error'] = 'Could not get user-information from webfinger service.';
 $string['personal_drive'] = 'Personal';
+$string['shares_drive'] = 'Shares';
