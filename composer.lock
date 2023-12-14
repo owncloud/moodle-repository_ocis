@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cbf51412486b64b2076c37f00c4eb7d1",
+    "content-hash": "95aea266af957d7a56acf1cab18a8f98",
     "packages": [
         {
             "name": "owncloud/libre-graph-api-php",
@@ -73,12 +73,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0"
+                "reference": "34d5fcb760806f069ce9e265c3097cd8ee0ea89c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/f5702c34ed214a7dde98fd9d72cc60f6744268d0",
-                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/34d5fcb760806f069ce9e265c3097cd8ee0ea89c",
+                "reference": "34d5fcb760806f069ce9e265c3097cd8ee0ea89c",
                 "shasum": ""
             },
             "require": {
@@ -86,7 +86,7 @@
                 "ext-json": "*",
                 "owncloud/libre-graph-api-php": "dev-main#eaa85a34b43ecad81908c189556c437ac18f7d19",
                 "php": "^8.1",
-                "sabre/dav": "^4.4"
+                "sabre/dav": "^4.6"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.26",
@@ -108,7 +108,7 @@
                 "source": "https://github.com/owncloud/ocis-php-sdk/tree/main",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
-            "time": "2023-12-08T11:31:14+00:00"
+            "time": "2023-12-14T09:50:23+00:00"
         },
         {
             "name": "psr/log",
@@ -162,16 +162,16 @@
         },
         {
             "name": "sabre/dav",
-            "version": "4.5.1",
+            "version": "4.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sabre-io/dav.git",
-                "reference": "b29899b675371aee73920165d1dc5a2235aa104b"
+                "reference": "554145304b4a026477d130928d16e626939b0b2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sabre-io/dav/zipball/b29899b675371aee73920165d1dc5a2235aa104b",
-                "reference": "b29899b675371aee73920165d1dc5a2235aa104b",
+                "url": "https://api.github.com/repos/sabre-io/dav/zipball/554145304b4a026477d130928d16e626939b0b2a",
+                "reference": "554145304b4a026477d130928d16e626939b0b2a",
                 "shasum": ""
             },
             "require": {
@@ -195,7 +195,7 @@
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^2.19",
-                "monolog/monolog": "^1.27",
+                "monolog/monolog": "^1.27 || ^2.0",
                 "phpstan/phpstan": "^0.12 || ^1.0",
                 "phpstan/phpstan-phpunit": "^1.0",
                 "phpunit/phpunit": "^7.5 || ^8.5 || ^9.6"
@@ -241,7 +241,7 @@
                 "issues": "https://github.com/sabre-io/dav/issues",
                 "source": "https://github.com/fruux/sabre-dav"
             },
-            "time": "2023-11-23T04:33:31+00:00"
+            "time": "2023-12-11T13:01:23+00:00"
         },
         {
             "name": "sabre/event",

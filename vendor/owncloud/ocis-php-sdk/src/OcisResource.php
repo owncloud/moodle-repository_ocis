@@ -16,8 +16,10 @@ use Owncloud\OcisPhpSdk\Exception\BadRequestException;
 use Owncloud\OcisPhpSdk\Exception\ExceptionHelper;
 use Owncloud\OcisPhpSdk\Exception\ForbiddenException;
 use Owncloud\OcisPhpSdk\Exception\HttpException;
+use Owncloud\OcisPhpSdk\Exception\InternalServerErrorException;
 use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
 use Owncloud\OcisPhpSdk\Exception\NotFoundException;
+use Owncloud\OcisPhpSdk\Exception\TooEarlyException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use Sabre\DAV\Xml\Property\ResourceType;
 use Sabre\HTTP\ResponseInterface;
@@ -28,7 +30,7 @@ use Sabre\HTTP\ResponseInterface;
 class OcisResource
 {
     /**
-     * @var array<mixed>
+     * @var array<int, array<mixed>>
      */
     private array $metadata;
     private string $accessToken;
@@ -48,7 +50,7 @@ class OcisResource
     private string $driveId;
 
     /**
-     * @param array<mixed> $metadata of the resource
+     * @param array<int, array<mixed>> $metadata of the resource
      *        the format of the array is directly taken from the PROPFIND response
      *        returned by Sabre\DAV\Client
      *        for details about accepted metadata see: ResourceMetadata
@@ -62,6 +64,7 @@ class OcisResource
      * @throws InvalidResponseException
      * @throws NotFoundException
      * @throws UnauthorizedException
+     * @throws InternalServerErrorException
      * @phpstan-param array{
      *              'headers'?:array<string, mixed>,
      *              'verify'?:bool,
@@ -131,8 +134,16 @@ class OcisResource
     private function getMetadata(ResourceMetadata $property): array|string
     {
         $metadata = [];
-        if (array_key_exists($property->value, $this->metadata)) {
-            $metadata[$property->getKey()] = $this->metadata[$property->value];
+        // for metadata accept status codes of 200 and 425 (too early) status codes
+        // any other status code is regarded as an error
+        foreach ([200, 425] as $statusCode) {
+            if (
+                array_key_exists($statusCode, $this->metadata) &&
+                array_key_exists($property->value, $this->metadata[$statusCode])
+            ) {
+                $metadata[$property->getKey()] = $this->metadata[$statusCode][$property->value];
+                break;
+            }
         }
         if ($metadata === []) {
             throw new InvalidResponseException(
@@ -161,6 +172,7 @@ class OcisResource
      * @throws NotFoundException
      * @throws UnauthorizedException
      * @throws InvalidResponseException
+     * @throws InternalServerErrorException
      */
     public function getRoles(): array
     {
@@ -208,6 +220,7 @@ class OcisResource
      * @throws InvalidResponseException
      * @throws NotFoundException
      * @throws UnauthorizedException
+     * @throws InternalServerErrorException
      */
     public function invite($recipients, SharingRole $role, ?\DateTimeImmutable $expiration = null): array
     {
@@ -282,6 +295,7 @@ class OcisResource
      * @throws InvalidResponseException
      * @throws BadRequestException
      * @throws NotFoundException
+     * @throws InternalServerErrorException
      */
     public function createSharingLink(
         SharingLinkType $type = SharingLinkType::VIEW,
@@ -539,7 +553,7 @@ class OcisResource
         return rawurldecode($privateLink);
     }
 
-    /*
+    /**
      * returns the content of this resource
      *
      * @throws UnauthorizedException
@@ -548,6 +562,8 @@ class OcisResource
      * @throws HttpException
      * @throws BadRequestException
      * @throws NotFoundException
+     * @throws TooEarlyException
+     * @throws InternalServerErrorException
      */
     public function getContent(): string
     {
@@ -565,6 +581,8 @@ class OcisResource
      * @throws HttpException
      * @throws InvalidResponseException
      * @throws NotFoundException
+     * @throws TooEarlyException
+     * @throws InternalServerErrorException
      */
     public function getContentStream()
     {
@@ -583,6 +601,8 @@ class OcisResource
      * @throws NotFoundException
      * @throws UnauthorizedException
      * @throws HttpException
+     * @throws TooEarlyException
+     * @throws InternalServerErrorException
      */
     private function getFileResponseInterface(string $fileId): ResponseInterface
     {

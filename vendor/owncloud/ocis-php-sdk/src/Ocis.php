@@ -22,6 +22,7 @@ use Owncloud\OcisPhpSdk\Exception\BadRequestException;
 use Owncloud\OcisPhpSdk\Exception\ExceptionHelper;
 use Owncloud\OcisPhpSdk\Exception\ForbiddenException;
 use Owncloud\OcisPhpSdk\Exception\HttpException;
+use Owncloud\OcisPhpSdk\Exception\InternalServerErrorException;
 use Owncloud\OcisPhpSdk\Exception\NotFoundException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
@@ -77,6 +78,7 @@ class Ocis
      * @throws UnauthorizedException
      * @throws HttpException
      * @throws InvalidResponseException
+     * @throws InternalServerErrorException
      */
     public function __construct(
         string $serviceUrl,
@@ -229,6 +231,7 @@ class Ocis
      * @throws HttpException
      * @throws InvalidResponseException
      * @throws \InvalidArgumentException
+     * @throws InternalServerErrorException
      */
     private function getServiceUrlFromWebfinger(string $webfingerUrl): string
     {
@@ -285,6 +288,7 @@ class Ocis
      * @throws UnauthorizedException
      * @throws InvalidResponseException
      * @throws HttpException
+     * @throws InternalServerErrorException
      */
     public function getAllDrives(
         DriveOrder     $orderBy = DriveOrder::NAME,
@@ -347,6 +351,7 @@ class Ocis
      * @throws UnauthorizedException
      * @throws InvalidResponseException
      * @throws HttpException
+     * @throws InternalServerErrorException
      */
     public function getMyDrives(
         DriveOrder     $orderBy = DriveOrder::NAME,
@@ -421,6 +426,7 @@ class Ocis
      * @throws UnauthorizedException
      * @throws HttpException
      * @throws InvalidResponseException
+     * @throws InternalServerErrorException
      */
     public function getDriveById(string $driveId): Drive
     {
@@ -459,6 +465,7 @@ class Ocis
      * @throws \InvalidArgumentException
      * @throws InvalidResponseException
      * @throws HttpException
+     * @throws InternalServerErrorException
      */
     public function createDrive(
         string $name,
@@ -518,6 +525,7 @@ class Ocis
      * @throws \InvalidArgumentException
      * @throws InvalidResponseException
      * @throws HttpException
+     * @throws InternalServerErrorException
      */
     public function getGroups(
         string $search = "",
@@ -563,6 +571,7 @@ class Ocis
      * @throws NotFoundException
      * @throws UnauthorizedException
      * @throws HttpException
+     * @throws InternalServerErrorException
      */
     public function getResourceById(string $fileId): OcisResource
     {
@@ -573,7 +582,7 @@ class Ocis
             foreach (ResourceMetadata::cases() as $property) {
                 $properties[] = $property->value;
             }
-            $responses = $webDavClient->propFind(rawurlencode($fileId), $properties);
+            $responses = $webDavClient->propFindUnfiltered(rawurlencode($fileId), $properties);
             $resource = new OcisResource(
                 $responses,
                 null,
@@ -591,6 +600,7 @@ class Ocis
 
     /**
      * retrieve users known by the system
+     * NOTE: if this function is used by a normal user a search string with at least 3 characters should be provided
      *
      * @param string|null $search
      * @return array<User>
@@ -600,6 +610,7 @@ class Ocis
      * @throws InvalidResponseException
      * @throws NotFoundException
      * @throws UnauthorizedException
+     * @throws InternalServerErrorException
      */
     public function getUsers(?string $search = null): array
     {
@@ -633,6 +644,7 @@ class Ocis
      * @throws InvalidResponseException
      * @throws BadRequestException
      * @throws NotFoundException
+     * @throws InternalServerErrorException
      */
     public function getUserById(string $userId): User
     {
@@ -661,6 +673,7 @@ class Ocis
      * @throws HttpException
      * @throws InvalidResponseException
      * @throws NotFoundException
+     * @throws InternalServerErrorException
      */
     public function getGroupById(string $groupId): Group
     {
@@ -714,6 +727,7 @@ class Ocis
      * @throws \InvalidArgumentException
      * @throws InvalidResponseException
      * @throws HttpException
+     * @throws InternalServerErrorException
      */
     public function getNotifications(): array
     {
@@ -828,6 +842,7 @@ class Ocis
     * @throws \InvalidArgumentException
     * @throws InvalidResponseException
     * @throws HttpException
+    * @throws InternalServerErrorException
     */
     public function createGroup(string $groupName, string $description = ""): Group
     {
@@ -862,6 +877,7 @@ class Ocis
      * @throws UnauthorizedException
      * @throws \InvalidArgumentException
      * @throws HttpException
+     * @throws InternalServerErrorException
      */
     public function deleteGroupByID(string $groupId): void
     {
@@ -881,6 +897,7 @@ class Ocis
      * @throws InvalidResponseException
      * @throws NotFoundException
      * @throws UnauthorizedException
+     * @throws InternalServerErrorException
      */
     public function getSharedWithMe(): array
     {
@@ -916,6 +933,7 @@ class Ocis
      * @throws InvalidResponseException
      * @throws NotFoundException
      * @throws UnauthorizedException
+     * @throws InternalServerErrorException
      */
     public function getSharedByMe(): array
     {

@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'owncloud/moodle-repository_ocis',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => NULL,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'ecdb14b939e2778c15d269b93c271b38d6e36634',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -34,9 +34,9 @@
             'dev_requirement' => false,
         ),
         'owncloud/moodle-repository_ocis' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => NULL,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'ecdb14b939e2778c15d269b93c271b38d6e36634',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -45,7 +45,7 @@
         'owncloud/ocis-php-sdk' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'f5702c34ed214a7dde98fd9d72cc60f6744268d0',
+            'reference' => '34d5fcb760806f069ce9e265c3097cd8ee0ea89c',
             'type' => 'library',
             'install_path' => __DIR__ . '/../owncloud/ocis-php-sdk',
             'aliases' => array(
@@ -63,9 +63,9 @@
             'dev_requirement' => false,
         ),
         'sabre/dav' => array(
-            'pretty_version' => '4.5.1',
-            'version' => '4.5.1.0',
-            'reference' => 'b29899b675371aee73920165d1dc5a2235aa104b',
+            'pretty_version' => '4.6.0',
+            'version' => '4.6.0.0',
+            'reference' => '554145304b4a026477d130928d16e626939b0b2a',
             'type' => 'library',
             'install_path' => __DIR__ . '/../sabre/dav',
             'aliases' => array(),
