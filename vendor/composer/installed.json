@@ -66,17 +66,17 @@
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "dev-internalServerErrorException",
-            "version_normalized": "dev-internalServerErrorException",
+            "version": "dev-main",
+            "version_normalized": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "d20e1402bf5be126279d9fd17c768a7461d80b6a"
+                "reference": "34d5fcb760806f069ce9e265c3097cd8ee0ea89c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/d20e1402bf5be126279d9fd17c768a7461d80b6a",
-                "reference": "d20e1402bf5be126279d9fd17c768a7461d80b6a",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/34d5fcb760806f069ce9e265c3097cd8ee0ea89c",
+                "reference": "34d5fcb760806f069ce9e265c3097cd8ee0ea89c",
                 "shasum": ""
             },
             "require": {
@@ -92,7 +92,8 @@
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^9.6"
             },
-            "time": "2023-12-14T06:31:04+00:00",
+            "time": "2023-12-14T09:50:23+00:00",
+            "default-branch": true,
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -104,7 +105,7 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/internalServerErrorException",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/main",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
             "install-path": "../owncloud/ocis-php-sdk"
