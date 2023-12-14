@@ -48,6 +48,6 @@ $string['not_found_error'] = 'Could not find "{$a}".';
 $string['too_early_error'] = 'This file is still processed by the ownCloud Infinite Scale server. Please try again later.';
 $string['could_not_connect_error'] = 'Could not connect to ownCloud Infinite Scale server.';
 $string['internal_server_error'] = 'The ownCloud Infinite Scale server has an internal problem. Please try again later.';
-$string['unauthorized_error'] = 'Authorization to the ownCloud Infinite Scale server did fail. Please try to logout of the repository and login again' .
+$string['unauthorized_error'] = 'Authorization to ownCloud Infinite Scale server failed. Please try to logout of the repository and login again' .
 $string['webfinger_error'] = 'Could not get user-information from webfinger service.';
 $string['personal_drive'] = 'Personal';
