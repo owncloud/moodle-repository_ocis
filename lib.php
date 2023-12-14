@@ -32,9 +32,11 @@ use Owncloud\OcisPhpSdk\DriveOrder;
 use Owncloud\OcisPhpSdk\DriveType;
 use Owncloud\OcisPhpSdk\Exception\BadRequestException;
 use Owncloud\OcisPhpSdk\Exception\ForbiddenException;
+use Owncloud\OcisPhpSdk\Exception\InternalServerErrorException;
 use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
 use Owncloud\OcisPhpSdk\Exception\HttpException;
 use Owncloud\OcisPhpSdk\Exception\NotFoundException;
+use Owncloud\OcisPhpSdk\Exception\TooEarlyException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use Owncloud\OcisPhpSdk\Ocis;
 use Owncloud\OcisPhpSdk\OcisResource;
@@ -172,6 +174,14 @@ class repository_ocis extends repository {
                             'proxy' => $proxysetting,
                         ]
                     );
+                } catch (InternalServerErrorException $e) {
+                    throw new moodle_exception(
+                        'internal_server_error',
+                        'repository_ocis',
+                        '',
+                        null,
+                        $e->getTraceAsString()
+                    );
                 } catch (\Exception $e) {
                     throw new \moodle_exception(
                         'webfinger_error',
@@ -244,8 +254,23 @@ class repository_ocis extends repository {
                 null,
                 $e->getTraceAsString()
             );
+        } catch (UnauthorizedException $e) {
+            throw new moodle_exception(
+                'unauthorized_error',
+                'repository_ocis',
+                '',
+                null,
+                $e->getTraceAsString()
+            );
+        } catch (InternalServerErrorException $e) {
+            throw new moodle_exception(
+                'internal_server_error',
+                'repository_ocis',
+                '',
+                null,
+                $e->getTraceAsString()
+            );
         }
-
 
         if (empty($drives)) {
             throw new \moodle_exception(
@@ -314,9 +339,33 @@ class repository_ocis extends repository {
 
             try {
                 $drive = $ocis->getDriveById($driveid);
+            } catch (HttpException $e) {
+                throw new moodle_exception(
+                    'could_not_connect_error',
+                    'repository_ocis',
+                    '',
+                    null,
+                    $e->getTraceAsString()
+                );
             } catch (NotFoundException $e) {
                 throw new moodle_exception(
                     'drive_not_found_error',
+                    'repository_ocis',
+                    '',
+                    null,
+                    $e->getTraceAsString()
+                );
+            } catch (UnauthorizedException $e) {
+                throw new moodle_exception(
+                    'unauthorized_error',
+                    'repository_ocis',
+                    '',
+                    null,
+                    $e->getTraceAsString()
+                );
+            } catch (InternalServerErrorException $e) {
+                throw new moodle_exception(
+                    'internal_server_error',
                     'repository_ocis',
                     '',
                     null,
@@ -332,6 +381,14 @@ class repository_ocis extends repository {
 
             try {
                 $resources = $drive->getResources($path);
+            } catch (HttpException $e) {
+                throw new moodle_exception(
+                    'could_not_connect_error',
+                    'repository_ocis',
+                    '',
+                    null,
+                    $e->getTraceAsString()
+                );
             } catch (NotFoundException $e) {
                 throw new moodle_exception(
                     'not_found_error',
@@ -340,7 +397,24 @@ class repository_ocis extends repository {
                     $drivename . "/" . $path,
                     $e->getTraceAsString()
                 );
+            } catch (UnauthorizedException $e) {
+                throw new moodle_exception(
+                    'unauthorized_error',
+                    'repository_ocis',
+                    '',
+                    null,
+                    $e->getTraceAsString()
+                );
+            } catch (InternalServerErrorException $e) {
+                throw new moodle_exception(
+                    'internal_server_error',
+                    'repository_ocis',
+                    '',
+                    null,
+                    $e->getTraceAsString()
+                );
             }
+
             /** @var OcisResource $resource */
             foreach ($resources as $resource) {
                 try {
@@ -603,8 +677,6 @@ class repository_ocis extends repository {
      * @return array
      * @throws BadRequestException
      * @throws ForbiddenException
-     * @throws HttpException
-     * @throws UnauthorizedException
      * @throws InvalidResponseException
      * @throws coding_exception
      * @throws moodle_exception
@@ -616,12 +688,44 @@ class repository_ocis extends repository {
         try {
             $file = $ocis->getResourceById($fileid);
             file_put_contents($localpath, $file->getContentStream());
+        } catch (HttpException $e) {
+            throw new moodle_exception(
+                'could_not_connect_error',
+                'repository_ocis',
+                '',
+                null,
+                $e->getTraceAsString()
+            );
         } catch (NotFoundException $e) {
             throw new moodle_exception(
                 'not_found_error',
                 'repository_ocis',
                 '',
                 $filename,
+                $e->getTraceAsString()
+            );
+        } catch (UnauthorizedException $e) {
+            throw new moodle_exception(
+                'unauthorized_error',
+                'repository_ocis',
+                '',
+                null,
+                $e->getTraceAsString()
+            );
+        } catch (TooEarlyException $e) {
+            throw new moodle_exception(
+                'too_early_error',
+                'repository_ocis',
+                '',
+                null,
+                $e->getTraceAsString()
+            );
+        } catch (InternalServerErrorException $e) {
+            throw new moodle_exception(
+                'internal_server_error',
+                'repository_ocis',
+                '',
+                null,
                 $e->getTraceAsString()
             );
         }

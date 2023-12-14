@@ -3,7 +3,7 @@
     <library>
         <location>vendor/owncloud/ocis-php-sdk</location>
         <name>ocis-php-sdk</name>
-        <version>dev-main f5702c3</version>
+        <version>dev-main d20e140</version>
         <license>Apache</license>
         <licenseversion>2.0</licenseversion>
     </library>
@@ -17,7 +17,7 @@
     <library>
         <location>vendor/sabre/dav</location>
         <name>sabre/dav</name>
-        <version>4.5.1</version>
+        <version>4.6.0</version>
         <license>BSD-3-Clause</license>
         <licenseversion/>
     </library>

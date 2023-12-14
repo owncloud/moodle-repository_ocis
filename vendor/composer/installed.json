@@ -66,17 +66,17 @@
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "dev-main",
-            "version_normalized": "dev-main",
+            "version": "dev-internalServerErrorException",
+            "version_normalized": "dev-internalServerErrorException",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0"
+                "reference": "d20e1402bf5be126279d9fd17c768a7461d80b6a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/f5702c34ed214a7dde98fd9d72cc60f6744268d0",
-                "reference": "f5702c34ed214a7dde98fd9d72cc60f6744268d0",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/d20e1402bf5be126279d9fd17c768a7461d80b6a",
+                "reference": "d20e1402bf5be126279d9fd17c768a7461d80b6a",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "ext-json": "*",
                 "owncloud/libre-graph-api-php": "dev-main#eaa85a34b43ecad81908c189556c437ac18f7d19",
                 "php": "^8.1",
-                "sabre/dav": "^4.4"
+                "sabre/dav": "^4.6"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.26",
@@ -92,8 +92,7 @@
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^9.6"
             },
-            "time": "2023-12-08T11:31:14+00:00",
-            "default-branch": true,
+            "time": "2023-12-14T06:31:04+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -105,7 +104,7 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/main",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/internalServerErrorException",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
             "install-path": "../owncloud/ocis-php-sdk"
@@ -165,17 +164,17 @@
         },
         {
             "name": "sabre/dav",
-            "version": "4.5.1",
-            "version_normalized": "4.5.1.0",
+            "version": "4.6.0",
+            "version_normalized": "4.6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sabre-io/dav.git",
-                "reference": "b29899b675371aee73920165d1dc5a2235aa104b"
+                "reference": "554145304b4a026477d130928d16e626939b0b2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sabre-io/dav/zipball/b29899b675371aee73920165d1dc5a2235aa104b",
-                "reference": "b29899b675371aee73920165d1dc5a2235aa104b",
+                "url": "https://api.github.com/repos/sabre-io/dav/zipball/554145304b4a026477d130928d16e626939b0b2a",
+                "reference": "554145304b4a026477d130928d16e626939b0b2a",
                 "shasum": ""
             },
             "require": {
@@ -199,7 +198,7 @@
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^2.19",
-                "monolog/monolog": "^1.27",
+                "monolog/monolog": "^1.27 || ^2.0",
                 "phpstan/phpstan": "^0.12 || ^1.0",
                 "phpstan/phpstan-phpunit": "^1.0",
                 "phpunit/phpunit": "^7.5 || ^8.5 || ^9.6"
@@ -209,7 +208,7 @@
                 "ext-imap": "*",
                 "ext-pdo": "*"
             },
-            "time": "2023-11-23T04:33:31+00:00",
+            "time": "2023-12-11T13:01:23+00:00",
             "bin": [
                 "bin/sabredav",
                 "bin/naturalselection"

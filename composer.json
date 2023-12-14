@@ -8,7 +8,7 @@
     }
   ],
   "require": {
-    "owncloud/ocis-php-sdk": "dev-main#f5702c34ed214a7dde98fd9d72cc60f6744268d0"
+    "owncloud/ocis-php-sdk": "dev-internalServerErrorException"
   },
   "replace": {
     "guzzlehttp/guzzle": "*",
