@@ -394,7 +394,7 @@ class repository_ocis extends repository {
                     'not_found_error',
                     'repository_ocis',
                     '',
-                    $drivename . "/" . $path,
+                    rtrim($drivename, '/') . "/" . ltrim($path, '/'),
                     $e->getTraceAsString()
                 );
             } catch (UnauthorizedException $e) {
@@ -433,7 +433,9 @@ class repository_ocis extends repository {
                 if ($resource->getType() === 'folder') {
                     $listitem['children'] = [];
                     // The colon ":" is the seperator between drive_id and path.
-                    $listitem['path'] = $driveid . ":" . $path . "/" . $resource->getName();
+                    $listitem['path'] = $driveid .
+                        ":" . rtrim($path, '/') . "/" .
+                        ltrim($resource->getName(), '/');
                     $listitem['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
 
                     // This is to help with sorting, `0` is to make sure folders are on top
