@@ -260,6 +260,8 @@ class repository_ocis extends repository {
                 }
                 if ($drive->getType() === DriveType::PERSONAL) {
                     $drivetitle = get_string('personal_drive', 'repository_ocis');
+                } else if ($drive->getType() === DriveType::VIRTUAL) {
+                    $drivetitle = get_string('shares_drive', 'repository_ocis');
                 } else {
                     $drivetitle = $drive->getName();
                 }
