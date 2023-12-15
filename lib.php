@@ -128,7 +128,12 @@ class repository_ocis extends repository {
         $proxysetting = ocis_management::get_proxy_settings();
 
         $accesstoken = $this->get_user_oauth_client()->get_accesstoken();
-
+        if ($accesstoken === null) {
+            throw new moodle_exception(
+                'unauthorized_error',
+                'repository_ocis'
+            );
+        }
         if ($this->ocis === null) {
             $this->ocis = ocis_management::get_new_ocis_object($this->oauth2issuer, $accesstoken->token, $proxysetting);
         } else {
