@@ -42,6 +42,7 @@ use Owncloud\OcisPhpSdk\Ocis;
 use Owncloud\OcisPhpSdk\OcisResource;
 use Owncloud\OcisPhpSdk\OrderDirection;
 use repository_ocis\issuer_management;
+use repository_ocis\ocis_management;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -124,77 +125,12 @@ class repository_ocis extends repository {
      * @throws \Exception
      */
     private function getocisclient(): Ocis {
-        global $CFG;
-
-        if (empty($CFG->proxyhost)) {
-            $proxysetting = [];
-        } else {
-            $proxyhost = $CFG->proxyhost;
-            if (!empty($CFG->proxyport)) {
-                $proxyhost = "{$CFG->proxyhost}:{$CFG->proxyport}";
-            }
-
-            $proxyauth = "";
-            if (!empty($CFG->proxyuser) && !empty($CFG->proxypassword)) {
-                $proxyauth = "{$CFG->proxyuser}:{$CFG->proxypassword}@";
-            }
-
-            $protocol = "http://";
-            if (!empty($CFG->proxytype) && $CFG->proxytype === 'SOCKS5') {
-                $protocol = "socks5://";
-            }
-
-            $proxystring = "{$protocol}{$proxyauth}{$proxyhost}";
-            $noproxy = [];
-
-            if (!empty($CFG->proxybypass)) {
-                $noproxy = array_map(function (string $hostname): string {
-                    return trim($hostname);
-                }, explode(',', $CFG->proxybypass));
-            }
-
-            $proxysetting = [
-                'http' => $proxystring,
-                'https' => $proxystring,
-                'no' => $noproxy,
-            ];
-        }
+        $proxysetting = ocis_management::get_proxy_settings();
 
         $accesstoken = $this->get_user_oauth_client()->get_accesstoken();
 
         if ($this->ocis === null) {
-            $webfingerurl = issuer_management::get_webfinger_url($this->oauth2issuer);
-            if ($webfingerurl) {
-                try {
-                    $this->ocis = new Ocis(
-                        $webfingerurl,
-                        $accesstoken->token,
-                        [
-                            'webfinger' => true,
-                            'proxy' => $proxysetting,
-                        ]
-                    );
-                } catch (InternalServerErrorException $e) {
-                    throw new moodle_exception(
-                        'internal_server_error',
-                        'repository_ocis',
-                        '',
-                        null,
-                        $e->getTraceAsString()
-                    );
-                } catch (\Exception $e) {
-                    throw new \moodle_exception(
-                        'webfinger_error',
-                        'repository_ocis',
-                        '',
-                        null,
-                        $e->getMessage()
-                    );
-                }
-            } else {
-                $baseurl = $this->oauth2issuer->get('baseurl');
-                $this->ocis = new Ocis($baseurl, $accesstoken->token, ['proxy' => $proxysetting]);
-            }
+            $this->ocis = ocis_management::get_new_ocis_object($this->oauth2issuer, $accesstoken->token, $proxysetting);
         } else {
             // Update the token for the ocis client, just in case it changed.
             $this->ocis->setAccessToken($accesstoken->token);
