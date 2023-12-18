@@ -27,9 +27,6 @@
 use core\oauth2\api as oauth2_api;
 use core\oauth2\client as oauth2_client;
 use core\oauth2\issuer as oauth2_issuer;
-use Owncloud\OcisPhpSdk\Drive;
-use Owncloud\OcisPhpSdk\DriveOrder;
-use Owncloud\OcisPhpSdk\DriveType;
 use Owncloud\OcisPhpSdk\Exception\BadRequestException;
 use Owncloud\OcisPhpSdk\Exception\ForbiddenException;
 use Owncloud\OcisPhpSdk\Exception\InternalServerErrorException;
@@ -39,10 +36,9 @@ use Owncloud\OcisPhpSdk\Exception\NotFoundException;
 use Owncloud\OcisPhpSdk\Exception\TooEarlyException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use Owncloud\OcisPhpSdk\Ocis;
-use Owncloud\OcisPhpSdk\OcisResource;
-use Owncloud\OcisPhpSdk\OrderDirection;
 use repository_ocis\issuer_management;
 use repository_ocis\ocis_management;
+use repository_ocis\ocis_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -155,140 +151,26 @@ class repository_ocis extends repository {
      * @throws Exception
      */
     public function get_listing($driveidandpath = '', $page = '') {
-        $ocis = $this->getOcisClient();
-        $drives = ocis_management::get_drives(
-            $ocis,
+        $ocismanager = new ocis_manager(
+            $this->get_user_oauth_client(),
+            $this->oauth2issuer,
+            $driveidandpath,
             ($this->get_option('show_personal_drive') === "1"),
             ($this->get_option('show_shares') === "1"),
             ($this->get_option('show_project_drives') === "1")
         );
 
-        $list = [];
+        $list = $ocismanager->get_file_list();
+        $breadcrumbpath = $ocismanager->get_breadcrumb_path(
+            $this->get_meta()->name
+        );
 
-        if ($driveidandpath === '' || $driveidandpath === '/') {
-            /** @var Drive $drive */
-            foreach ($drives as $drive) {
-                $listitem = ocis_management::get_drive_listitem($drive);
-                if ($listitem !== null) {
-                    $list["0" . strtoupper($drive->getId())] = $listitem;
-                }
-            }
-            $breadcrumbpath = ocis_management::get_breadcrumb_path($this->get_meta()->name);
-        } else {
-            // The colon ":" is the seperator between drive_id and path.
-            $matches = explode(":", $driveidandpath, 2);
-            $driveid = $matches[0];
-            if (array_key_exists(1, $matches)) {
-                $path = $matches[1];
-            } else {
-                $path = '';
-            }
-
-            try {
-                $drive = $ocis->getDriveById($driveid);
-            } catch (HttpException $e) {
-                throw new moodle_exception(
-                    'could_not_connect_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (NotFoundException $e) {
-                throw new moodle_exception(
-                    'drive_not_found_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (UnauthorizedException $e) {
-                throw new moodle_exception(
-                    'unauthorized_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (InternalServerErrorException $e) {
-                throw new moodle_exception(
-                    'internal_server_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            }
-
-            if ($drive->getType() === DriveType::PERSONAL) {
-                $drivename = get_string('personal_drive', 'repository_ocis');
-            } else {
-                $drivename = $drive->getName();
-            }
-
-            try {
-                $resources = $drive->getResources($path);
-            } catch (HttpException $e) {
-                throw new moodle_exception(
-                    'could_not_connect_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (NotFoundException $e) {
-                throw new moodle_exception(
-                    'not_found_error',
-                    'repository_ocis',
-                    '',
-                    rtrim($drivename, '/') . "/" . ltrim($path, '/'),
-                    $e->getTraceAsString()
-                );
-            } catch (UnauthorizedException $e) {
-                throw new moodle_exception(
-                    'unauthorized_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (InternalServerErrorException $e) {
-                throw new moodle_exception(
-                    'internal_server_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            }
-
-            /** @var OcisResource $resource */
-            foreach ($resources as $resource) {
-                $listitem = ocis_management::get_resource_list_item($resource, $driveid, $path);
-                if ($resource->getType() === 'folder') {
-                    // This is to help with sorting, `0` is to make sure folders are on top
-                    // then the name in uppercase to sort everything alphabetically with ksort.
-                    $list["0" . strtoupper($resource->getName())] = $listitem;
-                } else {
-                    // This is to help with sorting, for sorting, `1` to make sure files are listed after folders.
-                    $list["1" . strtoupper($resource->getName())] = $listitem;
-                }
-            }
-            $breadcrumbpath = ocis_management::get_breadcrumb_path(
-                $this->get_meta()->name,
-                $drivename,
-                $driveid,
-                $path
-            );
-        }
-
-        ksort($list);
         return [
             // This will be used to build navigation bar.
             'dynload' => true,
             'nosearch' => true,
             'path' => $breadcrumbpath,
-            'manage' => $drive->getWebUrl(),
+            'manage' => $ocismanager->get_manage_url(),
             'list' => $list,
         ];
     }
