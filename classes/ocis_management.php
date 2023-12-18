@@ -208,10 +208,8 @@ class ocis_management {
         return $drives;
     }
 
-    public static function get_drive_listitem(Drive $drive): array|null
-    {
+    public static function get_drive_listitem(Drive $drive): array|null {
         global $OUTPUT;
-
         // Skip disabled drives.
         if ($drive->isDisabled()) {
             return null;
@@ -244,5 +242,47 @@ class ocis_management {
             'thumbnail' => $OUTPUT->image_url(file_folder_icon(90))->out(false),
             'size' => $size,
         ];
+    }
+
+    public static function get_breadcrumb_path(
+        string $reponame,
+        ?string $drivename = null,
+        ?string $driveid = null,
+        ?string $path = null
+    ): array {
+        // The first breadcrumb is the repo.
+        $breadcrumbpath = [
+            [
+                'name' => $reponame,
+                'path' => '/',
+            ],
+        ];
+
+        // The second breadcrumb is the drive.
+        if ($drivename !== null && $driveid !== null) {
+            $breadcrumbpath[] = [
+                'name' => urldecode($drivename),
+                'path' => $driveid,
+            ];
+        }
+        if ($path !== null) {
+            $chunks = explode('/', trim($path, '/'));
+
+            $parent = $driveid . ':';
+            // Every sub-path to the last part of the current path is a parent path.
+            foreach ($chunks as $chunk) {
+                if ($chunk === '') {
+                    continue;
+                }
+                $subpath = $parent . $chunk . '/';
+                $breadcrumbpath[] = [
+                    'name' => urldecode($chunk),
+                    'path' => $subpath,
+                ];
+                // Prepare next iteration.
+                $parent = $subpath;
+            }
+        }
+        return $breadcrumbpath;
     }
 }

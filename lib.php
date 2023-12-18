@@ -166,12 +166,6 @@ class repository_ocis extends repository {
         );
 
         $list = [];
-        $breadcrumbpath = [
-            [
-                'name' => $this->get_meta()->name,
-                'path' => '/',
-            ],
-        ];
 
         if ($driveidandpath === '' || $driveidandpath === '/') {
             /** @var Drive $drive */
@@ -181,6 +175,7 @@ class repository_ocis extends repository {
                     $list["0" . strtoupper($drive->getId())] = $listitem;
                 }
             }
+            $breadcrumbpath = ocis_management::get_breadcrumb_path($this->get_meta()->name);
         } else {
             // The colon ":" is the seperator between drive_id and path.
             $matches = explode(":", $driveidandpath, 2);
@@ -304,28 +299,12 @@ class repository_ocis extends repository {
                     $list["1" . strtoupper($resource->getName())] = $listitem;
                 }
             }
-
-            // The first breadcrumb is the drive.
-            $breadcrumbpath[] = [
-                'name' => urldecode($drivename),
-                'path' => $driveid,
-            ];
-            $chunks = explode('/', trim($path, '/'));
-
-            $parent = $driveid . ':';
-            // Every sub-path to the last part of the current path is a parent path.
-            foreach ($chunks as $chunk) {
-                if ($chunk === '') {
-                    continue;
-                }
-                $subpath = $parent . $chunk . '/';
-                $breadcrumbpath[] = [
-                    'name' => urldecode($chunk),
-                    'path' => $subpath,
-                ];
-                // Prepare next iteration.
-                $parent = $subpath;
-            }
+            $breadcrumbpath = ocis_management::get_breadcrumb_path(
+                $this->get_meta()->name,
+                $drivename,
+                $driveid,
+                $path
+            );
         }
 
         ksort($list);
