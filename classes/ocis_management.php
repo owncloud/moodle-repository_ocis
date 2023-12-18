@@ -17,6 +17,7 @@
 
 namespace repository_ocis;
 
+use DateTime;
 use moodle_exception;
 use core\oauth2\issuer as oauth2_issuer;
 use Owncloud\OcisPhpSdk\Drive;
@@ -30,6 +31,7 @@ use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
 use Owncloud\OcisPhpSdk\Exception\NotFoundException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use Owncloud\OcisPhpSdk\Ocis;
+use Owncloud\OcisPhpSdk\OcisResource;
 use Owncloud\OcisPhpSdk\OrderDirection;
 
 /**
@@ -242,6 +244,36 @@ class ocis_management {
             'thumbnail' => $OUTPUT->image_url(file_folder_icon(90))->out(false),
             'size' => $size,
         ];
+    }
+
+    public static function get_resource_list_item(OcisResource $resource, string $driveid, string $path): array {
+        global $OUTPUT;
+        try {
+            $lastmodifiedtime = new DateTime($resource->getLastModifiedTime());
+            $datemodified = $lastmodifiedtime->getTimestamp();
+        } catch (InvalidResponseException $e) {
+            $datemodified = "";
+        }
+
+        $listitem = [
+            'title' => $resource->getName(),
+            'date' => $datemodified,
+            'size' => $resource->getSize(),
+            'source' => $resource->getId(),
+        ];
+        if ($resource->getType() === 'folder') {
+            $listitem['children'] = [];
+            // The colon ":" is the seperator between drive_id and path.
+            $listitem['path'] = $driveid .
+                ":" . rtrim($path, '/') . "/" .
+                ltrim($resource->getName(), '/');
+            $listitem['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
+        } else {
+            $listitem['thumbnail'] = $OUTPUT->image_url(
+                file_extension_icon($resource->getName(), 90)
+            )->out(false);
+        }
+        return $listitem;
     }
 
     public static function get_breadcrumb_path(

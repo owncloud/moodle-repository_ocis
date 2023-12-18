@@ -155,8 +155,6 @@ class repository_ocis extends repository {
      * @throws Exception
      */
     public function get_listing($driveidandpath = '', $page = '') {
-        global $OUTPUT;
-
         $ocis = $this->getOcisClient();
         $drives = ocis_management::get_drives(
             $ocis,
@@ -266,35 +264,12 @@ class repository_ocis extends repository {
 
             /** @var OcisResource $resource */
             foreach ($resources as $resource) {
-                try {
-                    $lastmodifiedtime = new DateTime($resource->getLastModifiedTime());
-                    $datemodified = $lastmodifiedtime->getTimestamp();
-                } catch (InvalidResponseException $e) {
-                    $datemodified = "";
-                }
-
-                $listitem = [
-                    'title' => $resource->getName(),
-                    'date' => $datemodified,
-                    'size' => $resource->getSize(),
-                    'source' => $resource->getId(),
-                ];
+                $listitem = ocis_management::get_resource_list_item($resource, $driveid, $path);
                 if ($resource->getType() === 'folder') {
-                    $listitem['children'] = [];
-                    // The colon ":" is the seperator between drive_id and path.
-                    $listitem['path'] = $driveid .
-                        ":" . rtrim($path, '/') . "/" .
-                        ltrim($resource->getName(), '/');
-                    $listitem['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
-
                     // This is to help with sorting, `0` is to make sure folders are on top
                     // then the name in uppercase to sort everything alphabetically with ksort.
                     $list["0" . strtoupper($resource->getName())] = $listitem;
                 } else {
-                    $listitem['thumbnail'] = $OUTPUT->image_url(
-                        file_extension_icon($resource->getName(), 90)
-                    )->out(false);
-
                     // This is to help with sorting, for sorting, `1` to make sure files are listed after folders.
                     $list["1" . strtoupper($resource->getName())] = $listitem;
                 }
