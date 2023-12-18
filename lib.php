@@ -158,69 +158,13 @@ class repository_ocis extends repository {
         global $OUTPUT;
 
         $ocis = $this->getOcisClient();
-        $drives = [];
-        try {
-            if ($this->get_option('show_personal_drive') === '1') {
-                $drives = $ocis->getMyDrives(
-                    DriveOrder::NAME,
-                    OrderDirection::ASC,
-                    DriveType::PERSONAL
-                );
-            }
-            if ($this->get_option('show_shares') === '1') {
-                $drives = array_merge(
-                    $drives,
-                    $ocis->getMyDrives(
-                        DriveOrder::NAME,
-                        OrderDirection::ASC,
-                        DriveType::VIRTUAL
-                    )
-                );
-            }
-            if ($this->get_option('show_project_drives') === '1') {
-                $drives = array_merge(
-                    $drives,
-                    $ocis->getMyDrives(
-                        DriveOrder::NAME,
-                        OrderDirection::ASC,
-                        DriveType::PROJECT
-                    )
-                );
-            }
-        } catch (HttpException $e) {
-            throw new moodle_exception(
-                'could_not_connect_error',
-                'repository_ocis',
-                '',
-                null,
-                $e->getTraceAsString()
-            );
-        } catch (UnauthorizedException $e) {
-            throw new moodle_exception(
-                'unauthorized_error',
-                'repository_ocis',
-                '',
-                null,
-                $e->getTraceAsString()
-            );
-        } catch (InternalServerErrorException $e) {
-            throw new moodle_exception(
-                'internal_server_error',
-                'repository_ocis',
-                '',
-                null,
-                $e->getTraceAsString()
-            );
-        }
+        $drives = ocis_management::get_drives(
+            $ocis,
+            ($this->get_option('show_personal_drive') === "1"),
+            ($this->get_option('show_shares') === "1"),
+            ($this->get_option('show_project_drives') === "1")
+        );
 
-        if (empty($drives)) {
-            throw new \moodle_exception(
-                'no_drives_error',
-                'repository_ocis',
-                '',
-                null
-            );
-        }
         $list = [];
         $breadcrumbpath = [
             [
@@ -232,43 +176,10 @@ class repository_ocis extends repository {
         if ($driveidandpath === '' || $driveidandpath === '/') {
             /** @var Drive $drive */
             foreach ($drives as $drive) {
-                // Skip mountpoints, we will show them inside of the Shares drive.
-                if ($drive->getType() === DriveType::MOUNTPOINT) {
-                    continue;
+                $listitem = ocis_management::get_drive_listitem($drive);
+                if ($listitem !== null) {
+                    $list["0" . strtoupper($drive->getId())] = $listitem;
                 }
-                // Skip disabled drives.
-                if ($drive->isDisabled()) {
-                    continue;
-                }
-                if ($drive->getType() === DriveType::PERSONAL) {
-                    $drivetitle = get_string('personal_drive', 'repository_ocis');
-                } else if ($drive->getType() === DriveType::VIRTUAL) {
-                    $drivetitle = get_string('shares_drive', 'repository_ocis');
-                } else {
-                    $drivetitle = $drive->getName();
-                }
-                try {
-                    $size = (int)$drive->getQuota()->getUsed();
-                } catch (InvalidResponseException $e) {
-                    // The Share drive does not return a Quota.
-                    $size = 0;
-                }
-                try {
-                    $datemodified = $drive->getLastModifiedDateTime()->getTimestamp();
-                } catch (InvalidResponseException $e) {
-                    $datemodified = "";
-                }
-
-                $listitem = [
-                    'title' => $drivetitle,
-                    'datemodified' => $datemodified,
-                    'source' => $drive->getId(),
-                    'children' => [],
-                    'path' => $drive->getId(),
-                    'thumbnail' => $OUTPUT->image_url(file_folder_icon(90))->out(false),
-                    'size' => $size,
-                ];
-                $list["0" . strtoupper($drive->getId())] = $listitem;
             }
         } else {
             // The colon ":" is the seperator between drive_id and path.
