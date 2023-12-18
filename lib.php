@@ -67,13 +67,10 @@ class repository_ocis extends repository {
     private ?oauth2_client $oauth2client = null;
 
     /**
-     * Main object to access the oCIS instance.
-     * @var ?Ocis
+     * Main object that manages the access to the oCIS instance.
+     * @var ?ocis_manager
      */
-    private ?Ocis $ocis = null;
-    /**
-     * @var array|mixed|null
-     */
+    private ?ocis_manager $ocismanager = null;
 
     /**
      * repository_ocis constructor.
@@ -113,31 +110,22 @@ class repository_ocis extends repository {
     }
 
     /**
-     * Returns the oCIS client object.
-     * This function will create a new client if none exists or update the token if it changed,
-     * that way it makes sure that always the current token is used.
-     *
-     * @throws coding_exception
-     * @throws \Exception
+     * Returns the cached oCIS manager object.
      */
-    private function getocisclient(): Ocis {
-        $proxysetting = ocis_management::get_proxy_settings();
-
-        $accesstoken = $this->get_user_oauth_client()->get_accesstoken();
-        if ($accesstoken === null) {
-            throw new moodle_exception(
-                'unauthorized_error',
-                'repository_ocis'
+    private function getocismanager(): ocis_manager {
+        if ($this->ocismanager === null) {
+            $this->ocismanager = new ocis_manager(
+                $this->get_user_oauth_client(),
+                $this->oauth2issuer,
+                ($this->get_option('show_personal_drive') === "1"),
+                ($this->get_option('show_shares') === "1"),
+                ($this->get_option('show_project_drives') === "1")
             );
         }
-        if ($this->ocis === null) {
-            $this->ocis = ocis_management::get_new_ocis_object($this->oauth2issuer, $accesstoken->token, $proxysetting);
-        } else {
-            // Update the token for the ocis client, just in case it changed.
-            $this->ocis->setAccessToken($accesstoken->token);
-        }
-        return $this->ocis;
+
+        return $this->ocismanager;
     }
+
     /**
      * Get file listing.
      *
@@ -145,7 +133,7 @@ class repository_ocis extends repository {
      *
      * See repository::get_listing() for details.
      *
-     * @param string $drive_id_and_path The drive it is seperated by ":" from the path
+     * @param string $driveidandpath The drive it is seperated by ":" from the path
      * @param string $page
      * @return array the list of files, including meta information
      * @throws Exception
@@ -154,11 +142,11 @@ class repository_ocis extends repository {
         $ocismanager = new ocis_manager(
             $this->get_user_oauth_client(),
             $this->oauth2issuer,
-            $driveidandpath,
             ($this->get_option('show_personal_drive') === "1"),
             ($this->get_option('show_shares') === "1"),
             ($this->get_option('show_project_drives') === "1")
         );
+        $ocismanager->set_driveid_and_path($driveidandpath);
 
         $list = $ocismanager->get_file_list();
         $breadcrumbpath = $ocismanager->get_breadcrumb_path(
@@ -374,11 +362,9 @@ class repository_ocis extends repository {
      * @throws moodle_exception
      */
     public function get_file($fileid, $filename = ''): array {
-        $ocis = $this->getOcisClient();
-
         $localpath = $this->prepare_file($fileid);
         try {
-            $file = $ocis->getResourceById($fileid);
+            $file = $this->getocismanager()->get_ocis_client()->getResourceById($fileid);
             file_put_contents($localpath, $file->getContentStream());
         } catch (HttpException $e) {
             throw new moodle_exception(
