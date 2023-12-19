@@ -35,9 +35,7 @@ use Owncloud\OcisPhpSdk\Exception\HttpException;
 use Owncloud\OcisPhpSdk\Exception\NotFoundException;
 use Owncloud\OcisPhpSdk\Exception\TooEarlyException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
-use Owncloud\OcisPhpSdk\Ocis;
 use repository_ocis\issuer_management;
-use repository_ocis\ocis_management;
 use repository_ocis\ocis_manager;
 
 defined('MOODLE_INTERNAL') || die();
