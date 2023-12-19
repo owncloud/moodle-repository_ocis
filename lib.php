@@ -139,13 +139,7 @@ class repository_ocis extends repository {
      * @throws Exception
      */
     public function get_listing($driveidandpath = '', $page = '') {
-        $ocismanager = new ocis_manager(
-            $this->get_user_oauth_client(),
-            $this->oauth2issuer,
-            ($this->get_option('show_personal_drive') === "1"),
-            ($this->get_option('show_shares') === "1"),
-            ($this->get_option('show_project_drives') === "1")
-        );
+        $ocismanager = $this->getocismanager();
         $ocismanager->set_driveid_and_path($driveidandpath);
 
         $list = $ocismanager->get_file_list();
