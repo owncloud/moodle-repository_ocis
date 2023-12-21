@@ -3,7 +3,7 @@
         'name' => 'owncloud/moodle-repository_ocis',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'ecdb14b939e2778c15d269b93c271b38d6e36634',
+        'reference' => '103bebad175ad3ad0a23654979fbd79e32d68e70',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -25,7 +25,7 @@
         'owncloud/libre-graph-api-php' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'eaa85a34b43ecad81908c189556c437ac18f7d19',
+            'reference' => 'a005f15520f94cc44da78b6bc2660f2d87a6c7d4',
             'type' => 'library',
             'install_path' => __DIR__ . '/../owncloud/libre-graph-api-php',
             'aliases' => array(
@@ -36,7 +36,7 @@
         'owncloud/moodle-repository_ocis' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'ecdb14b939e2778c15d269b93c271b38d6e36634',
+            'reference' => '103bebad175ad3ad0a23654979fbd79e32d68e70',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -45,7 +45,7 @@
         'owncloud/ocis-php-sdk' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '34d5fcb760806f069ce9e265c3097cd8ee0ea89c',
+            'reference' => 'b5f98bfc2d0b4570b54c2d269de95e85cacc39c7',
             'type' => 'library',
             'install_path' => __DIR__ . '/../owncloud/ocis-php-sdk',
             'aliases' => array(

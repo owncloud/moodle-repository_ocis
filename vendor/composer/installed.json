@@ -7,12 +7,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/libre-graph-api-php.git",
-                "reference": "eaa85a34b43ecad81908c189556c437ac18f7d19"
+                "reference": "a005f15520f94cc44da78b6bc2660f2d87a6c7d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/eaa85a34b43ecad81908c189556c437ac18f7d19",
-                "reference": "eaa85a34b43ecad81908c189556c437ac18f7d19",
+                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/a005f15520f94cc44da78b6bc2660f2d87a6c7d4",
+                "reference": "a005f15520f94cc44da78b6bc2660f2d87a6c7d4",
                 "shasum": ""
             },
             "require": {
@@ -28,7 +28,7 @@
                 "overtrue/phplint": "^9.0",
                 "phpunit/phpunit": "^9.0"
             },
-            "time": "2023-12-07T08:36:22+00:00",
+            "time": "2023-12-19T14:31:30+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
@@ -71,12 +71,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "34d5fcb760806f069ce9e265c3097cd8ee0ea89c"
+                "reference": "b5f98bfc2d0b4570b54c2d269de95e85cacc39c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/34d5fcb760806f069ce9e265c3097cd8ee0ea89c",
-                "reference": "34d5fcb760806f069ce9e265c3097cd8ee0ea89c",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/b5f98bfc2d0b4570b54c2d269de95e85cacc39c7",
+                "reference": "b5f98bfc2d0b4570b54c2d269de95e85cacc39c7",
                 "shasum": ""
             },
             "require": {
@@ -92,7 +92,7 @@
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^9.6"
             },
-            "time": "2023-12-14T09:50:23+00:00",
+            "time": "2023-12-20T11:36:25+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
