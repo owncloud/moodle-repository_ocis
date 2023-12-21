@@ -76,6 +76,7 @@ class RemoteItem implements ModelInterface, ArrayAccess, JsonSerializable
         'c_tag' => 'string',
         'parent_reference' => '\OpenAPI\Client\Model\ItemReference',
         'shared' => '\OpenAPI\Client\Model\Shared',
+        'permissions' => '\OpenAPI\Client\Model\Permission[]',
         'size' => 'int',
         'special_folder' => '\OpenAPI\Client\Model\SpecialFolder',
         'web_dav_url' => 'string',
@@ -105,6 +106,7 @@ class RemoteItem implements ModelInterface, ArrayAccess, JsonSerializable
         'c_tag' => null,
         'parent_reference' => null,
         'shared' => null,
+        'permissions' => null,
         'size' => 'int64',
         'special_folder' => null,
         'web_dav_url' => null,
@@ -134,6 +136,7 @@ class RemoteItem implements ModelInterface, ArrayAccess, JsonSerializable
 		'c_tag' => false,
 		'parent_reference' => false,
 		'shared' => false,
+		'permissions' => false,
 		'size' => false,
 		'special_folder' => false,
 		'web_dav_url' => false,
@@ -243,6 +246,7 @@ class RemoteItem implements ModelInterface, ArrayAccess, JsonSerializable
         'c_tag' => 'cTag',
         'parent_reference' => 'parentReference',
         'shared' => 'shared',
+        'permissions' => 'permissions',
         'size' => 'size',
         'special_folder' => 'specialFolder',
         'web_dav_url' => 'webDavUrl',
@@ -272,6 +276,7 @@ class RemoteItem implements ModelInterface, ArrayAccess, JsonSerializable
         'c_tag' => 'setCTag',
         'parent_reference' => 'setParentReference',
         'shared' => 'setShared',
+        'permissions' => 'setPermissions',
         'size' => 'setSize',
         'special_folder' => 'setSpecialFolder',
         'web_dav_url' => 'setWebDavUrl',
@@ -301,6 +306,7 @@ class RemoteItem implements ModelInterface, ArrayAccess, JsonSerializable
         'c_tag' => 'getCTag',
         'parent_reference' => 'getParentReference',
         'shared' => 'getShared',
+        'permissions' => 'getPermissions',
         'size' => 'getSize',
         'special_folder' => 'getSpecialFolder',
         'web_dav_url' => 'getWebDavUrl',
@@ -380,6 +386,7 @@ class RemoteItem implements ModelInterface, ArrayAccess, JsonSerializable
         $this->setIfExists('c_tag', $data ?? [], null);
         $this->setIfExists('parent_reference', $data ?? [], null);
         $this->setIfExists('shared', $data ?? [], null);
+        $this->setIfExists('permissions', $data ?? [], null);
         $this->setIfExists('size', $data ?? [], null);
         $this->setIfExists('special_folder', $data ?? [], null);
         $this->setIfExists('web_dav_url', $data ?? [], null);
@@ -901,6 +908,33 @@ class RemoteItem implements ModelInterface, ArrayAccess, JsonSerializable
             throw new InvalidArgumentException('non-nullable shared cannot be null');
         }
         $this->container['shared'] = $shared;
+
+        return $this;
+    }
+
+    /**
+     * Gets permissions
+     *
+     * @return \OpenAPI\Client\Model\Permission[]|null
+     */
+    public function getPermissions(): ?array
+    {
+        return $this->container['permissions'];
+    }
+
+    /**
+     * Sets permissions
+     *
+     * @param \OpenAPI\Client\Model\Permission[]|null $permissions The set of permissions for the item. Read-only. Nullable.
+     *
+     * @return $this
+     */
+    public function setPermissions(?array $permissions): static
+    {
+        if (is_null($permissions)) {
+            throw new InvalidArgumentException('non-nullable permissions cannot be null');
+        }
+        $this->container['permissions'] = $permissions;
 
         return $this;
     }
