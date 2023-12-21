@@ -52,6 +52,7 @@ class ocis_manager {
     private ?string $driveid = null;
     private string $path;
     private ?Drive $drive = null;
+    private ?Ocis $ocis = null;
 
     public function __construct(
         oauth2_client $oauth2client,
@@ -77,7 +78,7 @@ class ocis_manager {
         if ($this->drive !== null) {
             return $this->drive;
         } else {
-            // The colon ":" is the seperator between drive_id and path.
+            // The colon ":" is the separator between drive_id and path.
             $matches = explode(":", $this->driveidandpath, 2);
             $this->driveid = $matches[0];
             if (array_key_exists(1, $matches)) {
@@ -199,7 +200,7 @@ class ocis_manager {
         return $drives;
     }
 
-    private function get_drive_listitem(Drive $drive): array|null {
+    private function get_drive_list_item(Drive $drive): array|null {
         global $OUTPUT;
         // Skip disabled drives.
         if ($drive->isDisabled()) {
@@ -319,11 +320,11 @@ class ocis_manager {
         }
     }
 
-    public function set_driveid_and_path(string $driveidandpath) {
+    public function set_driveid_and_path(string $driveidandpath): void {
         $this->driveidandpath = $driveidandpath;
     }
 
-    private function is_root() {
+    private function is_root(): bool {
         return ($this->driveidandpath === '' || $this->driveidandpath === '/');
     }
 
@@ -363,7 +364,7 @@ class ocis_manager {
         ];
         if ($resource->getType() === 'folder') {
             $listitem['children'] = [];
-            // The colon ":" is the seperator between drive_id and path.
+            // The colon ":" is the separator between drive_id and path.
             $listitem['path'] = $this->driveid .
                 ":" . rtrim($this->path, '/') . "/" .
                 ltrim($resource->getName(), '/');
@@ -427,7 +428,7 @@ class ocis_manager {
             $drives = $this->get_drives();
             /** @var Drive $drive */
             foreach ($drives as $drive) {
-                $listitem = $this->get_drive_listitem($drive);
+                $listitem = $this->get_drive_list_item($drive);
                 if ($listitem !== null) {
                     $list["0" . strtoupper($drive->getId())] = $listitem;
                 }
