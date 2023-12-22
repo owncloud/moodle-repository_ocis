@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "367f3fa61abb613370c0834fa5338e19",
+    "content-hash": "e32c891ef2691d54736523e198263690",
     "packages": [
         {
             "name": "owncloud/libre-graph-api-php",
@@ -69,16 +69,16 @@
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "dev-main",
+            "version": "v1.0.0-beta.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "b5f98bfc2d0b4570b54c2d269de95e85cacc39c7"
+                "reference": "034f158b6053be94f9acc1960fd642a4b60686a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/b5f98bfc2d0b4570b54c2d269de95e85cacc39c7",
-                "reference": "b5f98bfc2d0b4570b54c2d269de95e85cacc39c7",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/034f158b6053be94f9acc1960fd642a4b60686a3",
+                "reference": "034f158b6053be94f9acc1960fd642a4b60686a3",
                 "shasum": ""
             },
             "require": {
@@ -94,7 +94,6 @@
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^9.6"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -105,10 +104,10 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/main",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/v1.0.0-beta.1",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
-            "time": "2023-12-20T11:36:25+00:00"
+            "time": "2023-12-22T08:57:54+00:00"
         },
         {
             "name": "psr/log",
@@ -1077,9 +1076,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "owncloud/ocis-php-sdk": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": [],
