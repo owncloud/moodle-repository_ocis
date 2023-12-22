@@ -47,18 +47,30 @@ class Ocis
     private string $notificationsEndpoint = '/ocs/v2.php/apps/notifications/api/v1/notifications?format=json';
 
     /**
-     * @phpstan-var array{'headers'?:array<string, mixed>, 'verify'?:bool, 'webfinger'?:bool, 'guzzle'?:Client,'drivesApi'?:DrivesApi,'drivesGetDrivesApi'?:DrivesGetDrivesApi}
+     * @phpstan-var array{
+     *                    'headers'?:array<string, mixed>,
+     *                    'proxy'?:array{'http'?:string, 'https'?:string, 'no'?:array<string>}|string,
+     *                    'verify'?:bool,
+     *                    'webfinger'?:bool,
+     *                    'guzzle'?:Client,
+     *                    'drivesApi'?:DrivesApi,
+     *                    'drivesGetDrivesApi'?:DrivesGetDrivesApi,
+     *                    'drivesPermissionsApi'?:DrivesPermissionsApi
+     * }
      */
     private array $connectionConfig;
 
     /**
      * @phpstan-param array{
-     *                        'headers'?:array<string, mixed>,
-     *                        'proxy'?:array{'http'?:string, 'https'?:string, 'no'?:array<string>}|string,
-     *                        'verify'?:bool,
-     *                        'webfinger'?:bool,
-     *                        'guzzle'?:Client
-     *                        } $connectionConfig
+     *                      'headers'?:array<string, mixed>,
+     *                      'proxy'?:array{'http'?:string, 'https'?:string, 'no'?:array<string>}|string,
+     *                      'verify'?:bool,
+     *                      'webfinger'?:bool,
+     *                      'guzzle'?:Client,
+     *                      'drivesApi'?:DrivesApi,
+     *                      'drivesGetDrivesApi'?:DrivesGetDrivesApi,
+     *                      'drivesPermissionsApi'?:DrivesPermissionsApi
+     *                      } $connectionConfig
      *        valid config keys are: headers, proxy, verify, webfinger, guzzle
      *        headers has to be an array in the form like
      *        [
@@ -925,7 +937,7 @@ class Ocis
     }
 
     /**
-     * @return array<ShareCreated>
+     * @return array<ShareCreated|ShareLink>
      * @throws BadRequestException
      * @throws ForbiddenException
      * @throws HttpException
@@ -973,15 +985,25 @@ class Ocis
                 throw new InvalidResponseException("Invalid permissions provided");
             }
             foreach ($share->getPermissions() as $apiSharePermission) {
-
-                $shares[] = new ShareCreated(
-                    $apiSharePermission,
-                    $resourceId,
-                    $driveId,
-                    $this->connectionConfig,
-                    $this->serviceUrl,
-                    $this->accessToken
-                );
+                if($apiSharePermission->getLink() === null) {
+                    $shares[] = new ShareCreated(
+                        $apiSharePermission,
+                        $resourceId,
+                        $driveId,
+                        $this->connectionConfig,
+                        $this->serviceUrl,
+                        $this->accessToken
+                    );
+                } else {
+                    $shares[] = new ShareLink(
+                        $apiSharePermission,
+                        $resourceId,
+                        $driveId,
+                        $this->connectionConfig,
+                        $this->serviceUrl,
+                        $this->accessToken
+                    );
+                }
             }
         }
         return $shares;

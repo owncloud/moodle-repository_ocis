@@ -3,7 +3,7 @@
     <library>
         <location>vendor/owncloud/ocis-php-sdk</location>
         <name>ocis-php-sdk</name>
-        <version>dev-main b5f98bf</version>
+        <version>1.0.0-beta.1</version>
         <license>Apache</license>
         <licenseversion>2.0</licenseversion>
     </library>
