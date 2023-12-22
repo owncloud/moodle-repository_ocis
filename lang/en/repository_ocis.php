@@ -39,6 +39,9 @@ $string['privacy:metadata'] = 'The ownCloud Infinite Scale repository plugin nei
 $string['show_personal_drive'] = 'Show Personal Drive';
 $string['show_shares'] = 'Show Shares';
 $string['show_project_drives'] = 'Show Project Drives';
+$string['personal_drive_icon_url'] = 'Icon URL for Personal Drive';
+$string['shares_icon_url'] = 'Icon URL for Shares';
+$string['project_drives_icon_url'] = 'Icon URL for Project Drives';
 
 
 // Filepicker.

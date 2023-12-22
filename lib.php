@@ -117,7 +117,10 @@ class repository_ocis extends repository {
                 $this->oauth2issuer,
                 ($this->get_option('show_personal_drive') === "1"),
                 ($this->get_option('show_shares') === "1"),
-                ($this->get_option('show_project_drives') === "1")
+                ($this->get_option('show_project_drives') === "1"),
+                $this->get_option('personal_drive_icon_url'),
+                $this->get_option('shares_icon_url'),
+                $this->get_option('project_drives_icon_url')
             );
         }
 
@@ -225,6 +228,27 @@ class repository_ocis extends repository {
         );
 
         $mform->setDefault('show_project_drives', 1);
+
+        $mform->addElement(
+            'text',
+            'personal_drive_icon_url',
+            get_string('personal_drive_icon_url', 'repository_ocis')
+        );
+        $mform->setType('personal_drive_icon_url', PARAM_TEXT);
+
+        $mform->addElement(
+            'text',
+            'shares_icon_url',
+            get_string('shares_icon_url', 'repository_ocis')
+        );
+        $mform->setType('shares_icon_url', PARAM_TEXT);
+
+        $mform->addElement(
+            'text',
+            'project_drives_icon_url',
+            get_string('project_drives_icon_url', 'repository_ocis')
+        );
+        $mform->setType('project_drives_icon_url', PARAM_TEXT);
     }
 
     /**
@@ -335,7 +359,8 @@ class repository_ocis extends repository {
     public static function get_instance_option_names() {
         return ['issuerid', 'controlledlinkfoldername',
             'defaultreturntype', 'supportedreturntypes',
-            'show_personal_drive', 'show_shares', 'show_project_drives'];
+            'show_personal_drive', 'show_shares', 'show_project_drives',
+            'personal_drive_icon_url', 'shares_icon_url', 'project_drives_icon_url'];
     }
 
     /**

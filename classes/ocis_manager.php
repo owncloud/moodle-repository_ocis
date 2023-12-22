@@ -53,19 +53,28 @@ class ocis_manager {
     private string $path;
     private ?Drive $drive = null;
     private ?Ocis $ocis = null;
+    private ?string $personaldriveiconurl;
+    private ?string $sharesiconurl;
+    private ?string $projectdriveiconurl;
 
     public function __construct(
         oauth2_client $oauth2client,
         oauth2_issuer $oauth2issuer,
         bool $showpersonaldrive,
         bool $showshares,
-        bool $showprojectdrives
+        bool $showprojectdrives,
+        ?string $personaldriveiconurl,
+        ?string $sharesiconurl,
+        ?string $projectdriveiconurl
     ) {
         $this->oauth2client = $oauth2client;
         $this->oauth2issuer = $oauth2issuer;
         $this->showpersonaldrive = $showpersonaldrive;
         $this->showshares = $showshares;
         $this->showprojectdrives = $showprojectdrives;
+        $this->personaldriveiconurl = $personaldriveiconurl;
+        $this->sharesiconurl = $sharesiconurl;
+        $this->projectdriveiconurl = $projectdriveiconurl;
     }
 
     private function get_drive_id(): string {
@@ -208,10 +217,16 @@ class ocis_manager {
         }
         if ($drive->getType() === DriveType::PERSONAL) {
             $drivetitle = get_string('personal_drive', 'repository_ocis');
+            $thumbnail = $this->personaldriveiconurl;
+            $icon = $this->personaldriveiconurl;
         } else if ($drive->getType() === DriveType::VIRTUAL) {
             $drivetitle = get_string('shares_drive', 'repository_ocis');
+            $thumbnail = $this->sharesiconurl;
+            $icon = $this->sharesiconurl;
         } else {
             $drivetitle = $drive->getName();
+            $thumbnail = $this->projectdriveiconurl;
+            $icon = $this->projectdriveiconurl;
         }
         try {
             $size = (int)$drive->getQuota()->getUsed();
@@ -225,13 +240,18 @@ class ocis_manager {
             $datemodified = "";
         }
 
+        if ($thumbnail === null || trim($thumbnail) === '') {
+            $thumbnail = $OUTPUT->image_url(file_folder_icon(90))->out(false);
+            $icon = $OUTPUT->image_url(file_folder_icon(24))->out(false);
+        }
         return [
             'title' => $drivetitle,
             'datemodified' => $datemodified,
             'source' => $drive->getId(),
             'children' => [],
             'path' => $drive->getId(),
-            'thumbnail' => $OUTPUT->image_url(file_folder_icon(90))->out(false),
+            'thumbnail' => $thumbnail,
+            'icon' => $icon,
             'size' => $size,
         ];
     }
