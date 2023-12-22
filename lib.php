@@ -27,9 +27,6 @@
 use core\oauth2\api as oauth2_api;
 use core\oauth2\client as oauth2_client;
 use core\oauth2\issuer as oauth2_issuer;
-use Owncloud\OcisPhpSdk\Drive;
-use Owncloud\OcisPhpSdk\DriveOrder;
-use Owncloud\OcisPhpSdk\DriveType;
 use Owncloud\OcisPhpSdk\Exception\BadRequestException;
 use Owncloud\OcisPhpSdk\Exception\ForbiddenException;
 use Owncloud\OcisPhpSdk\Exception\InternalServerErrorException;
@@ -38,11 +35,8 @@ use Owncloud\OcisPhpSdk\Exception\HttpException;
 use Owncloud\OcisPhpSdk\Exception\NotFoundException;
 use Owncloud\OcisPhpSdk\Exception\TooEarlyException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
-use Owncloud\OcisPhpSdk\Ocis;
-use Owncloud\OcisPhpSdk\OcisResource;
-use Owncloud\OcisPhpSdk\OrderDirection;
 use repository_ocis\issuer_management;
-use repository_ocis\ocis_management;
+use repository_ocis\ocis_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -71,13 +65,10 @@ class repository_ocis extends repository {
     private ?oauth2_client $oauth2client = null;
 
     /**
-     * Main object to access the oCIS instance.
-     * @var ?Ocis
+     * Main object that manages the access to the oCIS instance.
+     * @var ?ocis_manager
      */
-    private ?Ocis $ocis = null;
-    /**
-     * @var array|mixed|null
-     */
+    private ?ocis_manager $ocismanager = null;
 
     /**
      * repository_ocis constructor.
@@ -117,31 +108,22 @@ class repository_ocis extends repository {
     }
 
     /**
-     * Returns the oCIS client object.
-     * This function will create a new client if none exists or update the token if it changed,
-     * that way it makes sure that always the current token is used.
-     *
-     * @throws coding_exception
-     * @throws \Exception
+     * Returns the cached oCIS manager object.
      */
-    private function getocisclient(): Ocis {
-        $proxysetting = ocis_management::get_proxy_settings();
-
-        $accesstoken = $this->get_user_oauth_client()->get_accesstoken();
-        if ($accesstoken === null) {
-            throw new moodle_exception(
-                'unauthorized_error',
-                'repository_ocis'
+    private function getocismanager(): ocis_manager {
+        if ($this->ocismanager === null) {
+            $this->ocismanager = new ocis_manager(
+                $this->get_user_oauth_client(),
+                $this->oauth2issuer,
+                ($this->get_option('show_personal_drive') === "1"),
+                ($this->get_option('show_shares') === "1"),
+                ($this->get_option('show_project_drives') === "1")
             );
         }
-        if ($this->ocis === null) {
-            $this->ocis = ocis_management::get_new_ocis_object($this->oauth2issuer, $accesstoken->token, $proxysetting);
-        } else {
-            // Update the token for the ocis client, just in case it changed.
-            $this->ocis->setAccessToken($accesstoken->token);
-        }
-        return $this->ocis;
+
+        return $this->ocismanager;
     }
+
     /**
      * Get file listing.
      *
@@ -149,281 +131,26 @@ class repository_ocis extends repository {
      *
      * See repository::get_listing() for details.
      *
-     * @param string $drive_id_and_path The drive it is seperated by ":" from the path
+     * @param string $driveidandpath The drive it is seperated by ":" from the path
      * @param string $page
      * @return array the list of files, including meta information
      * @throws Exception
      */
     public function get_listing($driveidandpath = '', $page = '') {
-        global $OUTPUT;
+        $ocismanager = $this->getocismanager();
+        $ocismanager->set_driveid_and_path($driveidandpath);
 
-        $ocis = $this->getOcisClient();
-        $drives = [];
-        try {
-            if ($this->get_option('show_personal_drive') === '1') {
-                $drives = $ocis->getMyDrives(
-                    DriveOrder::NAME,
-                    OrderDirection::ASC,
-                    DriveType::PERSONAL
-                );
-            }
-            if ($this->get_option('show_shares') === '1') {
-                $drives = array_merge(
-                    $drives,
-                    $ocis->getMyDrives(
-                        DriveOrder::NAME,
-                        OrderDirection::ASC,
-                        DriveType::VIRTUAL
-                    )
-                );
-            }
-            if ($this->get_option('show_project_drives') === '1') {
-                $drives = array_merge(
-                    $drives,
-                    $ocis->getMyDrives(
-                        DriveOrder::NAME,
-                        OrderDirection::ASC,
-                        DriveType::PROJECT
-                    )
-                );
-            }
-        } catch (HttpException $e) {
-            throw new moodle_exception(
-                'could_not_connect_error',
-                'repository_ocis',
-                '',
-                null,
-                $e->getTraceAsString()
-            );
-        } catch (UnauthorizedException $e) {
-            throw new moodle_exception(
-                'unauthorized_error',
-                'repository_ocis',
-                '',
-                null,
-                $e->getTraceAsString()
-            );
-        } catch (InternalServerErrorException $e) {
-            throw new moodle_exception(
-                'internal_server_error',
-                'repository_ocis',
-                '',
-                null,
-                $e->getTraceAsString()
-            );
-        }
+        $list = $ocismanager->get_file_list();
+        $breadcrumbpath = $ocismanager->get_breadcrumb_path(
+            $this->get_meta()->name
+        );
 
-        if (empty($drives)) {
-            throw new \moodle_exception(
-                'no_drives_error',
-                'repository_ocis',
-                '',
-                null
-            );
-        }
-        $list = [];
-        $breadcrumbpath = [
-            [
-                'name' => $this->get_meta()->name,
-                'path' => '/',
-            ],
-        ];
-
-        if ($driveidandpath === '' || $driveidandpath === '/') {
-            /** @var Drive $drive */
-            foreach ($drives as $drive) {
-                // Skip mountpoints, we will show them inside of the Shares drive.
-                if ($drive->getType() === DriveType::MOUNTPOINT) {
-                    continue;
-                }
-                // Skip disabled drives.
-                if ($drive->isDisabled()) {
-                    continue;
-                }
-                if ($drive->getType() === DriveType::PERSONAL) {
-                    $drivetitle = get_string('personal_drive', 'repository_ocis');
-                } else if ($drive->getType() === DriveType::VIRTUAL) {
-                    $drivetitle = get_string('shares_drive', 'repository_ocis');
-                } else {
-                    $drivetitle = $drive->getName();
-                }
-                try {
-                    $size = (int)$drive->getQuota()->getUsed();
-                } catch (InvalidResponseException $e) {
-                    // The Share drive does not return a Quota.
-                    $size = 0;
-                }
-                try {
-                    $datemodified = $drive->getLastModifiedDateTime()->getTimestamp();
-                } catch (InvalidResponseException $e) {
-                    $datemodified = "";
-                }
-
-                $listitem = [
-                    'title' => $drivetitle,
-                    'datemodified' => $datemodified,
-                    'source' => $drive->getId(),
-                    'children' => [],
-                    'path' => $drive->getId(),
-                    'thumbnail' => $OUTPUT->image_url(file_folder_icon(90))->out(false),
-                    'size' => $size,
-                ];
-                $list["0" . strtoupper($drive->getId())] = $listitem;
-            }
-        } else {
-            // The colon ":" is the seperator between drive_id and path.
-            $matches = explode(":", $driveidandpath, 2);
-            $driveid = $matches[0];
-            if (array_key_exists(1, $matches)) {
-                $path = $matches[1];
-            } else {
-                $path = '';
-            }
-
-            try {
-                $drive = $ocis->getDriveById($driveid);
-            } catch (HttpException $e) {
-                throw new moodle_exception(
-                    'could_not_connect_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (NotFoundException $e) {
-                throw new moodle_exception(
-                    'drive_not_found_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (UnauthorizedException $e) {
-                throw new moodle_exception(
-                    'unauthorized_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (InternalServerErrorException $e) {
-                throw new moodle_exception(
-                    'internal_server_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            }
-
-            if ($drive->getType() === DriveType::PERSONAL) {
-                $drivename = get_string('personal_drive', 'repository_ocis');
-            } else {
-                $drivename = $drive->getName();
-            }
-
-            try {
-                $resources = $drive->getResources($path);
-            } catch (HttpException $e) {
-                throw new moodle_exception(
-                    'could_not_connect_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (NotFoundException $e) {
-                throw new moodle_exception(
-                    'not_found_error',
-                    'repository_ocis',
-                    '',
-                    rtrim($drivename, '/') . "/" . ltrim($path, '/'),
-                    $e->getTraceAsString()
-                );
-            } catch (UnauthorizedException $e) {
-                throw new moodle_exception(
-                    'unauthorized_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            } catch (InternalServerErrorException $e) {
-                throw new moodle_exception(
-                    'internal_server_error',
-                    'repository_ocis',
-                    '',
-                    null,
-                    $e->getTraceAsString()
-                );
-            }
-
-            /** @var OcisResource $resource */
-            foreach ($resources as $resource) {
-                try {
-                    $lastmodifiedtime = new DateTime($resource->getLastModifiedTime());
-                    $datemodified = $lastmodifiedtime->getTimestamp();
-                } catch (InvalidResponseException $e) {
-                    $datemodified = "";
-                }
-
-                $listitem = [
-                    'title' => $resource->getName(),
-                    'date' => $datemodified,
-                    'size' => $resource->getSize(),
-                    'source' => $resource->getId(),
-                ];
-                if ($resource->getType() === 'folder') {
-                    $listitem['children'] = [];
-                    // The colon ":" is the seperator between drive_id and path.
-                    $listitem['path'] = $driveid .
-                        ":" . rtrim($path, '/') . "/" .
-                        ltrim($resource->getName(), '/');
-                    $listitem['thumbnail'] = $OUTPUT->image_url(file_folder_icon(90))->out(false);
-
-                    // This is to help with sorting, `0` is to make sure folders are on top
-                    // then the name in uppercase to sort everything alphabetically with ksort.
-                    $list["0" . strtoupper($resource->getName())] = $listitem;
-                } else {
-                    $listitem['thumbnail'] = $OUTPUT->image_url(
-                        file_extension_icon($resource->getName(), 90)
-                    )->out(false);
-
-                    // This is to help with sorting, for sorting, `1` to make sure files are listed after folders.
-                    $list["1" . strtoupper($resource->getName())] = $listitem;
-                }
-            }
-
-            // The first breadcrumb is the drive.
-            $breadcrumbpath[] = [
-                'name' => urldecode($drivename),
-                'path' => $driveid,
-            ];
-            $chunks = explode('/', trim($path, '/'));
-
-            $parent = $driveid . ':';
-            // Every sub-path to the last part of the current path is a parent path.
-            foreach ($chunks as $chunk) {
-                if ($chunk === '') {
-                    continue;
-                }
-                $subpath = $parent . $chunk . '/';
-                $breadcrumbpath[] = [
-                    'name' => urldecode($chunk),
-                    'path' => $subpath,
-                ];
-                // Prepare next iteration.
-                $parent = $subpath;
-            }
-        }
-
-        ksort($list);
         return [
             // This will be used to build navigation bar.
             'dynload' => true,
             'nosearch' => true,
             'path' => $breadcrumbpath,
-            'manage' => $drive->getWebUrl(),
+            'manage' => $ocismanager->get_manage_url(),
             'list' => $list,
         ];
     }
@@ -627,11 +354,9 @@ class repository_ocis extends repository {
      * @throws moodle_exception
      */
     public function get_file($fileid, $filename = ''): array {
-        $ocis = $this->getOcisClient();
-
         $localpath = $this->prepare_file($fileid);
         try {
-            $file = $ocis->getResourceById($fileid);
+            $file = $this->getocismanager()->get_ocis_client()->getResourceById($fileid);
             file_put_contents($localpath, $file->getContentStream());
         } catch (HttpException $e) {
             throw new moodle_exception(
