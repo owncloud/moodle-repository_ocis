@@ -36,27 +36,88 @@ use Owncloud\OcisPhpSdk\OcisResource;
 use Owncloud\OcisPhpSdk\OrderDirection;
 
 /**
- * Provides functions for managing access to the oCIS server.
- *
+ * Helper class to deal with oCIS
  * @package    repository_ocis
  * @copyright  2023 ownCloud GmbH
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class ocis_manager {
+    /**
+     * @var oauth2_client
+     */
     private oauth2_client $oauth2client;
+    /**
+     * @var oauth2_issuer
+     */
     private oauth2_issuer $oauth2issuer;
+    /**
+     * String containing the drive_id and the current path. The drive_id is separated from the path by a colon ":".
+     * @var string
+     */
     private ?string $driveidandpath = null;
+    /**
+     * Setting to determine if the personal drive should be listed.
+     * @var bool
+     */
     private bool $showpersonaldrive;
+    /**
+     * Setting to determine if received shares should be listed.
+     * @var bool
+     */
     private bool $showshares;
+    /**
+     * Setting to determine if project-drives should be listed.
+     * @var bool
+     */
     private bool $showprojectdrives;
+    /**
+     * The id of the currently browsed drive.
+     * @var string|null
+     */
     private ?string $driveid = null;
+    /**
+     * The currently browsed path.
+     * @var string
+     */
     private string $path;
+    /**
+     * The currently browsed drive.
+     * @var Drive|null
+     */
     private ?Drive $drive = null;
+    /**
+     * The main ocis object.
+     * @var Ocis|null
+     */
     private ?Ocis $ocis = null;
+    /**
+     * URL of the icon to be shown for the personal drive.
+     * @var string|null
+     */
     private ?string $personaldriveiconurl;
+    /**
+     * URL of the icon to be shown for the share drive.
+     * @var string|null
+     */
     private ?string $sharesiconurl;
+    /**
+     * URL of the icon to be shown for all project drives.
+     * @var string|null
+     */
     private ?string $projectdriveiconurl;
 
+    /**
+     * Creates a new ocis_manager
+     *
+     * @param oauth2_client $oauth2client
+     * @param oauth2_issuer $oauth2issuer
+     * @param bool $showpersonaldrive Setting to determine if the personal drive should be listed.
+     * @param bool $showshares Setting to determine if received shares should be listed.
+     * @param bool $showprojectdrives Setting to determine if project-drives should be listed.
+     * @param string|null $personaldriveiconurl URL of the icon to be shown for the personal drive.
+     * @param string|null $sharesiconurl URL of the icon to be shown for the share drive.
+     * @param string|null $projectdriveiconurl URL of the icon to be shown for all project drives.
+     */
     public function __construct(
         oauth2_client $oauth2client,
         oauth2_issuer $oauth2issuer,
@@ -77,12 +138,23 @@ class ocis_manager {
         $this->projectdriveiconurl = $projectdriveiconurl;
     }
 
+    /**
+     * Returns the cached drive_id.
+     * If no id is set yet, it will get a new drive object and return it's id.
+     */
     private function get_drive_id(): string {
         if ($this->driveid === null) {
             $this->get_drive();
         }
         return $this->driveid;
     }
+
+    /**
+     * Returns the cached drive object.
+     * If the Drive object does not exist yet, a new one will be created using the drive_id in $this->driveidanpath.
+     *
+     * @throws moodle_exception
+     */
     private function get_drive(): Drive {
         if ($this->drive !== null) {
             return $this->drive;
@@ -135,11 +207,9 @@ class ocis_manager {
     }
 
     /**
+     * Gets all drives that should be displayed to the user.
+     *
      * @return array<Drive>
-     * @throws BadRequestException
-     * @throws ForbiddenException
-     * @throws InvalidResponseException
-     * @throws NotFoundException
      * @throws moodle_exception
      */
     private function get_drives(): array {
@@ -209,6 +279,11 @@ class ocis_manager {
         return $drives;
     }
 
+    /**
+     * Uses the given Drive object to create an item for the list in the file-picker.
+     * @param Drive $drive
+     * @return array<mixed>|null
+     */
     private function get_drive_list_item(Drive $drive): array|null {
         global $OUTPUT;
         // Skip disabled drives.
@@ -256,6 +331,9 @@ class ocis_manager {
         ];
     }
 
+    /**
+     * Gets the name of the drive, or in the case of the personal/shares drive the translated string.
+     */
     private function get_drive_name(): string {
         if ($this->get_drive()->getType() === DriveType::PERSONAL) {
             return get_string('personal_drive', 'repository_ocis');
@@ -264,6 +342,9 @@ class ocis_manager {
         }
     }
 
+    /**
+     * Returns the proxy settings of moodle in a format that can be passed to the OCIS-PHP-SDK.
+     */
     private function get_proxy_settings(): array {
         global $CFG;
 
@@ -302,6 +383,12 @@ class ocis_manager {
         }
     }
 
+    /**
+     * Creates and returns a new Ocis object.
+     * @param string $accesstoken
+     * @param array $proxysetting
+     * @throws moodle_exception
+     */
     private function get_new_ocis_object(
         string $accesstoken,
         array $proxysetting
@@ -340,14 +427,26 @@ class ocis_manager {
         }
     }
 
+    /**
+     * Setter for $this->driveidandpath
+     * @param string $driveidandpath
+     */
     public function set_driveid_and_path(string $driveidandpath): void {
         $this->driveidandpath = $driveidandpath;
     }
 
+    /**
+     * Determines if the user currently browses the root of the oCIS instance (true) or is browsing inside of a drive (false).
+     */
     private function is_root(): bool {
         return ($this->driveidandpath === '' || $this->driveidandpath === '/');
     }
 
+    /**
+     * Returns a cached Ocis object.
+     * If the object exists it will update the access token, if it does not exist it will create one.
+     * @throws moodle_exception
+     */
     public function get_ocis_client(): Ocis {
         $accesstoken = $this->oauth2client->get_accesstoken();
         if ($accesstoken === null) {
@@ -367,6 +466,11 @@ class ocis_manager {
         return $this->ocis;
     }
 
+    /**
+     * Uses the given OcisResource object to create an item for the list in the file-picker.
+     * @param OcisResource $resource
+     * @return array<mixed>
+     */
     public function get_resource_list_item(OcisResource $resource): array {
         global $OUTPUT;
         try {
@@ -397,6 +501,10 @@ class ocis_manager {
         return $listitem;
     }
 
+    /**
+     * Gets the breadcrumb path in the format that is used by the file-picker.
+     * @param string $reponame
+     */
     public function get_breadcrumb_path(
         string $reponame
     ): array {
@@ -436,10 +544,7 @@ class ocis_manager {
     }
 
     /**
-     * @throws ForbiddenException
-     * @throws BadRequestException
-     * @throws NotFoundException
-     * @throws InvalidResponseException
+     * Returns the complete file list for the currently browsed path.
      * @throws moodle_exception
      */
     public function get_file_list(): array {
@@ -507,6 +612,12 @@ class ocis_manager {
         return $list;
     }
 
+    /**
+     * Returns the URL to access the webUI of the oCIS instance.
+     * If the user browses a drive, the web URL of the drive is returned.
+     * Else the base URL of the instance is returned.
+     *
+     */
     public function get_manage_url(): string {
         if (!$this->is_root()) {
             return $this->get_drive()->getWebUrl();
