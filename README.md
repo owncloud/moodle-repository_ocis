@@ -50,10 +50,8 @@ There are three different modes for the Moodle user to link files from oCIS to M
       # get and install this plugin including it's dependencies
       cd moodle/repository/
       git clone https://github.com/owncloud/moodle-repository_ocis.git ocis
-      cd ocis
-      composer install
       # get docker containers for moodle developers
-      cd ../../../
+      cd ../../
       git clone https://github.com/moodlehq/moodle-docker.git
       cd moodle-docker
       # some general settings for moodle
@@ -82,10 +80,23 @@ There are three different modes for the Moodle user to link files from oCIS to M
       bin/moodle-docker-compose exec webserver php admin/cli/install_database.php --agree-license --fullname="Docker moodle" --shortname="docker_moodle" --summary="Docker moodle site" --adminpass="admin" --adminemail="admin@example.com"
       ```
       moodle will now be available under http://localhost:8000
-    - Other installation methods:
-        - [Install and run moodle](https://docs.moodle.org/402/en/Installing_Moodle)
-        - copy / clone the code of the repository into the `repository/ocis` folder of your moodle installation
-        - run `composer install` inside of the `repository/ocis` folder
+    - Other installation methods (require to [install and run moodle](https://docs.moodle.org/402/en/Installing_Moodle) first):
+        - Install the plugin using git:
+          - Clone the code of this repository into the `repository/ocis` folder of your moodle installation:
+            ```bash
+            git clone https://github.com/owncloud/moodle-repository_ocis.git <moodle-path>/repository/ocis
+            ```
+          - Checkout the wanted version:
+            ```bash
+            cd <moodle-path>/repository/ocis
+            git checkout v<the-required-version-of-the-plugin>
+            ```
+        - Install the plugin using a downloaded ZIP file:
+            - Download the ZIP file of the last release [from GitHub](https://github.com/owncloud/moodle-repository_ocis/tags)
+            - In your moodle installation login as administrator 
+            - Navigate to the "Plugin installer" (Site administration -> Plugins -> Install plugins)
+            - Upload the ZIP package of the plugin
+            - Click the `Install plugin from the ZIP file` button
 3. Install & run [oCIS](https://doc.owncloud.com/ocis/next/quickguide/quickguide.html)
    If you have created an own TLS certificate in point 1, run oCIS using this certificate: 
    ```bash
