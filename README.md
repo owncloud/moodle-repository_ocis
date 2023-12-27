@@ -2,8 +2,6 @@
 
 A [Moodle repository](https://docs.moodle.org/402/en/Repositories) that makes files stored in oCIS accessible through the [Moodle file-picker](https://docs.moodle.org/402/en/File_picker).
 
-:exclamation: This plugin is still under heavy development and is not yet ready for production use! :exclamation:
-
 ## Minimum requirement
 - [oCIS PHP SDK](https://github.com/owncloud/ocis-php-sdk/)
 - moodle 4.2
@@ -17,15 +15,15 @@ The existing OAuth2 implementation in Moodle does support OpenID connect, so a c
 
 ### 2. Link files between Moodle & oCIS using the [Moodle file-picker](https://docs.moodle.org/402/en/File_picker)
 
-There are three different modes for the Moodle user to link files from oCIS to Moodle. Only files stored in the personal space will be accessible by Moodle.
+There are three different modes for the Moodle user to link files from oCIS to Moodle:
 
 1. **Internal** (Make a copy of the file)
 
    In this case the file is copied from oCIS and stored within the Moodle file system.
-3. **Reference**: (Link to the file) :construction: *This feature is not implemented yet* :woman_technologist:
+2. **Reference**: (Link to the file) :construction: *This feature is not implemented yet* :woman_technologist:
 
    In this case a public link of the file is created in oCIS and Moodle stores this link
-5. **Controlled Link**: (Create an access controlled link to the file) :construction: *This feature is not implemented yet* :man_technologist:
+3. **Controlled Link**: (Create an access controlled link to the file) :construction: *This feature is not implemented yet* :man_technologist:
 
 
    For this to work a special oCIS account needs to be connected to Moodle that will be used as a System account. If the user selects the "Controlled Link" option, the file will be shared to the System account and Moodle will access it through the System account.
