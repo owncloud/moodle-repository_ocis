@@ -30,6 +30,15 @@ There are three different modes for the Moodle user to link files from oCIS to M
 
    For this to work a special oCIS account needs to be connected to Moodle that will be used as a System account. If the user selects the "Controlled Link" option, the file will be shared to the System account and Moodle will access it through the System account.
 
+## Screenshots
+
+![file-picker-main.png](docs%2Ffile-picker-main.png)
+
+![file-picker-list.png](docs%2Ffile-picker-list.png)
+
+![file-picker-images.png](docs%2Ffile-picker-images.png)
+
+
 ## Installation
 1. TLS certificate
    The TLS certificates of oCIS need to be trusted by the server running moodle. If your oCIS instance has already a trusted certificate you can skip this step. 
