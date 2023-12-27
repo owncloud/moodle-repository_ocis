@@ -53,7 +53,6 @@ function xmldb_repository_ocis_install() {
             $issuerdata->image = $ocislogourl;
         }
 
-
         $issuer = core\oauth2\api::create_issuer($issuerdata);
         $result = $issuer->is_valid();
         if (!$result) {
