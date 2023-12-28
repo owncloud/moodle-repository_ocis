@@ -52,7 +52,7 @@ class ocis_manager {
     private oauth2_issuer $oauth2issuer;
     /**
      * String containing the drive_id and the current path. The drive_id is separated from the path by a colon ":".
-     * @var string
+     * @var string|null
      */
     private ?string $driveidandpath = null;
     /**
