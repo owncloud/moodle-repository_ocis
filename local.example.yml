@@ -1,0 +1,47 @@
+services:
+  webserver:
+    labels:
+      traefik.enable: true
+      traefik.http.routers.webserver.tls: true
+      # Host(`host.docker.internal`)
+      # PathPrefix(`/`)
+      traefik.http.routers.webserver.rule: Host(`host.docker.internal`)
+      traefik.http.routers.webserver.entrypoints: websecure
+      traefik.http.services.webserver.loadbalancer.server.port: 80
+    ports: !reset [] # reset port mapping need docker compose >=2.19
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      MOODLE_DISABLE_CURL_SECURITY: 'true' # optional, but useful for testing on localhost or host.docker.internal
+      MOODLE_OCIS_URL: 'https://host.docker.internal:9200' # optional, used to create OAuth 2 services and repository instance during installation
+      MOODLE_OCIS_CLIENT_ID: 'moodle-ocis-integration'
+      MOODLE_OCIS_CLIENT_SECRET: 'UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh'
+
+  selenium:
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  traefik:
+    image: traefik:v2.9.1
+    command:
+      - '--pilot.dashboard=false'
+      - '--log.level=ERROR'
+      - '--api.dashboard=true'
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.websecure.http.middlewares=https_config@docker'
+      - '--entrypoints.websecure.http.tls.options=default'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.http_catchall.middlewares: https_config
+      traefik.http.middlewares.https_config.headers.sslRedirect: true
+    ports:
+      - 8000:443
+      - 8080:8080 # traefik dashboard
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
