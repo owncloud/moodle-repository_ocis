@@ -63,17 +63,7 @@ There are three different modes for the Moodle user to link files from oCIS to M
       export MOODLE_DOCKER_PHP_VERSION=8.1
       cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/config.php
       # allow container to access docker host via 'host.docker.internal'
-      cat > local.yml <<'EOF'
-      services:
-        webserver:
-          extra_hosts:
-            - host.docker.internal:host-gateway
-          environment:
-            MOODLE_DISABLE_CURL_SECURITY: "true" # optional, but useful for testing on localhost or host.docker.internal
-            MOODLE_OCIS_URL: "https://host.docker.internal:9200" # optional, used to create OAuth 2 services and repository instance during installation
-            MOODLE_OCIS_CLIENT_ID: "xdXOt13JKxym1B1QcEncf2XDkLAexMBFwiT9j6EfhhHFJhs2KM9jbjTmf8JBXE69"  # optional, used to create OAuth 2 services and repository instance during installation
-            MOODLE_OCIS_CLIENT_SECRET: "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh" # optional, used to create OAuth 2 services and repository instance during installation
-      EOF
+      cp $MOODLE_DOCKER_WWWROOT/repository/ocis/local.example.yml local.yml
       # run moodle
       bin/moodle-docker-compose up -d
       # if oCIS will run with a self signed certificate copy that into the moodle container and make it trust it
@@ -82,12 +72,16 @@ There are three different modes for the Moodle user to link files from oCIS to M
       bin/moodle-docker-wait-for-db
       bin/moodle-docker-compose exec webserver php admin/cli/install_database.php --agree-license --fullname="Docker moodle" --shortname="docker_moodle" --summary="Docker moodle site" --adminpass="admin" --adminemail="admin@example.com"
       ```
-      moodle will now be available under http://localhost:8000
+      moodle will now be available under https://host.docker.internal:8000
     - Other installation methods:
         - [Install and run moodle](https://docs.moodle.org/402/en/Installing_Moodle)
         - copy / clone the code of the repository into the `repository/ocis` folder of your moodle installation
         - run `composer install` inside of the `repository/ocis` folder
 3. Install & run [oCIS](https://doc.owncloud.com/ocis/next/quickguide/quickguide.html)
+   Add idp configuration in ocis configuration
+   ```bash
+   cp $MOODLE_DOCKER_WWWROOT/repository/ocis/idp.example.yaml ~/.ocis/config/idp.yaml
+   ```
    If you have created an own TLS certificate in point 1, run oCIS using this certificate: 
    ```bash
    OCIS_INSECURE=true \
