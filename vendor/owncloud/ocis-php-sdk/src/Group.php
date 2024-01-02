@@ -17,15 +17,18 @@ use Owncloud\OcisPhpSdk\Exception\NotFoundException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use OpenAPI\Client\ApiException;
 
+/**
+ * @phpstan-import-type ConnectionConfig from Ocis
+ */
 class Group
 {
-    private string $id;
-    private string $description;
-    private string $displayName;
+    private string|null $id;
+    private string|null $description;
+    private string|null $displayName;
     /**
-     * @var array<int,string>
+     * @var ?array<int,string>
      */
-    private array $groupTypes;
+    private array|null $groupTypes;
     /**
      * @var array<int,User>
      */
@@ -36,12 +39,7 @@ class Group
     private string $accessToken;
 
     /**
-     * @phpstan-param array{
-     *                      'headers'?:array<string, mixed>,
-     *                      'verify'?:bool,
-     *                      'webfinger'?:bool,
-     *                      'guzzle'?:\GuzzleHttp\Client
-     *                      } $connectionConfig
+     * @phpstan-var ConnectionConfig
      * @ignore The developer using the SDK does not need to create Group objects manually,
      *         but should use the Ocis class to query the server for groups
      */
@@ -50,12 +48,7 @@ class Group
     /**
      * @param OpenApiGroup $openApiGroup
      * @param string $serviceUrl
-     * @phpstan-param array{
-     *                      'headers'?:array<string, mixed>,
-     *                      'verify'?:bool,
-     *                      'webfinger'?:bool,
-     *                      'guzzle'?:\GuzzleHttp\Client
-     *                      } $connectionConfig
+     * @phpstan-param ConnectionConfig $connectionConfig
      * @param string $accessToken
      */
     public function __construct(
@@ -64,18 +57,10 @@ class Group
         array $connectionConfig,
         string &$accessToken
     ) {
-        $this->id = empty($openApiGroup->getId()) ?
-        throw new InvalidResponseException(
-            "Invalid id returned for group '" . print_r($openApiGroup->getId(), true) . "'"
-        )
-        : (string)$openApiGroup->getId();
-        $this->displayName = empty($openApiGroup->getDisplayName()) ?
-        throw new InvalidResponseException(
-            "Invalid displayName returned for group '" . print_r($openApiGroup->getDisplayName(), true) . "'"
-        )
-        : (string)$openApiGroup->getDisplayName();
-        $this->description = $openApiGroup->getDescription() ?? "";
-        $this->groupTypes = $openApiGroup->getGroupTypes() ?? [];
+        $this->id = $openApiGroup->getId();
+        $this->displayName = $openApiGroup->getDisplayName();
+        $this->description = $openApiGroup->getDescription();
+        $this->groupTypes = $openApiGroup->getGroupTypes();
         $openApiUser = $openApiGroup->getMembers() ?? [];
         $this->members = [];
         foreach ($openApiUser as $user) {
@@ -97,7 +82,10 @@ class Group
      */
     public function getId(): string
     {
-        return $this->id;
+        return (($this->id === null) || ($this->id === '')) ?
+        throw new InvalidResponseException(
+            "Invalid id returned for group '" . print_r($this->id, true) . "'"
+        ) : (string)$this->id;
     }
 
     /**
@@ -105,7 +93,7 @@ class Group
      */
     public function getDescription(): string
     {
-        return $this->description;
+        return (string)$this->description;
     }
 
     /**
@@ -113,7 +101,10 @@ class Group
      */
     public function getDisplayName(): string
     {
-        return $this->displayName;
+        return (($this->displayName === null) || ($this->displayName === '')) ?
+        throw new InvalidResponseException(
+            "Invalid displayName returned for group '" . print_r($this->displayName, true) . "'"
+        ) : $this->displayName;
     }
 
     /**
@@ -121,7 +112,7 @@ class Group
      */
     public function getGroupTypes(): array
     {
-        return $this->groupTypes;
+        return $this->groupTypes ?? [];
     }
 
     /**
@@ -130,6 +121,15 @@ class Group
     public function getMembers(): array
     {
         return $this->members;
+    }
+
+    /**
+     * Set the value of members
+     * @param User $member
+     */
+    public function setMembers(User $member): void
+    {
+        $this->members[] = $member;
     }
 
     /**
@@ -158,7 +158,7 @@ class Group
         } catch (ApiException $e) {
             throw ExceptionHelper::getHttpErrorException($e);
         }
-        $this->members[] = $user;
+        $this->setMembers($user);
     }
 
     /**

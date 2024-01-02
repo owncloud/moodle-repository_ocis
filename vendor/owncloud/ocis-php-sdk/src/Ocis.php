@@ -34,6 +34,17 @@ use OpenAPI\Client\Model\Group as OpenAPIGroup;
 
 /**
  * Basic class to establish the connection to an ownCloud Infinite Scale instance
+ *
+ * @phpstan-type ConnectionConfig array{
+ *                     'headers'?:array<string, mixed>,
+ *                     'proxy'?:array{'http'?:string, 'https'?:string, 'no'?:array<string>}|string,
+ *                     'verify'?:bool,
+ *                     'webfinger'?:bool,
+ *                     'guzzle'?:Client,
+ *                     'drivesApi'?:DrivesApi,
+ *                     'drivesGetDrivesApi'?:DrivesGetDrivesApi,
+ *                     'drivesPermissionsApi'?:DrivesPermissionsApi
+ *  }
  */
 class Ocis
 {
@@ -47,30 +58,12 @@ class Ocis
     private string $notificationsEndpoint = '/ocs/v2.php/apps/notifications/api/v1/notifications?format=json';
 
     /**
-     * @phpstan-var array{
-     *                    'headers'?:array<string, mixed>,
-     *                    'proxy'?:array{'http'?:string, 'https'?:string, 'no'?:array<string>}|string,
-     *                    'verify'?:bool,
-     *                    'webfinger'?:bool,
-     *                    'guzzle'?:Client,
-     *                    'drivesApi'?:DrivesApi,
-     *                    'drivesGetDrivesApi'?:DrivesGetDrivesApi,
-     *                    'drivesPermissionsApi'?:DrivesPermissionsApi
-     * }
+     * @phpstan-var ConnectionConfig
      */
     private array $connectionConfig;
 
     /**
-     * @phpstan-param array{
-     *                      'headers'?:array<string, mixed>,
-     *                      'proxy'?:array{'http'?:string, 'https'?:string, 'no'?:array<string>}|string,
-     *                      'verify'?:bool,
-     *                      'webfinger'?:bool,
-     *                      'guzzle'?:Client,
-     *                      'drivesApi'?:DrivesApi,
-     *                      'drivesGetDrivesApi'?:DrivesGetDrivesApi,
-     *                      'drivesPermissionsApi'?:DrivesPermissionsApi
-     *                      } $connectionConfig
+     * @phpstan-param ConnectionConfig $connectionConfig
      *        valid config keys are: headers, proxy, verify, webfinger, guzzle
      *        headers has to be an array in the form like
      *        [
@@ -173,10 +166,10 @@ class Ocis
             'headers' => 'is_array',
             'verify' => 'is_bool',
             'webfinger' => 'is_bool',
-            'guzzle' => 'self::isGuzzleClient',
-            'drivesPermissionsApi' => 'self::isDrivesPermissionsApi',
-            'drivesApi' => 'self::isDrivesApi',
-            'drivesGetDrivesApi' => 'self::isDrivesGetDrivesApi',
+            'guzzle' => self::class . '::isGuzzleClient',
+            'drivesPermissionsApi' => self::class . '::isDrivesPermissionsApi',
+            'drivesApi' => self::class . '::isDrivesApi',
+            'drivesGetDrivesApi' => self::class . '::isDrivesGetDrivesApi',
             'proxy' => 'is_array',
         ];
         foreach ($connectionConfig as $key => $check) {
@@ -184,8 +177,6 @@ class Ocis
                 return false;
             }
 
-            // phpstan does not understand that the `$validConnectionConfigKeys` array has values that are callable
-            // @phpstan-ignore-next-line
             if (!\call_user_func($validConnectionConfigKeys[$key], $check)) {
                 return false;
             }
@@ -201,13 +192,7 @@ class Ocis
      * @throws \InvalidArgumentException
      * @ignore This function is used for internal purposes only and should not be shown in the documentation.
      *         The function is public to make it testable.
-     * @phpstan-param array{
-     *                       'headers'?:array<string, mixed>,
-     *                       'proxy'?:array{'http'?:string, 'https'?:string, 'no'?:array<string>}|string,
-     *                       'verify'?:bool,
-     *                       'webfinger'?:bool,
-     *                       'guzzle'?:Client
-     *                       } $connectionConfig
+     * @phpstan-param ConnectionConfig $connectionConfig
      */
     public static function createGuzzleConfig(array $connectionConfig, string $accessToken): array
     {
@@ -257,6 +242,9 @@ class Ocis
         }
         $tokenPayload = json_decode($plainPayload, true);
         if (!is_array($tokenPayload) || !array_key_exists('iss', $tokenPayload)) {
+            throw new \InvalidArgumentException(self::DECODE_TOKEN_ERROR_MESSAGE);
+        }
+        if (!is_string($tokenPayload['iss'])) {
             throw new \InvalidArgumentException(self::DECODE_TOKEN_ERROR_MESSAGE);
         }
         $iss = parse_url($tokenPayload['iss']);
@@ -824,6 +812,8 @@ class Ocis
             ) {
                 if (!isset($ocsData[$key])) {
                     $notificationContent->$key = "";
+                } else {
+                    $notificationContent->$key = $ocsData[$key];
                 }
             }
             $notificationContent->{'messageRichParameters'} =
