@@ -19,18 +19,14 @@ use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 
 /**
  * Parent class representing different types of share objects
+ *
+ * @phpstan-import-type ConnectionConfig from Ocis
  */
 class Share
 {
     protected string $accessToken;
     /**
-     * @phpstan-var array{
-     *                      'headers'?:array<string, mixed>,
-     *                      'verify'?:bool,
-     *                      'webfinger'?:bool,
-     *                      'guzzle'?:\GuzzleHttp\Client,
-     *                      'drivesPermissionsApi'?:\OpenAPI\Client\Api\DrivesPermissionsApi,
-     *                    }
+     * @phpstan-var ConnectionConfig
      */
     protected array $connectionConfig;
     protected string $serviceUrl;
@@ -42,13 +38,7 @@ class Share
 
     /**
      * @throws InvalidResponseException
-     * @phpstan-param array{
-     *                       'headers'?:array<string, mixed>,
-     *                       'verify'?:bool,
-     *                       'webfinger'?:bool,
-     *                       'guzzle'?:\GuzzleHttp\Client,
-     *                       'drivesPermissionsApi'?:\OpenAPI\Client\Api\DrivesPermissionsApi,
-     *                     } $connectionConfig
+     * @phpstan-param ConnectionConfig $connectionConfig
      * @ignore The developer using the SDK does not need to create share objects manually,
      *         but should use the OcisResource class to invite people to a resource and
      *         that will create ShareCreated objects
@@ -63,11 +53,6 @@ class Share
     ) {
         $this->apiPermission = $apiPermission;
         $this->driveId = $driveId;
-        if (!is_string($apiPermission->getId())) {
-            throw new InvalidResponseException(
-                "Invalid id returned for permission '" . print_r($apiPermission->getId(), true) . "'"
-            );
-        }
 
         $this->resourceId = $resourceId;
         $this->accessToken = &$accessToken;
@@ -98,9 +83,13 @@ class Share
 
     public function getPermissionId(): string
     {
-        // in the constructor the value is checked for being the right type, but phan does not know
-        // so simply cast to string
-        return (string)$this->apiPermission->getId();
+        $id = $this->apiPermission->getId();
+        if ($id === null || $id === '') {
+            throw new InvalidResponseException(
+                "Invalid id returned for permission '" . print_r($id, true) . "'"
+            );
+        }
+        return (string)$id;
     }
 
     public function getExpiration(): ?\DateTimeImmutable

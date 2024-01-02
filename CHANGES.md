@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+## Summary
 
-### Fixed
+## Details
 
-### Changed
+# Changelog for [1.0.0-beta.2] (2024-01-02)
 
-### Removed
+## Summary
+
+* Bugfix - fixed version number in version.php [#59](https://github.com/owncloud/moodle-repository_ocis/pull/59)
+* Change - delete extra line to be consistent with moodle codestyle [#65](https://github.com/owncloud/moodle-repository_ocis/pull/65)
+* Change - improve PHPDocs to be consistent with moodle PHPdoc checker [#67](https://github.com/owncloud/moodle-repository_ocis/pull/67)
+
+## Details

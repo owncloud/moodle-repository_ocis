@@ -66,17 +66,17 @@
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "v1.0.0-beta.1",
-            "version_normalized": "1.0.0.0-beta1",
+            "version": "v1.0.0-beta.2",
+            "version_normalized": "1.0.0.0-beta2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "034f158b6053be94f9acc1960fd642a4b60686a3"
+                "reference": "57c9dda9d94c621b4f5757e02cf3100942ce7868"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/034f158b6053be94f9acc1960fd642a4b60686a3",
-                "reference": "034f158b6053be94f9acc1960fd642a4b60686a3",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/57c9dda9d94c621b4f5757e02cf3100942ce7868",
+                "reference": "57c9dda9d94c621b4f5757e02cf3100942ce7868",
                 "shasum": ""
             },
             "require": {
@@ -90,9 +90,9 @@
                 "friendsofphp/php-cs-fixer": "^3.26",
                 "phan/phan": "^5.4",
                 "phpstan/phpstan": "^1.10",
-                "phpunit/phpunit": "^9.6"
+                "phpunit/phpunit": "^10.5"
             },
-            "time": "2023-12-22T08:57:54+00:00",
+            "time": "2024-01-02T02:23:22+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -104,7 +104,7 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/v1.0.0-beta.1",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/v1.0.0-beta.2",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
             "install-path": "../owncloud/ocis-php-sdk"
