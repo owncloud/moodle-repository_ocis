@@ -29,7 +29,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2024010200;
+$plugin->version = 2024010306;
 $plugin->requires = 2023041800;
 $plugin->component = 'repository_ocis';
 $plugin->maturity = MATURITY_BETA;
