@@ -54,6 +54,33 @@ There are three different modes for the Moodle user to link files from oCIS to M
       ```bash
       # get moodle from git
       git clone https://github.com/moodle/moodle.git --branch MOODLE_402_STABLE --single-branch --depth=1
+      ```
+      ```php
+        // Now we can begin switching $CFG->X for $CFG->behat_X.
+        $CFG->wwwroot = $CFG->behat_wwwroot;
+        $CFG->prefix = $CFG->behat_prefix;
+        $CFG->dataroot = $CFG->behat_dataroot;
+      # add some code below above code in moodle/lib/setup.php
+        // Now we can begin switching $CFG->X for $CFG->behat_X.
+        $CFG->wwwroot = $CFG->behat_wwwroot;
+        $CFG->prefix = $CFG->behat_prefix;
+        $CFG->dataroot = $CFG->behat_dataroot;
+        $CFG->sslproxy = $CFG->behat_sslproxy;
+      ```
+      ```php
+        // Get web versions used by behat site.
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+      # add some code below above code in moodle/lib/behat/classes/util.php
+              // Get web versions used by behat site.
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+      ```
+      
+      ```bash
       # get and install this plugin including it's dependencies
       cd moodle/repository/
       git clone https://github.com/owncloud/moodle-repository_ocis.git ocis
@@ -61,11 +88,65 @@ There are three different modes for the Moodle user to link files from oCIS to M
       cd ../../
       git clone https://github.com/moodlehq/moodle-docker.git
       cd moodle-docker
+      mkdir "traefix/configs traefix/certificates"
+      cd traefix
+      cat > tls.yml <<'EOF'
+      tls:
+        stores:
+           default:
+             defaultCertificate:
+                certFile: /certificates/server.crt
+                keyFile: /certificates/server.key
+      EOF
       # some general settings for moodle
       export MOODLE_DOCKER_WWWROOT=<path-of-your-moodle-source-code>
       export MOODLE_DOCKER_DB=pgsql
       export MOODLE_DOCKER_PHP_VERSION=8.1
+      export MOODLE_DOCKER_WEB_HOST=host.docker.internal
+      export MOODLE_DOCKER_WEB_PORT=8000
+      export MOODLE_DOCKER_SELENIUM_VNC_PORT=5900
+      export MOODLE_DOCKER_BROWSER=chrome:latest
       cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/config.php
+      ```
+      ```bash
+      $CFG->wwwroot   = "http://{$host}";
+      # replace above code in config.php with below code
+      $CFG->sslproxy = true;
+      $CFG->behat_wwwroot   = 'https://moodle.webserver:8000';
+      ```
+      ```bash
+      $CFG->behat_wwwroot   = 'http://webserver';
+      # replace above code in config.php with below code
+      $CFG->behat_sslproxy = true;
+      $CFG->behat_wwwroot   = 'https://moodle.webserver:8000';
+      ```
+      ```php
+      $CFG->behat_profiles = array(
+          'default' => array(
+             'browser' => getenv('MOODLE_DOCKER_BROWSER'),
+             'wd_host' => 'http://selenium:4444/wd/hub',
+          ),
+      );
+      # replace above code in config.php with below code
+      $CFG->behat_profiles = array(
+           'default' => array(
+              'browser' => getenv('MOODLE_DOCKER_BROWSER'),
+              'wd_host' => 'http://selenium:4444/wd/hub',
+                'capabilities' =>
+                       [
+                           'acceptSslCerts'=> true,
+                            'extra_capabilities' =>
+                            [ 'chromeOptions' =>
+                            [ 'args' =>
+                                  [ '--ignore-certificate-errors']
+                            ]
+                          ]
+                ]
+                ),
+             );
+      ```
+
+      ```bash
       # allow container to access docker host via 'host.docker.internal'
       cat > local.yml <<'EOF'
       services:
@@ -82,6 +163,7 @@ There are three different modes for the Moodle user to link files from oCIS to M
       bin/moodle-docker-compose up -d
       # if oCIS will run with a self signed certificate copy that into the moodle container and make it trust it
       bin/moodle-docker-compose cp </path/of/ocis.crt> webserver:/usr/local/share/ca-certificates/
+      bin/moodle-docker-compose cp <path-to-moodle-docker>/traefik/certificates/server.crt webserver:/usr/local/share/ca-certificates/
       bin/moodle-docker-compose exec webserver update-ca-certificates
       bin/moodle-docker-wait-for-db
       bin/moodle-docker-compose exec webserver php admin/cli/install_database.php --agree-license --fullname="Docker moodle" --shortname="docker_moodle" --summary="Docker moodle site" --adminpass="admin" --adminemail="admin@example.com"
