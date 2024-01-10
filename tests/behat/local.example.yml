@@ -1,0 +1,59 @@
+services:
+  webserver:
+    labels:
+      traefik.enable: true
+      traefik.http.routers.webserver.tls: true
+      traefik.http.routers.webserver.rule: Host(`host.docker.internal`) ||  Host(`moodle.webserver`)
+      traefik.http.routers.webserver.entrypoints: websecure
+      traefik.http.services.webserver.loadbalancer.server.port: 80
+    ports: !reset [] # reset port mapping
+    extra_hosts:
+      - host.docker.internal:host-gateway
+      - moodle.webserver:host-gateway
+    environment:
+      MOODLE_DISABLE_CURL_SECURITY: "true" # optional, but useful for testing on localhost or host.docker.internal
+      MOODLE_OCIS_URL: "https://host.docker.internal:9200" # optional, used to create OAuth 2 services and repository instance during installation
+      MOODLE_OCIS_CLIENT_ID: "moodle-ocis-integration"
+      MOODLE_OCIS_CLIENT_SECRET: "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh"
+
+  selenium:
+    user: 0:0
+    extra_hosts:
+      - moodle.webserver:host-gateway
+      - host.docker.internal:host-gateway
+
+  traefik:
+    image: traefik:2.10.5
+    restart: unless-stopped
+    entrypoint:
+      [
+        "/bin/sh",
+        "-c",
+        "[ -f /certificates/server.key ] && ./entrypoint.sh $$@ || (apk add openssl && openssl req -subj '/CN=moodle.webserver' -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout /certificates/server.key -out /certificates/server.crt && chmod -R 777 /certificates && ./entrypoint.sh $$@)",
+      ]
+    command:
+      - "--pilot.dashboard=false"
+      - "--log.level=ERROR"
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.file.directory=/configs"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.middlewares=https_config@docker"
+      - "--entrypoints.websecure.http.tls.options=default"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.http_catchall.middlewares: https_config
+      traefik.http.middlewares.https_config.headers.sslRedirect: true
+    ports:
+      - 8000:443
+      - 8080:8080 # traefik dashboard
+    extra_hosts:
+      - host.docker.internal:host-gateway
+      - moodle.webserver:host-gateway
+    volumes:
+      - "./traefik/certificates:/certificates"
+      - "./traefik/configs:/configs"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
