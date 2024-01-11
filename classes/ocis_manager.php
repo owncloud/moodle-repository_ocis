@@ -626,7 +626,7 @@ class ocis_manager {
         if (!$this->is_root()) {
             return $this->get_drive()->getWebUrl();
         } else {
-            return $this->oauth2issuer->get('baseurl');
+            return $this->get_ocis_client()->getServiceUrl();
         }
     }
 }
