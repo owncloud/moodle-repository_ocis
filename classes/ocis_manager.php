@@ -295,15 +295,12 @@ class ocis_manager {
             return null;
         }
         if ($drive->getType() === DriveType::PERSONAL) {
-            $drivetitle = get_string('personal_drive', 'repository_ocis');
             $thumbnail = $this->personaldriveiconurl;
             $icon = $this->personaldriveiconurl;
         } else if ($drive->getType() === DriveType::VIRTUAL) {
-            $drivetitle = get_string('shares_drive', 'repository_ocis');
             $thumbnail = $this->sharesiconurl;
             $icon = $this->sharesiconurl;
         } else {
-            $drivetitle = $drive->getName();
             $thumbnail = $this->projectdriveiconurl;
             $icon = $this->projectdriveiconurl;
         }
@@ -324,7 +321,7 @@ class ocis_manager {
             $icon = $OUTPUT->image_url(file_folder_icon(24))->out(false);
         }
         return [
-            'title' => $drivetitle,
+            'title' => $this->get_drive_name($drive),
             'datemodified' => $datemodified,
             'source' => $drive->getId(),
             'children' => [],
@@ -337,12 +334,18 @@ class ocis_manager {
 
     /**
      * Gets the name of the drive, or in the case of the personal/shares drive the translated string.
+     * @param ?Drive $drive if null use get_drive() to find the current drive
      */
-    private function get_drive_name(): string {
-        if ($this->get_drive()->getType() === DriveType::PERSONAL) {
+    private function get_drive_name(?Drive $drive = null): string {
+        if ($drive === null) {
+            $drive = $this->get_drive();
+        }
+        if ($drive->getType() === DriveType::PERSONAL) {
             return get_string('personal_drive', 'repository_ocis');
+        } else if ($drive->getType() === DriveType::VIRTUAL) {
+            return get_string('shares_drive', 'repository_ocis');
         } else {
-            return $this->get_drive()->getName();
+            return $drive->getName();
         }
     }
 
