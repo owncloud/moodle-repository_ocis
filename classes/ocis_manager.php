@@ -295,15 +295,25 @@ class ocis_manager {
             return null;
         }
         if ($drive->getType() === DriveType::PERSONAL) {
-            $thumbnail = $this->personaldriveiconurl;
-            $icon = $this->personaldriveiconurl;
+            if ($this->personaldriveiconurl === null || trim($this->personaldriveiconurl) === '') {
+                $thumbnail = $OUTPUT->image_url('resource-type-folder-fill', 'repository_ocis')->out(false);
+            } else {
+                $thumbnail = $this->personaldriveiconurl;
+            }
         } else if ($drive->getType() === DriveType::VIRTUAL) {
-            $thumbnail = $this->sharesiconurl;
-            $icon = $this->sharesiconurl;
+            if ($this->sharesiconurl === null || trim($this->sharesiconurl) === '') {
+                $thumbnail = $OUTPUT->image_url('share-forward-fill', 'repository_ocis')->out(false);
+            } else {
+                $thumbnail = $this->sharesiconurl;
+            }
         } else {
-            $thumbnail = $this->projectdriveiconurl;
-            $icon = $this->projectdriveiconurl;
+            if ($this->projectdriveiconurl === null || trim($this->projectdriveiconurl) === '') {
+                $thumbnail = $OUTPUT->image_url('layout-grid-fill', 'repository_ocis')->out(false);
+            } else {
+                $thumbnail = $this->projectdriveiconurl;
+            }
         }
+        $icon = $thumbnail;
         try {
             $size = (int)$drive->getQuota()->getUsed();
         } catch (InvalidResponseException $e) {
@@ -316,10 +326,6 @@ class ocis_manager {
             $datemodified = "";
         }
 
-        if ($thumbnail === null || trim($thumbnail) === '') {
-            $thumbnail = $OUTPUT->image_url(file_folder_icon(90))->out(false);
-            $icon = $OUTPUT->image_url(file_folder_icon(24))->out(false);
-        }
         return [
             'title' => $this->get_drive_name($drive),
             'datemodified' => $datemodified,
