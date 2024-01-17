@@ -5,8 +5,10 @@ namespace Owncloud\OcisPhpSdk;
 use OpenAPI\Client\Model\DriveItem;
 use OpenAPI\Client\Model\Identity;
 use OpenAPI\Client\Model\ItemReference;
+use OpenAPI\Client\Model\Permission;
 use OpenAPI\Client\Model\RemoteItem;
 use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
+use Owncloud\OcisPhpSdk\Exception\TooEarlyException;
 
 /**
  * Ensures that the return type is correct, but Phan does not recognize it.
@@ -29,14 +31,12 @@ class ShareReceived
     /**
      *
      * @return string
-     * @throws InvalidResponseException
+     * @throws TooEarlyException
      */
     public function getId(): string
     {
-        return empty($this->shareReceived->getId())
-            ? throw new InvalidResponseException(
-                "Invalid Id '" . print_r($this->shareReceived->getId(), true) . "'"
-            )
+        return ($this->shareReceived->getId() === null)
+            ? throw new TooEarlyException()
             : $this->shareReceived->getId();
     }
 
@@ -55,14 +55,12 @@ class ShareReceived
 
     /**
      * @return string
-     * @throws InvalidResponseException
+     * @throws TooEarlyException
      */
     public function getEtag(): string
     {
-        return empty($this->shareReceived->getETag())
-            ? throw new InvalidResponseException(
-                "Invalid etag '" . print_r($this->shareReceived->getETag(), true) . "'"
-            )
+        return ($this->shareReceived->getETag() === null)
+            ? throw new TooEarlyException()
             : $this->shareReceived->getETag();
     }
 
@@ -72,10 +70,7 @@ class ShareReceived
     private function getParentReference(): ItemReference
     {
         return empty($this->shareReceived->getParentReference()) ?
-            throw new InvalidResponseException(
-                "Invalid parentReference returned for received share  '" .
-                print_r($this->shareReceived->getParentReference(), true) . "'"
-            )
+            throw new TooEarlyException()
             : $this->shareReceived->getParentReference();
 
     }
@@ -227,5 +222,45 @@ class ShareReceived
         return empty($ownerUser->getId()) ? throw new InvalidResponseException(
             "Invalid share owner id '" . print_r($ownerUser->getId(), true) . "'"
         ) : $ownerUser->getId();
+    }
+
+    /**
+     * gets the first permissio of the remote item
+     * in theory there might be more that one permission, but currently there is no such case in ocis
+     * @return Permission
+     * @throws InvalidResponseException
+     */
+    private function getRemoteItemPermission()
+    {
+        $remoteItem = $this->getRemoteItem();
+        $permissions = $remoteItem->getPermissions();
+        if ($permissions === null || sizeof($permissions) !== 1) {
+            throw new InvalidResponseException('Invalid permissions in remoteItem');
+        }
+        return $permissions[0];
+    }
+
+    /**
+     * @throws InvalidResponseException
+     */
+    public function isUiHidden(): bool
+    {
+        $uiHidden = $this->getRemoteItemPermission()->getAtUiHidden();
+        if ($uiHidden === null) {
+            throw new InvalidResponseException('Invalid "@ui.hidden" parameter in permission');
+        }
+        return $uiHidden;
+    }
+
+    /**
+     * @throws InvalidResponseException
+     */
+    public function isClientSyncronize(): bool
+    {
+        $clientSyncronize = $this->getRemoteItemPermission()->getAtClientSynchronize();
+        if ($clientSyncronize === null) {
+            throw new InvalidResponseException('Invalid "@client.synchronize" parameter in permission');
+        }
+        return $clientSyncronize;
     }
 }

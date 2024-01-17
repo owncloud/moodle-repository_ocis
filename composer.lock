@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e32c891ef2691d54736523e198263690",
+    "content-hash": "ee288e7c3ed8b8316fb8430b2b1661fe",
     "packages": [
         {
             "name": "owncloud/libre-graph-api-php",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/libre-graph-api-php.git",
-                "reference": "a005f15520f94cc44da78b6bc2660f2d87a6c7d4"
+                "reference": "cb414b614a1dc9dee1a320ea3862f56b11c3d70c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/a005f15520f94cc44da78b6bc2660f2d87a6c7d4",
-                "reference": "a005f15520f94cc44da78b6bc2660f2d87a6c7d4",
+                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/cb414b614a1dc9dee1a320ea3862f56b11c3d70c",
+                "reference": "cb414b614a1dc9dee1a320ea3862f56b11c3d70c",
                 "shasum": ""
             },
             "require": {
@@ -65,26 +65,26 @@
                 "issues": "https://github.com/owncloud/libre-graph-api-php/issues",
                 "source": "https://github.com/owncloud/libre-graph-api-php/tree/main"
             },
-            "time": "2023-12-19T14:31:30+00:00"
+            "time": "2024-01-15T11:05:29+00:00"
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "v1.0.0-beta.2",
+            "version": "dev-shareWithMeOcis8016Adjustements",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "57c9dda9d94c621b4f5757e02cf3100942ce7868"
+                "reference": "039183948717d4830de6660888c0e4f42b5d4dea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/57c9dda9d94c621b4f5757e02cf3100942ce7868",
-                "reference": "57c9dda9d94c621b4f5757e02cf3100942ce7868",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/039183948717d4830de6660888c0e4f42b5d4dea",
+                "reference": "039183948717d4830de6660888c0e4f42b5d4dea",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
-                "owncloud/libre-graph-api-php": "dev-main#eaa85a34b43ecad81908c189556c437ac18f7d19",
+                "owncloud/libre-graph-api-php": "dev-main#cb414b614a1dc9dee1a320ea3862f56b11c3d70c",
                 "php": "^8.1",
                 "sabre/dav": "^4.6"
             },
@@ -104,10 +104,10 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/v1.0.0-beta.2",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/shareWithMeOcis8016Adjustements",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
-            "time": "2024-01-02T02:23:22+00:00"
+            "time": "2024-01-17T13:42:15+00:00"
         },
         {
             "name": "psr/log",
@@ -995,16 +995,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.8.0",
+            "version": "3.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPCSStandards/PHP_CodeSniffer.git",
-                "reference": "5805f7a4e4958dbb5e944ef1e6edae0a303765e7"
+                "reference": "14f5fff1e64118595db5408e946f3a22c75807f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/5805f7a4e4958dbb5e944ef1e6edae0a303765e7",
-                "reference": "5805f7a4e4958dbb5e944ef1e6edae0a303765e7",
+                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/14f5fff1e64118595db5408e946f3a22c75807f7",
+                "reference": "14f5fff1e64118595db5408e946f3a22c75807f7",
                 "shasum": ""
             },
             "require": {
@@ -1014,11 +1014,11 @@
                 "php": ">=5.4.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.0 || ^5.0 || ^6.0 || ^7.0 || ^8.0 || ^9.0"
+                "phpunit/phpunit": "^4.0 || ^5.0 || ^6.0 || ^7.0 || ^8.0 || ^9.3.4"
             },
             "bin": [
-                "bin/phpcs",
-                "bin/phpcbf"
+                "bin/phpcbf",
+                "bin/phpcs"
             ],
             "type": "library",
             "extra": {
@@ -1071,12 +1071,14 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2023-12-08T12:32:31+00:00"
+            "time": "2024-01-11T20:47:48+00:00"
         }
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "owncloud/ocis-php-sdk": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": [],

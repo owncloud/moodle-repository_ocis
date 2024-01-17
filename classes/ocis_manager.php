@@ -38,6 +38,7 @@ use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use Owncloud\OcisPhpSdk\Ocis;
 use Owncloud\OcisPhpSdk\OcisResource;
 use Owncloud\OcisPhpSdk\OrderDirection;
+use Owncloud\OcisPhpSdk\ShareReceived;
 
 /**
  * Helper class to deal with oCIS
@@ -573,7 +574,11 @@ class ocis_manager {
             }
         } else {
             try {
+                $receivedshares = null;
                 $resources = $this->get_drive()->getResources($this->path);
+                if ($this->get_drive()->getType() === DriveType::VIRTUAL) {
+                    $receivedshares = $this->get_ocis_client()->getSharedWithMe();
+                }
             } catch (HttpException $e) {
                 throw new moodle_exception(
                     'could_not_connect_error',
@@ -610,6 +615,17 @@ class ocis_manager {
 
             /** @var OcisResource $resource */
             foreach ($resources as $resource) {
+                if ($receivedshares !== null) {
+                    foreach ($receivedshares as $share) {
+                        if (
+                            $share->isClientSyncronize() === true &&
+                            $share->getId() === $resource->getId() &&
+                            $share->isUiHidden() === true
+                        ) {
+                            continue(2);
+                        }
+                    }
+                }
                 $listitem = $this->get_resource_list_item($resource);
                 if ($resource->getType() === 'folder') {
                     // This is to help with sorting, `0` is to make sure folders are on top

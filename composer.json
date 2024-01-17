@@ -8,7 +8,7 @@
     }
   ],
   "require": {
-    "owncloud/ocis-php-sdk": "^1.0.0"
+    "owncloud/ocis-php-sdk": "dev-shareWithMeOcis8016Adjustements"
   },
   "replace": {
     "guzzlehttp/guzzle": "*",

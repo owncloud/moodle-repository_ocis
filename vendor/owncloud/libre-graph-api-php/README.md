@@ -75,6 +75,7 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *ApplicationsApi* | [**getApplication**](docs/Api/ApplicationsApi.md#getapplication) | **GET** /v1.0/applications/{application-id} | Get application by id
 *ApplicationsApi* | [**listApplications**](docs/Api/ApplicationsApi.md#listapplications) | **GET** /v1.0/applications | Get all applications
+*DriveItemApi* | [**deleteDriveItem**](docs/Api/DriveItemApi.md#deletedriveitem) | **DELETE** /v1beta1/drives/{drive-id}/items/{item-id} | Delete a DriveItem.
 *DrivesApi* | [**createDrive**](docs/Api/DrivesApi.md#createdrive) | **POST** /v1.0/drives | Create a new drive of a specific type
 *DrivesApi* | [**deleteDrive**](docs/Api/DrivesApi.md#deletedrive) | **DELETE** /v1.0/drives/{drive-id} | Delete a specific space
 *DrivesApi* | [**getDrive**](docs/Api/DrivesApi.md#getdrive) | **GET** /v1.0/drives/{drive-id} | Get drive by id
@@ -88,6 +89,7 @@ Class | Method | HTTP request | Description
 *DrivesPermissionsApi* | [**listPermissions**](docs/Api/DrivesPermissionsApi.md#listpermissions) | **GET** /v1beta1/drives/{drive-id}/items/{item-id}/permissions | List the effective sharing permissions on a driveItem.
 *DrivesPermissionsApi* | [**setPermissionPassword**](docs/Api/DrivesPermissionsApi.md#setpermissionpassword) | **POST** /v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id}/setPassword | Set sharing link password
 *DrivesPermissionsApi* | [**updatePermission**](docs/Api/DrivesPermissionsApi.md#updatepermission) | **PATCH** /v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id} | Update sharing permission
+*DrivesRootApi* | [**createDriveItem**](docs/Api/DrivesRootApi.md#createdriveitem) | **POST** /v1beta1/drives/{drive-id}/root/children | Create a drive item
 *DrivesRootApi* | [**getRoot**](docs/Api/DrivesRootApi.md#getroot) | **GET** /v1.0/drives/{drive-id}/root | Get root from arbitrary space
 *EducationClassApi* | [**addUserToClass**](docs/Api/EducationClassApi.md#addusertoclass) | **POST** /v1.0/education/classes/{class-id}/members/$ref | Assign a user to a class
 *EducationClassApi* | [**createClass**](docs/Api/EducationClassApi.md#createclass) | **POST** /v1.0/education/classes | Add new education class
@@ -175,18 +177,15 @@ Class | Method | HTTP request | Description
 - [CollectionOfUser](docs/Model/CollectionOfUser.md)
 - [CollectionOfUsers](docs/Model/CollectionOfUsers.md)
 - [Deleted](docs/Model/Deleted.md)
-- [DirectoryObject](docs/Model/DirectoryObject.md)
 - [Drive](docs/Model/Drive.md)
 - [DriveItem](docs/Model/DriveItem.md)
 - [DriveItemCreateLink](docs/Model/DriveItemCreateLink.md)
 - [DriveItemInvite](docs/Model/DriveItemInvite.md)
 - [DriveRecipient](docs/Model/DriveRecipient.md)
 - [EducationClass](docs/Model/EducationClass.md)
-- [EducationOrganization](docs/Model/EducationOrganization.md)
 - [EducationSchool](docs/Model/EducationSchool.md)
 - [EducationUser](docs/Model/EducationUser.md)
 - [EducationUserReference](docs/Model/EducationUserReference.md)
-- [Entity](docs/Model/Entity.md)
 - [ExportPersonalDataRequest](docs/Model/ExportPersonalDataRequest.md)
 - [FileSystemInfo](docs/Model/FileSystemInfo.md)
 - [Folder](docs/Model/Folder.md)
