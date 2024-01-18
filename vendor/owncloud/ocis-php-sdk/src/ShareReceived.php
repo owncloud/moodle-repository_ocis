@@ -8,7 +8,6 @@ use OpenAPI\Client\Model\ItemReference;
 use OpenAPI\Client\Model\Permission;
 use OpenAPI\Client\Model\RemoteItem;
 use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
-use Owncloud\OcisPhpSdk\Exception\TooEarlyException;
 
 /**
  * Ensures that the return type is correct, but Phan does not recognize it.
@@ -29,15 +28,19 @@ class ShareReceived
     }
 
     /**
-     *
-     * @return string
-     * @throws TooEarlyException
+     * @throws InvalidResponseException
      */
-    public function getId(): string
+    public function getId(): ?string
     {
-        return ($this->shareReceived->getId() === null)
-            ? throw new TooEarlyException()
-            : $this->shareReceived->getId();
+        if (empty($this->shareReceived->getId()) && $this->isClientSyncronize() === false) {
+            return  null;
+        }
+        if (empty($this->shareReceived->getId()) && $this->isClientSyncronize() === true) {
+            throw new InvalidResponseException(
+                "Invalid Id '" . print_r($this->shareReceived->getId(), true) . "'"
+            );
+        }
+        return $this->shareReceived->getId();
     }
 
     /**
@@ -54,52 +57,77 @@ class ShareReceived
     }
 
     /**
-     * @return string
-     * @throws TooEarlyException
+     * @throws InvalidResponseException
      */
-    public function getEtag(): string
+    public function getEtag(): ?string
     {
-        return ($this->shareReceived->getETag() === null)
-            ? throw new TooEarlyException()
-            : $this->shareReceived->getETag();
+        if (empty($this->shareReceived->getETag()) && $this->isClientSyncronize() === false) {
+            return  null;
+        }
+        if (empty($this->shareReceived->getETag()) && $this->isClientSyncronize() === true) {
+            throw new InvalidResponseException(
+                "Invalid Etag '" . print_r($this->shareReceived->getETag(), true) . "'"
+            );
+        }
+        return $this->shareReceived->getETag();
     }
 
     /**
      * @throws InvalidResponseException
      */
-    private function getParentReference(): ItemReference
+    private function getParentReference(): ?ItemReference
     {
-        return empty($this->shareReceived->getParentReference()) ?
-            throw new TooEarlyException()
-            : $this->shareReceived->getParentReference();
-
+        if (empty($this->shareReceived->getParentReference()) && $this->isClientSyncronize() === false) {
+            return  null;
+        }
+        if (empty($this->shareReceived->getParentReference()) && $this->isClientSyncronize() === true) {
+            throw new InvalidResponseException(
+                "Invalid parentReference of received share '" .
+                print_r($this->shareReceived->getParentReference(), true) . "'"
+            );
+        }
+        return $this->shareReceived->getParentReference();
     }
 
     /**
-     * @return string
      * @throws InvalidResponseException
      */
-    public function getParentDriveId(): string
+    public function getParentDriveId(): ?string
     {
         $parentReference = $this->getParentReference();
-        return empty($parentReference->getDriveId()) ?
-           throw new InvalidResponseException(
-               "Invalid driveId returned in parentReference of received share '" .
-               print_r($parentReference->getDriveId(), true) . "'"
-           )
-           : $parentReference->getDriveId();
+        if ($parentReference === null) {
+            return  null;
+        }
+        if (empty($parentReference->getDriveId()) && $this->isClientSyncronize() === false) {
+            return  null;
+        }
+        if (empty($parentReference->getDriveId()) && $this->isClientSyncronize() === true) {
+            throw new InvalidResponseException(
+                "Invalid driveId returned in parentReference of received share '" .
+                print_r($parentReference->getDriveId(), true) . "'"
+            );
+        }
+        return $parentReference->getDriveId();
     }
 
     /**
      * @throws InvalidResponseException
      */
-    public function getParentDriveType(): DriveType
+    public function getParentDriveType(): ?DriveType
     {
-        $driveTypeString = (string)$this->getParentReference()->getDriveType();
+        $parentReference = $this->getParentReference();
+        if ($parentReference === null) {
+            return  null;
+        }
+        if (empty($parentReference->getDriveType()) && $this->isClientSyncronize() === false) {
+            return  null;
+        }
+        $driveTypeString = (string)$parentReference->getDriveType();
         $driveType = DriveType::tryFrom($driveTypeString);
         if ($driveType instanceof DriveType) {
             return $driveType;
         }
+
         throw new InvalidResponseException(
             'Invalid driveType returned in parentReference of received share: "' .
             print_r($driveTypeString, true) . '"'
@@ -225,7 +253,7 @@ class ShareReceived
     }
 
     /**
-     * gets the first permissio of the remote item
+     * gets the first permission of the remote item
      * in theory there might be more that one permission, but currently there is no such case in ocis
      * @return Permission
      * @throws InvalidResponseException
