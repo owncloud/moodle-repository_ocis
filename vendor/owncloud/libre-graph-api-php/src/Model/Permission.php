@@ -67,6 +67,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => 'string[]',
         'granted_to_identities' => '\OpenAPI\Client\Model\IdentitySet[]',
         'at_libre_graph_permissions_actions' => 'string[]',
+        'at_client_synchronize' => 'bool',
         'at_ui_hidden' => 'bool'
     ];
 
@@ -84,6 +85,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => null,
         'granted_to_identities' => null,
         'at_libre_graph_permissions_actions' => null,
+        'at_client_synchronize' => null,
         'at_ui_hidden' => null
     ];
 
@@ -101,6 +103,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
 		'roles' => false,
 		'granted_to_identities' => false,
 		'at_libre_graph_permissions_actions' => false,
+		'at_client_synchronize' => false,
 		'at_ui_hidden' => false
     ];
 
@@ -198,7 +201,8 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => 'roles',
         'granted_to_identities' => 'grantedToIdentities',
         'at_libre_graph_permissions_actions' => '@libre.graph.permissions.actions',
-        'at_ui_hidden' => '@UI.Hidden'
+        'at_client_synchronize' => '@client.synchronize',
+        'at_ui_hidden' => '@ui.hidden'
     ];
 
     /**
@@ -215,6 +219,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => 'setRoles',
         'granted_to_identities' => 'setGrantedToIdentities',
         'at_libre_graph_permissions_actions' => 'setAtLibreGraphPermissionsActions',
+        'at_client_synchronize' => 'setAtClientSynchronize',
         'at_ui_hidden' => 'setAtUiHidden'
     ];
 
@@ -232,6 +237,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => 'getRoles',
         'granted_to_identities' => 'getGrantedToIdentities',
         'at_libre_graph_permissions_actions' => 'getAtLibreGraphPermissionsActions',
+        'at_client_synchronize' => 'getAtClientSynchronize',
         'at_ui_hidden' => 'getAtUiHidden'
     ];
 
@@ -299,6 +305,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         $this->setIfExists('roles', $data ?? [], null);
         $this->setIfExists('granted_to_identities', $data ?? [], null);
         $this->setIfExists('at_libre_graph_permissions_actions', $data ?? [], null);
+        $this->setIfExists('at_client_synchronize', $data ?? [], null);
         $this->setIfExists('at_ui_hidden', $data ?? [], null);
     }
 
@@ -565,6 +572,33 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
             throw new InvalidArgumentException('non-nullable at_libre_graph_permissions_actions cannot be null');
         }
         $this->container['at_libre_graph_permissions_actions'] = $at_libre_graph_permissions_actions;
+
+        return $this;
+    }
+
+    /**
+     * Gets at_client_synchronize
+     *
+     * @return bool|null
+     */
+    public function getAtClientSynchronize(): ?bool
+    {
+        return $this->container['at_client_synchronize'];
+    }
+
+    /**
+     * Sets at_client_synchronize
+     *
+     * @param bool|null $at_client_synchronize Indicates if the item is synchronized with the underlying storage provider. Read-only.
+     *
+     * @return $this
+     */
+    public function setAtClientSynchronize(?bool $at_client_synchronize): static
+    {
+        if (is_null($at_client_synchronize)) {
+            throw new InvalidArgumentException('non-nullable at_client_synchronize cannot be null');
+        }
+        $this->container['at_client_synchronize'] = $at_client_synchronize;
 
         return $this;
     }

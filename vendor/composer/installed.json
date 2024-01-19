@@ -7,12 +7,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/libre-graph-api-php.git",
-                "reference": "a005f15520f94cc44da78b6bc2660f2d87a6c7d4"
+                "reference": "cb414b614a1dc9dee1a320ea3862f56b11c3d70c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/a005f15520f94cc44da78b6bc2660f2d87a6c7d4",
-                "reference": "a005f15520f94cc44da78b6bc2660f2d87a6c7d4",
+                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/cb414b614a1dc9dee1a320ea3862f56b11c3d70c",
+                "reference": "cb414b614a1dc9dee1a320ea3862f56b11c3d70c",
                 "shasum": ""
             },
             "require": {
@@ -28,7 +28,7 @@
                 "overtrue/phplint": "^9.0",
                 "phpunit/phpunit": "^9.0"
             },
-            "time": "2023-12-19T14:31:30+00:00",
+            "time": "2024-01-15T11:05:29+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
@@ -66,23 +66,23 @@
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "v1.0.0-beta.2",
-            "version_normalized": "1.0.0.0-beta2",
+            "version": "v1.0.0-rc.1",
+            "version_normalized": "1.0.0.0-RC1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "57c9dda9d94c621b4f5757e02cf3100942ce7868"
+                "reference": "7f7da9e348729c1f4f30e14d58cc963ceb67459a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/57c9dda9d94c621b4f5757e02cf3100942ce7868",
-                "reference": "57c9dda9d94c621b4f5757e02cf3100942ce7868",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/7f7da9e348729c1f4f30e14d58cc963ceb67459a",
+                "reference": "7f7da9e348729c1f4f30e14d58cc963ceb67459a",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
-                "owncloud/libre-graph-api-php": "dev-main#eaa85a34b43ecad81908c189556c437ac18f7d19",
+                "owncloud/libre-graph-api-php": "dev-main#cb414b614a1dc9dee1a320ea3862f56b11c3d70c",
                 "php": "^8.1",
                 "sabre/dav": "^4.6"
             },
@@ -92,7 +92,7 @@
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^10.5"
             },
-            "time": "2024-01-02T02:23:22+00:00",
+            "time": "2024-01-18T07:09:27+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -104,7 +104,7 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/v1.0.0-beta.2",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/v1.0.0-rc.1",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
             "install-path": "../owncloud/ocis-php-sdk"
