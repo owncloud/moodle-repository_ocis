@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Details
 
+# Changelog for [1.0.0-rc.1] (2024-01-18)
+
+## Summary
+
+* Bugfix - fixed destination of manage button [#50](https://github.com/owncloud/moodle-repository_ocis/issues/50)
+* Bugfix - made string for `Shares` translatable in the breadcrumbs [#66](https://github.com/owncloud/moodle-repository_ocis/issues/66)
+* Bugfix - shares that are set to `hide` in ocis webUI are hidden also in moodle [#77](https://github.com/owncloud/moodle-repository_ocis/pull/77)
+* Enhancement - default icons for the different drive-types are the same as in ocis-web [#76](https://github.com/owncloud/moodle-repository_ocis/pull/76)
+
+## Details
+
 # Changelog for [1.0.0-beta.2] (2024-01-02)
 
 ## Summary
