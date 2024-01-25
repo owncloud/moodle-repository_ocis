@@ -2,7 +2,10 @@ OC_CI_PHP = "owncloudci/php:%s"
 DEFAULT_PHP_VERSION = "8.1"
 OC_UBUNTU = "owncloud/ubuntu:20.04"
 PLUGINS_GITHUB_RELEASE = "plugins/github-release:1"
-
+POSTGRESQL = "postgres:13"
+MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
+OC_OCIS = "owncloud/ocis:5.0.0-rc.3"
+OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
 config = {
     "branches": [
         "main",
@@ -19,15 +22,16 @@ trigger = {
 }
 
 def main(ctx):
-    testPipelines = tests(
-        ctx,
-        [
-            ["codestyle", "make test-php-style"],
-        ],
-    )
-    releasePipeline = release (ctx)
-    dependsOn(testPipelines, releasePipeline)
-    return testPipelines + releasePipeline
+    return behattest()
+    # testPipelines = tests(
+    #     ctx,
+    #     [
+    #         ["codestyle", "make test-php-style"],
+    #     ],
+    # )
+    # releasePipeline = release (ctx)
+    # dependsOn(testPipelines, releasePipeline)
+    # return testPipelines + releasePipeline
 
 def tests(ctx, tests):
     pipelines = []
@@ -48,7 +52,7 @@ def tests(ctx, tests):
                         },
                     ],
                     "trigger": trigger,
-                }
+                },
             ]
     return pipelines
 
@@ -68,7 +72,7 @@ def release(ctx):
                         "mkdir ocis",
                         "cp -r `ls | grep -v \"^ocis$\"` ocis/",
                         "zip -r moodle-repository_ocis_%s.zip ocis" % (ctx.build.ref.replace("refs/tags/v", "")),
-                        "ls -lh"
+                        "ls -lh",
                     ],
                 },
                 {
@@ -80,7 +84,7 @@ def release(ctx):
                         },
                         "files": [
                             "moodle-repository_ocis_%s.zip" % (ctx.build.ref.replace("refs/tags/v", "")),
-                            ],
+                        ],
                         "title": ctx.build.ref.replace("refs/tags/v", ""),
                         "note": "CHANGES.md",
                         "overwrite": True,
@@ -111,7 +115,7 @@ def release(ctx):
                             --data-urlencode \"altdownloadurl=$ZIPURL\")",
                         "echo $RESPONSE | jq",
                         "echo $RESPONSE | jq --exit-status \".id\"",
-                        ],
+                    ],
                 },
             ],
             "trigger": {
@@ -121,6 +125,168 @@ def release(ctx):
             },
         },
     ]
+
+def behattest():
+    return [
+        {
+            "kind": "pipeline",
+            "type": "docker",
+            "name": "behatUItest",
+            "steps": generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+\
+                     waitForService("postgresql",5432)+runApache()+\
+                     waitForService("apache",80)+setupMoodle(),
+            "volumes":[
+                {
+                    "name":"www-moodle",
+                    "temp": {}
+                },
+                {
+                    "name":"ocis-cert",
+                    "temp":{}
+                },
+            ]
+        },
+    ]
+
+def databaseService():
+    return [
+        {
+            "name": "postgresql",
+            "image": POSTGRESQL,
+            "detach":True,
+            "environment": {
+                "POSTGRES_USER": "moodle",
+                "POSTGRES_PASSWORD": "moodle",
+                "POSTGRES_DB": "moodle",
+            },
+        },
+    ]
+
+def waitForService(name,port):
+    return [
+        {
+        "name": "wait-for-%s" % name,
+        "image": OC_CI_WAIT_FOR,
+        "commands": ["wait-for -it %s:%s -t 600" % (name,port)]
+        }
+    ]
+def runOcis():
+    return [
+        {
+            "name": "ocis",
+            "image": OC_OCIS,
+            "detach": True,
+            "volumes":[
+                {
+                    "name":"www-moodle",
+                    "path": "/var/www"
+                },
+                {
+                    "name":"ocis-cert",
+                    "path":"/usr/local/share/ca-certificates/"
+                },
+            ],
+            "environment": {
+                "OCIS_INSECURE": "true",
+                "PROXY_ENABLE_BASIC_AUTH": "true",
+                "IDM_ADMIN_PASSWORD": 'admin',
+                "OCIS_URL": "https://ocis:9200",
+                "PROXY_TRANSPORT_TLS_KEY":"/usr/local/share/ca-certificates/ocis.pem",
+                "PROXY_TRANSPORT_TLS_CERT":"/usr/local/share/ca-certificates/ocis.crt",
+            },
+            "commands": [
+                "ocis init",
+                "ocis server"
+            ]
+        }
+    ]
+
+def generateSSLCert():
+    return  [
+        {
+            "name": "generate-ocis-ssl",
+            "image": OC_UBUNTU,
+            "volumes":[
+                {
+                    "name":"www-moodle",
+                    "path": "/var/www"
+                },
+                {
+                    "name":"ocis-cert",
+                    "path":"/usr/local/share/ca-certificates/"
+                },
+            ],
+            "commands": [
+                "apt install openssl -y",
+                "openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=ocis'",
+                "cp ocis.crt /usr/local/share/ca-certificates/",
+                "cp ocis.pem /usr/local/share/ca-certificates/",
+                "chmod -R 755 /usr/local/share/ca-certificates/",
+            ]
+        }
+    ]
+
+def runApache():
+    return [
+        {
+            "name": "apache",
+            "image": MOODLEHQ_APACHE,
+            "detach":True,
+            "environment": {
+                "MOODLE_DBTYPE": "pgsql",
+                "MOODLE_DBHOST": "postgresql",
+                "MOODLE_DBNAME": "moodle",
+                "MOODLE_DBUSER": "moodle",
+                "MOODLE_DBPASS": "moodle",
+            },
+            "volumes":[
+                {
+                    "name":"www-moodle",
+                    "path": "/var/www"
+                },
+            ]
+        },
+    ]
+
+def setupMoodle():
+    return [
+        {
+            "name": "moodle-setup",
+            "image": MOODLEHQ_APACHE,
+            "environment": {
+                "MOODLE_DBTYPE": "pgsql",
+                "MOODLE_DBHOST": "postgresql",
+                "MOODLE_DBNAME": "moodle",
+                "MOODLE_DBUSER": "moodle",
+                "MOODLE_DBPASS": "moodle",
+                "MOODLE_WWWROOT": "http://apache",
+                "MOODLE_DATAROOT": "/var/www/moodledata",
+                "MOODLE_OCIS_URL": "https://ocis:9200",
+                "MOODLE_DISABLE_CURL_SECURITY": "true",
+                "MOODLE_OCIS_CLIENT_ID": "xdXOt13JKxym1B1QcEncf2XDkLAexMBFwiT9j6EfhhHFJhs2KM9jbjTmf8JBXE69",
+                "MOODLE_OCIS_CLIENT_SECRET": "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh"
+            },
+            "commands": [
+                "update-ca-certificates",
+                # "curl https://ocis:9200",
+                "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git /var/www/html",
+                "cp tests/drone/config.php /var/www/html",
+                "php /var/www/html/admin/cli/install_database.php --agree-license --fullname='Moodle' --shortname='moodle' --summary='Moodle site' --adminpass='admin' --adminemail='admin@example.com'",
+                "curl http://apache",
+            ],
+            "volumes":[
+                {
+                    "name":"www-moodle",
+                    "path": "/var/www"
+                },
+                {
+                    "name":"ocis-cert",
+                    "path": "/usr/local/share/ca-certificates/"
+                }
+            ]
+        },
+    ]
+
 
 def dependsOn(earlierStages, nextStages):
     for earlierStage in earlierStages:
