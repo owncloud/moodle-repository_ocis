@@ -163,5 +163,5 @@ To meet the [moodle coding style](https://moodledev.io/general/development/polic
 make test-php-style
 make test-php-style-fix
 ```
-#### UI Test
-[README](tests/behat/README.md)
+#### UI Tests
+Additional setup for [UI TEST](tests/README.md)

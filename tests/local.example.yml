@@ -13,6 +13,8 @@ services:
     environment:
       MOODLE_DISABLE_CURL_SECURITY: "true" # optional, but useful for testing on localhost or host.docker.internal
       MOODLE_OCIS_URL: "https://host.docker.internal:9200" # optional, used to create OAuth 2 services and repository instance during installation
+      OCIS_ADMIN_PASSWORD: admin
+      OCIS_ADMIN_USERNAME: admin
       MOODLE_OCIS_CLIENT_ID: "moodle-ocis-integration"
       MOODLE_OCIS_CLIENT_SECRET: "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh"
 

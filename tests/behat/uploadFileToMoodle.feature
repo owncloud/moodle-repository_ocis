@@ -1,9 +1,9 @@
 @ocis @javascript
 Feature: upload the resource in oCIS to moodle
-  As a user
-  I want to list the resources
-  So that I can upload them to moodle
-  
+  As a user who manages moodle content
+  I want to make resources from oCIS available in moodle
+  So that the resource content can be integrated into moodle course content
+
 
   Background:
     Given I log in as "admin"
@@ -14,10 +14,8 @@ Feature: upload the resource in oCIS to moodle
     And I click on "oCIS" "link"
     And I click on "Log in to your account" "button"
     And I switch to a second window
-    And I set the field with xpath "//*[@id='oc-login-username']" to "admin"
-    And I set the field with xpath "//*[@id='oc-login-password']" to "admin"
-    And I click on "Log in" "button"
-    And I click on Allow Button
+    And I log in to ocis as "admin"
+    And "admin" has created a file "new.txt" in "Personal" space
 
 
   Scenario: upload a file from the personal drive of ocis to moodle
