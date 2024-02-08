@@ -8,8 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## Summary
+* Bugfix - fixed a bug where a user could end up with an unusable file-picker [#83](https://github.com/owncloud/moodle-repository_ocis/pull/83)
 
 ## Details
+
+* Bugfix - fixed a bug where a user could end up with an unusable file-picker [#83](https://github.com/owncloud/moodle-repository_ocis/pull/83)
+   We have fixed a bug where when a user, with a ocis-token, looses access to ocis, would only see an error message and could not use the file-picker nor could log-out.
+   The solution was to log-out the user automatically in those cases.
+
+   https://github.com/owncloud/moodle-repository_ocis/issues/80
+   https://github.com/owncloud/moodle-repository_ocis/pull/83
 
 # Changelog for [1.0.0-rc.1] (2024-01-18)
 

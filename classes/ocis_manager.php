@@ -248,6 +248,7 @@ class ocis_manager {
                 );
             }
         } catch (HttpException $e) {
+            $this->oauth2client->log_out();
             throw new moodle_exception(
                 'could_not_connect_error',
                 'repository_ocis',
@@ -256,16 +257,27 @@ class ocis_manager {
                 $e->getTraceAsString()
             );
         } catch (UnauthorizedException $e) {
+            $this->oauth2client->log_out();
             throw new moodle_exception(
-                'unauthorized_error',
+                'unauthorized_error_after_logout',
                 'repository_ocis',
                 '',
                 null,
                 $e->getTraceAsString()
             );
         } catch (InternalServerErrorException $e) {
+            $this->oauth2client->log_out();
             throw new moodle_exception(
                 'internal_server_error',
+                'repository_ocis',
+                '',
+                null,
+                $e->getTraceAsString()
+            );
+        } catch (\Exception $e) {
+            $this->oauth2client->log_out();
+            throw new moodle_exception(
+                'unrecoverable_server_error',
                 'repository_ocis',
                 '',
                 null,
