@@ -44,7 +44,7 @@ MOODLE_ENV = {
     "MOODLE_DBNAME": "moodle",
     "MOODLE_DBUSER": "moodle",
     "MOODLE_DBPASS": "moodle",
-    "MOODLE_WWWROOT": "http://apache",
+    "MOODLE_WWWROOT": "https://apache",
     "MOODLE_DATAROOT": "/var/www/moodledata",
     "MOODLE_OCIS_URL": "https://ocis:9200",
     "MOODLE_DISABLE_CURL_SECURITY": "true",
@@ -195,7 +195,9 @@ def behattest():
             "kind": "pipeline",
             "type": "docker",
             "name": "behatUItest",
-            "steps": moodleCert(),
+            "steps": generateSSLCert()+databaseService()+ \
+                          waitForService("postgresql",5432)+runApache()+\
+                          waitForService("apache",443)+setupMoodle(),
                 # generateSSLCert()+runOcis()+waitForService("ocis",9200)+setupMoodle(),
                 # generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+\
                 #      waitForService("postgresql",5432)+runApache()+\
@@ -207,9 +209,13 @@ def behattest():
                     "temp": {}
                 },
                 {
-                    "name":"ocis-cert",
+                    "name":"update-cert",
                     "temp":{}
                 },
+                {
+                    "name":"moodle-cert",
+                    "temp":{}
+                }
             ]
         },
     ]
@@ -244,9 +250,10 @@ def runOcis():
                     "path": "/var/www"
                 },
                 {
-                    "name":"ocis-cert",
+                    "name":"update-cert",
                     "path":"/usr/local/share/ca-certificates/"
                 },
+
             ],
             "environment": OCIS_ENV,
             "commands": [
@@ -260,26 +267,27 @@ def generateSSLCert():
     return  [
         {
             "name": "generate-ocis-ssl",
-            "image": OC_UBUNTU,
+            "image": MOODLEHQ_APACHE,
             "volumes":[
                 {
                     "name":"www-moodle",
                     "path": "/var/www"
                 },
                 {
-                    "name":"ocis-cert",
+                    "name":"update-cert",
                     "path":"/usr/local/share/ca-certificates/"
                 },
             ],
             "commands": [
                 "apt install openssl -y",
                 # "openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=ocis'",
+                "cd /usr/local/share/ca-certificates/",
                 "openssl req -x509  -newkey rsa:2048 -keyout moodle.key -out moodle.crt -nodes -days 365 -subj '/CN=apache'",
-                "cp moodle.key /usr/local/share/ca-certificates/",
-                "cp moodle.crt /usr/local/share/ca-certificates/",
+                # "sed -i 's/\\\\/etc\\\\/ssl\\\\/certs\\\\/ssl-cert-snakeoil.pem/\\\\moodle.crt/' /etc/apache2/sites-available/default-ssl.conf",
+                # "sed -i 's/\\\\/etc\\\\/ssl\\\\/private\\\\/ssl-cert-snakeoil.key/\\\\moodle.key/' /etc/apache2/sites-available/default-ssl.conf",
+                # "cat /etc/apache2/sites-available/default-ssl.conf",
                 # "cp ocis.crt /usr/local/share/ca-certificates/",
-                # "cp ocis.pem /usr/local/share/ca-certificates/",
-                # "chmod -R 755 /usr/local/share/ca-certificates/",
+                "chmod -R 755 /usr/local/share/ca-certificates/",
             ]
         }
     ]
@@ -291,10 +299,22 @@ def runApache():
             "image": MOODLEHQ_APACHE,
             "detach":True,
             "environment": APACHE_ENV,
+            "commands":[
+                "cd /usr/local/share/ca-certificates/",
+                "cp moodle.crt /etc/ssl/certs/ssl-cert-snakeoil.pem",
+                "cp moodle.key /etc/ssl/private/ssl-cert-snakeoil.key",
+                "a2ensite default-ssl.conf",
+                "a2enmod ssl",
+                "moodle-docker-php-entrypoint apache2-foreground",
+            ],
             "volumes":[
                 {
                     "name":"www-moodle",
                     "path": "/var/www"
+                },
+                {
+                    "name":"update-cert",
+                    "path":"/usr/local/share/ca-certificates"
                 },
             ]
         },
@@ -310,14 +330,14 @@ def setupMoodle():
                 "update-ca-certificates",
                 # "curl https:/ocis:9200",
                 "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git /var/www/html",
-                # "ls -al /var/www/html/repository",
-                "cp -r /drone/src /var/www/html/repository/ocis",
+
+                # "cp -r /drone/src /var/www/html/repository/ocis",
                 # "mkdir /var/www/html/repository/ocis && cp /drone/src /var/www/html/repository/ocis",
-                "ls -al /var/www/html/repository/ocis/tests",
+                # "ls -al /var/www/html/repository/ocis/tests",
                 "cp tests/drone/config.php /var/www/html",
-                "sed -i 's/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;\\\\n\\\\t\\\\t\\\\$CFG->sslproxy = true;/' /var/www/html/lib/setup.php",
+                # "sed -i 's/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;\\\\n\\\\t\\\\t\\\\$CFG->sslproxy = true;/' /var/www/html/lib/setup.php",
                 "php /var/www/html/admin/cli/install_database.php --agree-license --fullname='Moodle' --shortname='moodle' --summary='Moodle site' --adminpass='admin' --adminemail='admin@example.com'",
-                "curl -I http://apache",
+                "curl https://apache",
             ],
             "volumes":[
                 {
@@ -325,9 +345,9 @@ def setupMoodle():
                     "path": "/var/www"
                 },
                 {
-                    "name":"ocis-cert",
-                    "path": "/usr/local/share/ca-certificates/"
-                }
+                    "name":"update-cert",
+                    "path":"/usr/local/share/ca-certificates"
+                },
             ]
         },
     ]

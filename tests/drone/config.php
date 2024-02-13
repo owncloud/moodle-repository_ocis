@@ -12,12 +12,12 @@ $CFG->dbpass    = getenv('MOODLE_DBPASS') ?: 'moodle';
 $CFG->prefix    = 'm_';
 
 //$CFG->sslproxy = true;
-$CFG->wwwroot   = getenv('MOODLE_WWWROOT') ?: 'http://127.0.0.1/moodle';
+$CFG->wwwroot   = getenv('MOODLE_WWWROOT') ?: 'https://127.0.0.1/moodle';
 $CFG->dataroot  = getenv('MOODLE_DATAROOT') ?: '/var/www/moodledata';
 $CFG->directorypermissions = 02777;
 $CFG->admin = 'admin';
 
-$CFG->behat_wwwroot = getenv('BEHAT_WWWROOT') ?: 'http://localhost/moodle';
+$CFG->behat_wwwroot = getenv('BEHAT_WWWROOT') ?: 'https://localhost/moodle';
 $CFG->behat_prefix = 'bht_';
 $CFG->behat_dataroot = getenv('BEHAT_DATAROOT') ?: '/var/www/behatdata';
 $seleniumHost = getenv('SELENIUM_HOST') ?: 'localhost';
