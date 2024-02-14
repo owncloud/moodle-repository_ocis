@@ -254,7 +254,7 @@ class ocis_manager {
                 'repository_ocis',
                 '',
                 null,
-                $e->getTraceAsString()
+                $e->getTraceAsString() . " Message: " . $e->getMessage()
             );
         } catch (UnauthorizedException $e) {
             $this->oauth2client->log_out();
@@ -263,7 +263,7 @@ class ocis_manager {
                 'repository_ocis',
                 '',
                 null,
-                $e->getTraceAsString()
+                $e->getTraceAsString() . " Message: " . $e->getMessage()
             );
         } catch (InternalServerErrorException $e) {
             $this->oauth2client->log_out();
@@ -272,7 +272,7 @@ class ocis_manager {
                 'repository_ocis',
                 '',
                 null,
-                $e->getTraceAsString()
+                $e->getTraceAsString() . " Message: " . $e->getMessage()
             );
         } catch (\Exception $e) {
             $this->oauth2client->log_out();
@@ -281,7 +281,7 @@ class ocis_manager {
                 'repository_ocis',
                 '',
                 null,
-                $e->getTraceAsString()
+                $e->getTraceAsString() . " Message: " . $e->getMessage()
             );
         }
 
