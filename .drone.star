@@ -56,6 +56,8 @@ MOODLE_ENV = {
     "POSTGRES_USER": "moodle",
     "POSTGRES_PASSWORD": "moodle",
     "POSTGRES_DB": "moodle",
+    "OCIS_ADMIN_USERNAME":"admin",
+    "OCIS_ADMIN_PASSWORD":"admin",
 }
 
 def main(ctx):
@@ -169,11 +171,10 @@ def behattest():
             "kind": "pipeline",
             "type": "docker",
             "name": "behatUItest",
-            "steps": runTest(),
-                # generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+ \
-                #      waitForService("postgresql",5432)+runApache()+\
-                #       waitForService("apache",443)+ \
-                #      setupSelenium()+waitForService("selenium",4444)+runTest(),
+            "steps":generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+ \
+                     waitForService("postgresql",5432)+runApache()+\
+                      waitForService("apache",443)+ \
+                     setupSelenium()+waitForService("selenium",4444)+runTest(),
 
             "volumes":[
                 {
@@ -255,7 +256,6 @@ def generateSSLCert():
                 "cd /usr/local/share/ca-certificates/",
                 "openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=ocis'",
                 "openssl req -x509  -newkey rsa:2048 -keyout moodle.key -out moodle.crt -nodes -days 365 -subj '/CN=apache'",
-                # "cp ocis.crt /usr/local/share/ca-certificates/",
                 "chmod -R 755 /usr/local/share/ca-certificates/",
             ]
         }
@@ -344,18 +344,27 @@ def runTest():
             "environment": MOODLE_ENV,
             "commands": [
                 "cd /var/www/html",
-                # "update-ca-certificates",
+                "update-ca-certificates",
                 "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git .",
                 "cp -r /drone/src repository/ocis",
+                "cp /drone/src/tests/drone/config.php ./",
                 "ls -al repository/ocis",
-                # "cp /drone/src/tests/drone/config.php ./",
+                "ls -al repository/ocis/tests",
+                "ls -al repository/ocis/tests/behat",
+
+
+                "cat repository/ocis/tests/behat/uploadFileToMoodle.feature",
                 # "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;$$CFG->sslproxy = true;/' lib/setup.php",
-                # # "cat lib/setup.php",
-                # # "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\n\\\\t\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
-                # "php admin/tool/behat/cli/init.php",
-                # "pwd",
-                # "ls -al repository/ocis/tests/behat",
-                # "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml repository/ocis/tests/behat/uploadFileToMoodle.feature",
+
+                # the pattern below works for drone 1.4
+                # "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\n\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
+                # for drone 1.8
+                "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\\n\\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
+                "cat lib/setup.php",
+                "php admin/tool/behat/cli/init.php",
+                "pwd",
+                "cat repository/ocis/tests/behat/uploadFileToMoodle.feature",
+                "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml repository/ocis/tests/behat/uploadFileToMoodle.feature",
             ],
 
             "volumes":[
