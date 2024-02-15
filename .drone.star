@@ -348,11 +348,6 @@ def runTest():
                 "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git .",
                 "cp -r /drone/src repository/ocis",
                 "cp /drone/src/tests/drone/config.php ./",
-                "ls -al repository/ocis",
-                "ls -al repository/ocis/tests",
-                "ls -al repository/ocis/tests/behat",
-
-
                 "cat repository/ocis/tests/behat/uploadFileToMoodle.feature",
                 # "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;$$CFG->sslproxy = true;/' lib/setup.php",
 
@@ -362,8 +357,6 @@ def runTest():
                 "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\\n\\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
                 "cat lib/setup.php",
                 "php admin/tool/behat/cli/init.php",
-                "pwd",
-                "cat repository/ocis/tests/behat/uploadFileToMoodle.feature",
                 "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml repository/ocis/tests/behat/uploadFileToMoodle.feature",
             ],
 
