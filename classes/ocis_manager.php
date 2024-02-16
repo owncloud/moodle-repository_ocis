@@ -254,7 +254,7 @@ class ocis_manager {
                 'repository_ocis',
                 '',
                 null,
-                $e->getTraceAsString()
+                $e->getTraceAsString() . " Message: " . $e->getMessage()
             );
         } catch (UnauthorizedException $e) {
             $this->oauth2client->log_out();
@@ -263,7 +263,7 @@ class ocis_manager {
                 'repository_ocis',
                 '',
                 null,
-                $e->getTraceAsString()
+                $e->getTraceAsString() . " Message: " . $e->getMessage()
             );
         } catch (InternalServerErrorException $e) {
             $this->oauth2client->log_out();
@@ -272,8 +272,11 @@ class ocis_manager {
                 'repository_ocis',
                 '',
                 null,
-                $e->getTraceAsString()
+                $e->getTraceAsString() . " Message: " . $e->getMessage()
             );
+        }
+        catch (\moodle_exception $e) {
+            throw $e;
         } catch (\Exception $e) {
             $this->oauth2client->log_out();
             throw new moodle_exception(
@@ -281,7 +284,7 @@ class ocis_manager {
                 'repository_ocis',
                 '',
                 null,
-                $e->getTraceAsString()
+                $e->getTraceAsString() . " Message: " . $e->getMessage()
             );
         }
 
@@ -444,7 +447,7 @@ class ocis_manager {
                     'repository_ocis',
                     '',
                     null,
-                    $e->getMessage()
+                    $e->getTraceAsString() . " Message: " . $e->getMessage()
                 );
             }
         } else {
