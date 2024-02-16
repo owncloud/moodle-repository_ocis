@@ -274,6 +274,9 @@ class ocis_manager {
                 null,
                 $e->getTraceAsString() . " Message: " . $e->getMessage()
             );
+        }
+        catch (\moodle_exception $e) {
+            throw $e;
         } catch (\Exception $e) {
             $this->oauth2client->log_out();
             throw new moodle_exception(
