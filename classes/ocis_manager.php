@@ -447,7 +447,7 @@ class ocis_manager {
                     'repository_ocis',
                     '',
                     null,
-                    $e->getMessage()
+                    $e->getTraceAsString() . " Message: " . $e->getMessage()
                 );
             }
         } else {
