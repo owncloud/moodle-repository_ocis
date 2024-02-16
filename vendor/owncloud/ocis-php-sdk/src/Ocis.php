@@ -276,7 +276,7 @@ class Ocis
             );
         }
         $iss = parse_url($tokenPayload['iss']);
-        if (!is_array($iss) || !array_key_exists('host', $iss) || true) {
+        if (!is_array($iss) || !array_key_exists('host', $iss)) {
             throw new \InvalidArgumentException(
                 self::DECODE_TOKEN_ERROR_MESSAGE .
                 " Content of 'iss' has no 'host' part. Token: '" .
