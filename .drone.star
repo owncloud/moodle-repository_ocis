@@ -18,7 +18,7 @@ config = {
 trigger = {
     "ref": [
         "refs/heads/main",
-        "refs/pull/**",
+        # "refs/pull/**",
         "refs/tags/**",
     ],
 }
@@ -47,7 +47,7 @@ MOODLE_ENV = {
     "MOODLE_DATAROOT": "/var/www/moodledata",
     "MOODLE_OCIS_URL": "https://ocis:9200",
     "MOODLE_DISABLE_CURL_SECURITY": "true",
-    "MOODLE_OCIS_CLIENT_ID": "xdXOt13JKxym1B1QcEncf2XDkLAexMBFwiT9j6EfhhHFJhs2KM9jbjTmf8JBXE69",
+    "MOODLE_OCIS_CLIENT_ID": "moodle-ocis-integration",
     "MOODLE_OCIS_CLIENT_SECRET": "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh",
     "BROWSER": "chrome",
     "BEHAT_DATAROOT": "/var/www/behatdata",
@@ -185,10 +185,6 @@ def behattest():
                     "name":"update-cert",
                     "temp":{}
                 },
-                {
-                    "name":"moodle-cert",
-                    "temp":{}
-                }
             ]
         },
     ]
@@ -231,7 +227,8 @@ def runOcis():
             "environment": OCIS_ENV,
             "commands": [
                 "ocis init",
-                "ocis server"
+                "cp tests/drone/idp.yaml /etc/ocis",
+                "ocis server",
             ]
         }
     ]
@@ -296,17 +293,17 @@ def setupMoodle():
             "image": MOODLEHQ_APACHE,
             "environment": MOODLE_ENV,
             "commands": [
-                "update-ca-certificates",
-                # "curl https:/ocis:9200",
-                "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git /var/www/html",
-
-                # "cp -r /drone/src /var/www/html/repository/ocis",
-                # "mkdir /var/www/html/repository/ocis && cp /drone/src /var/www/html/repository/ocis",
-                # "ls -al /var/www/html/repository/ocis/tests",
-                "cp tests/drone/config.php /var/www/html",
-                # "sed -i 's/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;\\\\n\\\\t\\\\t\\\\$CFG->sslproxy = true;/' /var/www/html/lib/setup.php",
-                "php /var/www/html/admin/cli/install_database.php --agree-license --fullname='Moodle' --shortname='moodle' --summary='Moodle site' --adminpass='admin' --adminemail='admin@example.com'",
-                "curl https://apache",
+                # "update-ca-certificates",
+                "curl https:/ocis:9200",
+                # "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git /var/www/html",
+                #
+                # # "cp -r /drone/src /var/www/html/repository/ocis",
+                # # "mkdir /var/www/html/repository/ocis && cp /drone/src /var/www/html/repository/ocis",
+                # # "ls -al /var/www/html/repository/ocis/tests",
+                # "cp tests/drone/config.php /var/www/html",
+                # # "sed -i 's/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;\\\\n\\\\t\\\\t\\\\$CFG->sslproxy = true;/' /var/www/html/lib/setup.php",
+                # "php /var/www/html/admin/cli/install_database.php --agree-license --fullname='Moodle' --shortname='moodle' --summary='Moodle site' --adminpass='admin' --adminemail='admin@example.com'",
+                # "curl https://apache",
             ],
             "volumes":[
                 {
@@ -348,14 +345,10 @@ def runTest():
                 "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git .",
                 "cp -r /drone/src repository/ocis",
                 "cp /drone/src/tests/drone/config.php ./",
-                "cat repository/ocis/tests/behat/uploadFileToMoodle.feature",
-                # "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;$$CFG->sslproxy = true;/' lib/setup.php",
-
                 # the pattern below works for drone 1.4
                 # "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\n\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
                 # for drone 1.8
                 "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\\n\\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
-                "cat lib/setup.php",
                 "php admin/tool/behat/cli/init.php",
                 "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml repository/ocis/tests/behat/uploadFileToMoodle.feature",
             ],
