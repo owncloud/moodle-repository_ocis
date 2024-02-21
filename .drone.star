@@ -172,11 +172,9 @@ def behattest():
             "kind": "pipeline",
             "type": "docker",
             "name": "behatUItest",
-            "steps":generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+ \
-                     waitForService("postgresql",5432)+runApache()+\
-                      waitForService("apache",443)+ \
-                     setupSelenium()+waitForService("selenium",4444)+runTest(),
-
+            "steps":generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+waitForService("postgresql",5432)+ \
+                    apacheService()+waitForService("apache",443)+ seleniumService()+waitForService("selenium",4444)+ \
+                    setupMoodle()+runBehatTest(),
             "volumes":[
                 {
                     "name":"www-moodle",
@@ -186,7 +184,12 @@ def behattest():
                     "name":"update-cert",
                     "temp":{}
                 },
-            ]
+            ],
+            "trigger": {
+                "ref": [
+                    "refs/pull/**",
+                ],
+            },
         },
     ]
 
@@ -250,7 +253,6 @@ def generateSSLCert():
                 },
             ],
             "commands": [
-                "apt install openssl -y",
                 "cd /usr/local/share/ca-certificates/",
                 "openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=ocis'",
                 "openssl req -x509  -newkey rsa:2048 -keyout moodle.key -out moodle.crt -nodes -days 365 -subj '/CN=apache'",
@@ -259,7 +261,7 @@ def generateSSLCert():
         }
     ]
 
-def runApache():
+def apacheService():
     return [
         {
             "name": "apache",
@@ -268,6 +270,7 @@ def runApache():
             "environment": MOODLE_ENV,
             "commands":[
                 "cd /usr/local/share/ca-certificates/",
+                "update-ca-certificates",
                 "cp moodle.crt /etc/ssl/certs/ssl-cert-snakeoil.pem",
                 "cp moodle.key /etc/ssl/private/ssl-cert-snakeoil.key",
                 "a2ensite default-ssl.conf",
@@ -294,17 +297,13 @@ def setupMoodle():
             "image": MOODLEHQ_APACHE,
             "environment": MOODLE_ENV,
             "commands": [
-                # "update-ca-certificates",
-                "curl https:/ocis:9200",
-                # "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git /var/www/html",
-                #
-                # # "cp -r /drone/src /var/www/html/repository/ocis",
-                # # "mkdir /var/www/html/repository/ocis && cp /drone/src /var/www/html/repository/ocis",
-                # # "ls -al /var/www/html/repository/ocis/tests",
-                # "cp tests/drone/config.php /var/www/html",
-                # # "sed -i 's/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;/\\\\$CFG->dataroot = \\\\$CFG->behat_dataroot;\\\\n\\\\t\\\\t\\\\$CFG->sslproxy = true;/' /var/www/html/lib/setup.php",
-                # "php /var/www/html/admin/cli/install_database.php --agree-license --fullname='Moodle' --shortname='moodle' --summary='Moodle site' --adminpass='admin' --adminemail='admin@example.com'",
-                # "curl https://apache",
+                "cd /var/www/html",
+                "update-ca-certificates",
+                "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git .",
+                "cp -r /drone/src repository/ocis",
+                "cp /drone/src/tests/drone/config.php ./",
+                "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\\n\\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
+                "php admin/tool/behat/cli/init.php",
             ],
             "volumes":[
                 {
@@ -319,7 +318,7 @@ def setupMoodle():
         },
     ]
 
-def setupSelenium():
+def seleniumService():
     return [
         {
             "name":"selenium",
@@ -334,23 +333,15 @@ def setupSelenium():
         }
     ]
 
-def runTest():
+def runBehatTest():
     return [
         {
             "name":"behat-test",
             "image":MOODLEHQ_APACHE,
             "environment": MOODLE_ENV,
             "commands": [
-                "cd /var/www/html",
                 "update-ca-certificates",
-                "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git .",
-                "cp -r /drone/src repository/ocis",
-                "cp /drone/src/tests/drone/config.php ./",
-                # the pattern below works for drone 1.4
-                # "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\n\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
-                # for drone 1.8
-                "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\\n\\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
-                "php admin/tool/behat/cli/init.php",
+                "cd /var/www/html",
                 "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml repository/ocis/tests/behat/uploadFileToMoodle.feature",
             ],
 
