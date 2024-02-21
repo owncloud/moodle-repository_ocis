@@ -31,7 +31,8 @@ $CFG->behat_profiles = array(
             'extra_capabilities' => array(
                 'chromeOptions' => array(
                     'args' => array(
-                        '--ignore-certificate-errors'
+                        '--ignore-certificate-errors',
+                        "--headless"
                     )
                 )
             )

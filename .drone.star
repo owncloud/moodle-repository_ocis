@@ -4,7 +4,7 @@ OC_UBUNTU = "owncloud/ubuntu:20.04"
 PLUGINS_GITHUB_RELEASE = "plugins/github-release:1"
 POSTGRESQL = "postgres:13"
 MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
-OC_OCIS = "owncloud/ocis:5.0.0-rc.3"
+OC_OCIS = "owncloud/ocis:5.0.0-rc.4"
 OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
 SELENIUM = "selenium/standalone-chrome:94.0"
 TRAEFIK = "traefik:2.10.5"
@@ -18,7 +18,7 @@ config = {
 trigger = {
     "ref": [
         "refs/heads/main",
-        # "refs/pull/**",
+        "refs/pull/**",
         "refs/tags/**",
     ],
 }
