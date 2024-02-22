@@ -630,7 +630,7 @@ class ocis_manager {
                 if ($receivedshares !== null) {
                     foreach ($receivedshares as $share) {
                         if (
-                            $share->isClientSyncronize() === true &&
+                            $share->isClientSynchronized() === true &&
                             $share->getId() === $resource->getId() &&
                             $share->isUiHidden() === true
                         ) {

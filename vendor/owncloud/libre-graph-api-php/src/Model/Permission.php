@@ -67,8 +67,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => 'string[]',
         'granted_to_identities' => '\OpenAPI\Client\Model\IdentitySet[]',
         'at_libre_graph_permissions_actions' => 'string[]',
-        'at_client_synchronize' => 'bool',
-        'at_ui_hidden' => 'bool'
+        'invitation' => '\OpenAPI\Client\Model\SharingInvitation'
     ];
 
     /**
@@ -85,8 +84,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => null,
         'granted_to_identities' => null,
         'at_libre_graph_permissions_actions' => null,
-        'at_client_synchronize' => null,
-        'at_ui_hidden' => null
+        'invitation' => null
     ];
 
     /**
@@ -103,8 +101,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
 		'roles' => false,
 		'granted_to_identities' => false,
 		'at_libre_graph_permissions_actions' => false,
-		'at_client_synchronize' => false,
-		'at_ui_hidden' => false
+		'invitation' => false
     ];
 
     /**
@@ -201,8 +198,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => 'roles',
         'granted_to_identities' => 'grantedToIdentities',
         'at_libre_graph_permissions_actions' => '@libre.graph.permissions.actions',
-        'at_client_synchronize' => '@client.synchronize',
-        'at_ui_hidden' => '@ui.hidden'
+        'invitation' => 'invitation'
     ];
 
     /**
@@ -219,8 +215,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => 'setRoles',
         'granted_to_identities' => 'setGrantedToIdentities',
         'at_libre_graph_permissions_actions' => 'setAtLibreGraphPermissionsActions',
-        'at_client_synchronize' => 'setAtClientSynchronize',
-        'at_ui_hidden' => 'setAtUiHidden'
+        'invitation' => 'setInvitation'
     ];
 
     /**
@@ -237,8 +232,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'roles' => 'getRoles',
         'granted_to_identities' => 'getGrantedToIdentities',
         'at_libre_graph_permissions_actions' => 'getAtLibreGraphPermissionsActions',
-        'at_client_synchronize' => 'getAtClientSynchronize',
-        'at_ui_hidden' => 'getAtUiHidden'
+        'invitation' => 'getInvitation'
     ];
 
     /**
@@ -305,8 +299,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         $this->setIfExists('roles', $data ?? [], null);
         $this->setIfExists('granted_to_identities', $data ?? [], null);
         $this->setIfExists('at_libre_graph_permissions_actions', $data ?? [], null);
-        $this->setIfExists('at_client_synchronize', $data ?? [], null);
-        $this->setIfExists('at_ui_hidden', $data ?? [], null);
+        $this->setIfExists('invitation', $data ?? [], null);
     }
 
     /**
@@ -577,55 +570,28 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
     }
 
     /**
-     * Gets at_client_synchronize
+     * Gets invitation
      *
-     * @return bool|null
+     * @return \OpenAPI\Client\Model\SharingInvitation|null
      */
-    public function getAtClientSynchronize(): ?bool
+    public function getInvitation(): ?\OpenAPI\Client\Model\SharingInvitation
     {
-        return $this->container['at_client_synchronize'];
+        return $this->container['invitation'];
     }
 
     /**
-     * Sets at_client_synchronize
+     * Sets invitation
      *
-     * @param bool|null $at_client_synchronize Indicates if the item is synchronized with the underlying storage provider. Read-only.
+     * @param \OpenAPI\Client\Model\SharingInvitation|null $invitation invitation
      *
      * @return $this
      */
-    public function setAtClientSynchronize(?bool $at_client_synchronize): static
+    public function setInvitation(?\OpenAPI\Client\Model\SharingInvitation $invitation): static
     {
-        if (is_null($at_client_synchronize)) {
-            throw new InvalidArgumentException('non-nullable at_client_synchronize cannot be null');
+        if (is_null($invitation)) {
+            throw new InvalidArgumentException('non-nullable invitation cannot be null');
         }
-        $this->container['at_client_synchronize'] = $at_client_synchronize;
-
-        return $this;
-    }
-
-    /**
-     * Gets at_ui_hidden
-     *
-     * @return bool|null
-     */
-    public function getAtUiHidden(): ?bool
-    {
-        return $this->container['at_ui_hidden'];
-    }
-
-    /**
-     * Sets at_ui_hidden
-     *
-     * @param bool|null $at_ui_hidden Properties or facets (see UI.Facet) annotated with this term will not be rendered if the annotation evaluates to true. Users can set this to hide permissons.
-     *
-     * @return $this
-     */
-    public function setAtUiHidden(?bool $at_ui_hidden): static
-    {
-        if (is_null($at_ui_hidden)) {
-            throw new InvalidArgumentException('non-nullable at_ui_hidden cannot be null');
-        }
-        $this->container['at_ui_hidden'] = $at_ui_hidden;
+        $this->container['invitation'] = $invitation;
 
         return $this;
     }

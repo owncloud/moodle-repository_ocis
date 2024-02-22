@@ -210,7 +210,7 @@ Class | Method | HTTP request | Description
 - [Quota](docs/Model/Quota.md)
 - [RemoteItem](docs/Model/RemoteItem.md)
 - [SharePointIdentitySet](docs/Model/SharePointIdentitySet.md)
-- [Shared](docs/Model/Shared.md)
+- [SharingInvitation](docs/Model/SharingInvitation.md)
 - [SharingLink](docs/Model/SharingLink.md)
 - [SharingLinkPassword](docs/Model/SharingLinkPassword.md)
 - [SharingLinkType](docs/Model/SharingLinkType.md)

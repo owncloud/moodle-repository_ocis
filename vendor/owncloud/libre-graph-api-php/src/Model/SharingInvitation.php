@@ -1,6 +1,6 @@
 <?php
 /**
- * Shared
+ * SharingInvitation
  *
  * PHP version 8.1
  *
@@ -34,14 +34,15 @@ use ReturnTypeWillChange;
 use OpenAPI\Client\ObjectSerializer;
 
 /**
- * Shared Class Doc Comment
+ * SharingInvitation Class Doc Comment
  *
+ * @description invitation-related data items
  * @package  OpenAPI\Client
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
  * @implements ArrayAccess<string, mixed>
  */
-class Shared implements ModelInterface, ArrayAccess, JsonSerializable
+class SharingInvitation implements ModelInterface, ArrayAccess, JsonSerializable
 {
     public const DISCRIMINATOR = null;
 
@@ -50,7 +51,7 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
       *
       * @var string
       */
-    protected static string $openAPIModelName = 'shared';
+    protected static string $openAPIModelName = 'sharingInvitation';
 
     /**
       * Array of property to type mappings. Used for (de)serialization
@@ -58,10 +59,7 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
       * @var array<string, string>
       */
     protected static array $openAPITypes = [
-        'owner' => '\OpenAPI\Client\Model\IdentitySet',
-        'scope' => 'string',
-        'shared_by' => '\OpenAPI\Client\Model\IdentitySet',
-        'shared_date_time' => '\DateTime'
+        'invited_by' => '\OpenAPI\Client\Model\IdentitySet'
     ];
 
     /**
@@ -70,10 +68,7 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
       * @var array<string, string|null>
       */
     protected static array $openAPIFormats = [
-        'owner' => null,
-        'scope' => null,
-        'shared_by' => null,
-        'shared_date_time' => 'date-time'
+        'invited_by' => null
     ];
 
     /**
@@ -82,10 +77,7 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
       * @var array<string, bool>
       */
     protected static array $openAPINullables = [
-        'owner' => false,
-		'scope' => false,
-		'shared_by' => false,
-		'shared_date_time' => false
+        'invited_by' => false
     ];
 
     /**
@@ -174,10 +166,7 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
      * @var array<string, string>
      */
     protected static array $attributeMap = [
-        'owner' => 'owner',
-        'scope' => 'scope',
-        'shared_by' => 'sharedBy',
-        'shared_date_time' => 'sharedDateTime'
+        'invited_by' => 'invitedBy'
     ];
 
     /**
@@ -186,10 +175,7 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
      * @var array<string, string>
      */
     protected static array $setters = [
-        'owner' => 'setOwner',
-        'scope' => 'setScope',
-        'shared_by' => 'setSharedBy',
-        'shared_date_time' => 'setSharedDateTime'
+        'invited_by' => 'setInvitedBy'
     ];
 
     /**
@@ -198,10 +184,7 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
      * @var array<string, string>
      */
     protected static array $getters = [
-        'owner' => 'getOwner',
-        'scope' => 'getScope',
-        'shared_by' => 'getSharedBy',
-        'shared_date_time' => 'getSharedDateTime'
+        'invited_by' => 'getInvitedBy'
     ];
 
     /**
@@ -260,10 +243,7 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
      */
     public function __construct(array $data = null)
     {
-        $this->setIfExists('owner', $data ?? [], null);
-        $this->setIfExists('scope', $data ?? [], null);
-        $this->setIfExists('shared_by', $data ?? [], null);
-        $this->setIfExists('shared_date_time', $data ?? [], null);
+        $this->setIfExists('invited_by', $data ?? [], null);
     }
 
     /**
@@ -293,10 +273,6 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if (!is_null($this->container['shared_date_time']) && !preg_match("/^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$/", $this->container['shared_date_time'])) {
-            $invalidProperties[] = "invalid value for 'shared_date_time', must be conform to the pattern /^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$/.";
-        }
-
         return $invalidProperties;
     }
 
@@ -313,114 +289,28 @@ class Shared implements ModelInterface, ArrayAccess, JsonSerializable
 
 
     /**
-     * Gets owner
+     * Gets invited_by
      *
      * @return \OpenAPI\Client\Model\IdentitySet|null
      */
-    public function getOwner(): ?\OpenAPI\Client\Model\IdentitySet
+    public function getInvitedBy(): ?\OpenAPI\Client\Model\IdentitySet
     {
-        return $this->container['owner'];
+        return $this->container['invited_by'];
     }
 
     /**
-     * Sets owner
+     * Sets invited_by
      *
-     * @param \OpenAPI\Client\Model\IdentitySet|null $owner owner
+     * @param \OpenAPI\Client\Model\IdentitySet|null $invited_by invited_by
      *
      * @return $this
      */
-    public function setOwner(?\OpenAPI\Client\Model\IdentitySet $owner): static
+    public function setInvitedBy(?\OpenAPI\Client\Model\IdentitySet $invited_by): static
     {
-        if (is_null($owner)) {
-            throw new InvalidArgumentException('non-nullable owner cannot be null');
+        if (is_null($invited_by)) {
+            throw new InvalidArgumentException('non-nullable invited_by cannot be null');
         }
-        $this->container['owner'] = $owner;
-
-        return $this;
-    }
-
-    /**
-     * Gets scope
-     *
-     * @return string|null
-     */
-    public function getScope(): ?string
-    {
-        return $this->container['scope'];
-    }
-
-    /**
-     * Sets scope
-     *
-     * @param string|null $scope Indicates the scope of how the item is shared: anonymous, organization, or users. Read-only.
-     *
-     * @return $this
-     */
-    public function setScope(?string $scope): static
-    {
-        if (is_null($scope)) {
-            throw new InvalidArgumentException('non-nullable scope cannot be null');
-        }
-        $this->container['scope'] = $scope;
-
-        return $this;
-    }
-
-    /**
-     * Gets shared_by
-     *
-     * @return \OpenAPI\Client\Model\IdentitySet|null
-     */
-    public function getSharedBy(): ?\OpenAPI\Client\Model\IdentitySet
-    {
-        return $this->container['shared_by'];
-    }
-
-    /**
-     * Sets shared_by
-     *
-     * @param \OpenAPI\Client\Model\IdentitySet|null $shared_by shared_by
-     *
-     * @return $this
-     */
-    public function setSharedBy(?\OpenAPI\Client\Model\IdentitySet $shared_by): static
-    {
-        if (is_null($shared_by)) {
-            throw new InvalidArgumentException('non-nullable shared_by cannot be null');
-        }
-        $this->container['shared_by'] = $shared_by;
-
-        return $this;
-    }
-
-    /**
-     * Gets shared_date_time
-     *
-     * @return \DateTime|null
-     */
-    public function getSharedDateTime(): ?\DateTime
-    {
-        return $this->container['shared_date_time'];
-    }
-
-    /**
-     * Sets shared_date_time
-     *
-     * @param \DateTime|null $shared_date_time The UTC date and time when the item was shared. Read-only.
-     *
-     * @return $this
-     */
-    public function setSharedDateTime(?\DateTime $shared_date_time): static
-    {
-        if (is_null($shared_date_time)) {
-            throw new InvalidArgumentException('non-nullable shared_date_time cannot be null');
-        }
-
-        if ((!preg_match("/^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$/", ObjectSerializer::toString($shared_date_time)))) {
-            throw new InvalidArgumentException("invalid value for \$shared_date_time when calling Shared., must conform to the pattern /^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$/.");
-        }
-
-        $this->container['shared_date_time'] = $shared_date_time;
+        $this->container['invited_by'] = $invited_by;
 
         return $this;
     }
