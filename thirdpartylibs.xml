@@ -3,14 +3,14 @@
     <library>
         <location>vendor/owncloud/ocis-php-sdk</location>
         <name>ocis-php-sdk</name>
-        <version>1.0.0-rc.1</version>
+        <version>1.0.0-rc.2</version>
         <license>Apache</license>
         <licenseversion>2.0</licenseversion>
     </library>
     <library>
         <location>vendor/owncloud/libre-graph-api-php</location>
         <name>libre-graph-api-php</name>
-        <version>dev-main cb414b6</version>
+        <version>dev-main c728b27</version>
         <license>Apache</license>
         <licenseversion>2.0</licenseversion>
     </library>

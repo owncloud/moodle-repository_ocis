@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Summary
 * Bugfix - fixed a bug where a user could end up with an unusable file-picker [#83](https://github.com/owncloud/moodle-repository_ocis/pull/83)
+* Bugfix - updated to ocis-php-sdk 1.0.0-rc2 & libre-graph-api-php dev-main c728b27
 
 ## Details
 
@@ -18,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
    https://github.com/owncloud/moodle-repository_ocis/issues/80
    https://github.com/owncloud/moodle-repository_ocis/pull/83
+
+* Bugfix - updated to ocis-php-sdk 1.0.0-rc2 & libre-graph-api-php dev-main c728b27 [#82](https://github.com/owncloud/moodle-repository_ocis/pull/82)
+   We have updated to the newest versions of the dependencies that are adjusted to changes in oCIS
 
 # Changelog for [1.0.0-rc.1] (2024-01-18)
 
