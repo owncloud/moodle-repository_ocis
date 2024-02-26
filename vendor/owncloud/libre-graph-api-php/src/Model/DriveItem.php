@@ -87,7 +87,9 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'children' => '\OpenAPI\Client\Model\DriveItem[]',
         'permissions' => '\OpenAPI\Client\Model\Permission[]',
         'audio' => '\OpenAPI\Client\Model\Audio',
-        'video' => '\OpenAPI\Client\Model\Video'
+        'video' => '\OpenAPI\Client\Model\Video',
+        'at_client_synchronize' => 'bool',
+        'at_ui_hidden' => 'bool'
     ];
 
     /**
@@ -124,7 +126,9 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'children' => null,
         'permissions' => null,
         'audio' => null,
-        'video' => null
+        'video' => null,
+        'at_client_synchronize' => null,
+        'at_ui_hidden' => null
     ];
 
     /**
@@ -161,7 +165,9 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
 		'children' => false,
 		'permissions' => false,
 		'audio' => false,
-		'video' => false
+		'video' => false,
+		'at_client_synchronize' => false,
+		'at_ui_hidden' => false
     ];
 
     /**
@@ -278,7 +284,9 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'children' => 'children',
         'permissions' => 'permissions',
         'audio' => 'audio',
-        'video' => 'video'
+        'video' => 'video',
+        'at_client_synchronize' => '@client.synchronize',
+        'at_ui_hidden' => '@UI.Hidden'
     ];
 
     /**
@@ -315,7 +323,9 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'children' => 'setChildren',
         'permissions' => 'setPermissions',
         'audio' => 'setAudio',
-        'video' => 'setVideo'
+        'video' => 'setVideo',
+        'at_client_synchronize' => 'setAtClientSynchronize',
+        'at_ui_hidden' => 'setAtUiHidden'
     ];
 
     /**
@@ -352,7 +362,9 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         'children' => 'getChildren',
         'permissions' => 'getPermissions',
         'audio' => 'getAudio',
-        'video' => 'getVideo'
+        'video' => 'getVideo',
+        'at_client_synchronize' => 'getAtClientSynchronize',
+        'at_ui_hidden' => 'getAtUiHidden'
     ];
 
     /**
@@ -440,6 +452,8 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
         $this->setIfExists('permissions', $data ?? [], null);
         $this->setIfExists('audio', $data ?? [], null);
         $this->setIfExists('video', $data ?? [], null);
+        $this->setIfExists('at_client_synchronize', $data ?? [], null);
+        $this->setIfExists('at_ui_hidden', $data ?? [], null);
     }
 
     /**
@@ -1281,6 +1295,60 @@ class DriveItem implements ModelInterface, ArrayAccess, JsonSerializable
             throw new InvalidArgumentException('non-nullable video cannot be null');
         }
         $this->container['video'] = $video;
+
+        return $this;
+    }
+
+    /**
+     * Gets at_client_synchronize
+     *
+     * @return bool|null
+     */
+    public function getAtClientSynchronize(): ?bool
+    {
+        return $this->container['at_client_synchronize'];
+    }
+
+    /**
+     * Sets at_client_synchronize
+     *
+     * @param bool|null $at_client_synchronize Indicates if the item is synchronized with the underlying storage provider. Read-only.
+     *
+     * @return $this
+     */
+    public function setAtClientSynchronize(?bool $at_client_synchronize): static
+    {
+        if (is_null($at_client_synchronize)) {
+            throw new InvalidArgumentException('non-nullable at_client_synchronize cannot be null');
+        }
+        $this->container['at_client_synchronize'] = $at_client_synchronize;
+
+        return $this;
+    }
+
+    /**
+     * Gets at_ui_hidden
+     *
+     * @return bool|null
+     */
+    public function getAtUiHidden(): ?bool
+    {
+        return $this->container['at_ui_hidden'];
+    }
+
+    /**
+     * Sets at_ui_hidden
+     *
+     * @param bool|null $at_ui_hidden Properties or facets (see UI.Facet) annotated with this term will not be rendered if the annotation evaluates to true. Users can set this to hide permissons.
+     *
+     * @return $this
+     */
+    public function setAtUiHidden(?bool $at_ui_hidden): static
+    {
+        if (is_null($at_ui_hidden)) {
+            throw new InvalidArgumentException('non-nullable at_ui_hidden cannot be null');
+        }
+        $this->container['at_ui_hidden'] = $at_ui_hidden;
 
         return $this;
     }
