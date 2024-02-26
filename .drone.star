@@ -62,16 +62,16 @@ MOODLE_ENV = {
 }
 
 def main(ctx):
-    return behattest()
-    # testPipelines = tests(
-    #     ctx,
-    #     [
-    #         ["codestyle", "make test-php-style"],
-    #     ],
-    # )
-    # releasePipeline = release (ctx)
-    # dependsOn(testPipelines, releasePipeline)
-    # return testPipelines + releasePipeline
+    testPipelines = tests(
+        ctx,
+        [
+            ["codestyle", "make test-php-style"],
+        ],
+    )
+    releasePipeline = release (ctx)
+    dependsOn(testPipelines, releasePipeline)
+    uiTestPipeLine = behattest()
+    return testPipelines + releasePipeline + uiTestPipeLine
 
 def tests(ctx, tests):
     pipelines = []
@@ -158,11 +158,7 @@ def release(ctx):
                     ],
                 },
             ],
-            "trigger": {
-                "ref": [
-                    "refs/tags/v*",
-                ],
-            },
+            "trigger": trigger,
         },
     ]
 
@@ -172,9 +168,9 @@ def behattest():
             "kind": "pipeline",
             "type": "docker",
             "name": "behatUItest",
-            "steps":generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+waitForService("postgresql",5432)+ \
-                    apacheService()+waitForService("apache",443)+ seleniumService()+waitForService("selenium",4444)+ \
-                    setupMoodle()+runBehatTest(),
+            "steps":generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+\
+                    waitForService("postgresql",5432)+ apacheService()+waitForService("apache",443)+ \
+                    seleniumService()+waitForService("selenium",4444)+ setupMoodle()+runBehatTest(),
             "volumes":[
                 {
                     "name":"www-moodle",
@@ -342,7 +338,8 @@ def runBehatTest():
             "commands": [
                 "update-ca-certificates",
                 "cd /var/www/html",
-                "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml repository/ocis/tests/behat/uploadFileToMoodle.feature",
+                # run the test
+                # "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml repository/ocis/tests/behat/uploadFileToMoodle.feature",
             ],
 
             "volumes":[
