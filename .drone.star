@@ -69,9 +69,10 @@ def main(ctx):
         ],
     )
     releasePipeline = release (ctx)
-    dependsOn(testPipelines, releasePipeline)
     uiTestPipeLine = behattest()
-    return testPipelines + releasePipeline + uiTestPipeLine
+    dependsOn(testPipelines,uiTestPipeLine)
+    dependsOn(testPipelines + uiTestPipeLine , releasePipeline)
+    return testPipelines + uiTestPipeLine + releasePipeline
 
 def tests(ctx, tests):
     pipelines = []
@@ -158,8 +159,12 @@ def release(ctx):
                     ],
                 },
             ],
-            "trigger": trigger,
-        },
+            "trigger": {
+                "ref": [
+                    "refs/tags/v*",
+                ],
+            }
+        }
     ]
 
 def behattest():
@@ -168,6 +173,7 @@ def behattest():
             "kind": "pipeline",
             "type": "docker",
             "name": "behatUItest",
+            "depends_on": [],
             "steps":generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+\
                     waitForService("postgresql",5432)+ apacheService()+waitForService("apache",443)+ \
                     seleniumService()+waitForService("selenium",4444)+ setupMoodle()+runBehatTest(),
