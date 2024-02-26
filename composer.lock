@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a1088b148d3a0455e7b724c6f6d291d6",
+    "content-hash": "e32c891ef2691d54736523e198263690",
     "packages": [
         {
             "name": "owncloud/libre-graph-api-php",
@@ -69,16 +69,16 @@
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "dev-bump-ocis-latest-commit-id",
+            "version": "v1.0.0-rc.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "e4f4b897cf835ee4d8d74153c5c13bfa36d03cca"
+                "reference": "48a9047791c47bbfa720cdeeecb947cd959e089e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/e4f4b897cf835ee4d8d74153c5c13bfa36d03cca",
-                "reference": "e4f4b897cf835ee4d8d74153c5c13bfa36d03cca",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/48a9047791c47bbfa720cdeeecb947cd959e089e",
+                "reference": "48a9047791c47bbfa720cdeeecb947cd959e089e",
                 "shasum": ""
             },
             "require": {
@@ -104,10 +104,10 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/bump-ocis-latest-commit-id",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/v1.0.0-rc.2",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
-            "time": "2024-02-22T06:35:30+00:00"
+            "time": "2024-02-26T08:25:30+00:00"
         },
         {
             "name": "psr/log",
@@ -1091,12 +1091,10 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "owncloud/ocis-php-sdk": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
