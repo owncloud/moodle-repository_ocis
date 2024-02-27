@@ -7,7 +7,7 @@ MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
 OC_OCIS = "owncloud/ocis:5.0.0-rc.2"
 OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
 SELENIUM = "selenium/standalone-chrome:94.0"
-TRAEFIK = "traefik:2.10.5"
+
 config = {
     "branches": [
         "main",
@@ -174,9 +174,10 @@ def behattest():
             "type": "docker",
             "name": "behatUItest",
             "depends_on": [],
-            "steps":generateSSLCert()+runOcis()+waitForService("ocis",9200)+databaseService()+\
-                    waitForService("postgresql",5432)+ apacheService()+waitForService("apache",443)+ \
-                    seleniumService()+waitForService("selenium",4444)+ setupMoodle()+runBehatTest(),
+            "steps":generateSSLCert() + runOcis() + waitForService("ocis",9200) + \
+                    databaseService() + waitForService("postgresql",5432) + \
+                    apacheService() + waitForService("apache",443) + seleniumService() + \
+                    waitForService("selenium",4444) + setupMoodle() + runBehatTest() ,
             "volumes":[
                 {
                     "name":"www-moodle",
@@ -208,17 +209,24 @@ def databaseService():
 def waitForService(name,port):
     return [
         {
-        "name": "wait-for-%s" % name,
-        "image": OC_CI_WAIT_FOR,
-        "commands": ["wait-for -it %s:%s -t 600" % (name,port)]
+            "name": "wait-for-%s" % name,
+            "image": OC_CI_WAIT_FOR,
+            "commands": ["wait-for -it %s:%s -t 600" % (name,port)]
         }
     ]
+
 def runOcis():
     return [
         {
             "name": "ocis",
             "image": OC_OCIS,
             "detach": True,
+            "environment": OCIS_ENV,
+            "commands": [
+                "ocis init",
+                "cp tests/drone/idp.yaml /etc/ocis",
+                "ocis server",
+            ],
             "volumes":[
                 {
                     "name":"www-moodle",
@@ -228,22 +236,21 @@ def runOcis():
                     "name":"update-cert",
                     "path":"/usr/local/share/ca-certificates/"
                 },
-
             ],
-            "environment": OCIS_ENV,
-            "commands": [
-                "ocis init",
-                "cp tests/drone/idp.yaml /etc/ocis",
-                "ocis server",
-            ]
         }
     ]
 
 def generateSSLCert():
     return  [
         {
-            "name": "generate-ocis-ssl",
+            "name": "generate-ssl-certs",
             "image": MOODLEHQ_APACHE,
+            "commands": [
+                "cd /usr/local/share/ca-certificates/",
+                "openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=ocis'",
+                "openssl req -x509  -newkey rsa:2048 -keyout moodle.key -out moodle.crt -nodes -days 365 -subj '/CN=apache'",
+                "chmod -R 755 /usr/local/share/ca-certificates/",
+            ],
             "volumes":[
                 {
                     "name":"www-moodle",
@@ -254,12 +261,6 @@ def generateSSLCert():
                     "path":"/usr/local/share/ca-certificates/"
                 },
             ],
-            "commands": [
-                "cd /usr/local/share/ca-certificates/",
-                "openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=ocis'",
-                "openssl req -x509  -newkey rsa:2048 -keyout moodle.key -out moodle.crt -nodes -days 365 -subj '/CN=apache'",
-                "chmod -R 755 /usr/local/share/ca-certificates/",
-            ]
         }
     ]
 
@@ -328,8 +329,8 @@ def seleniumService():
             "detach":True,
             "volumes":[
                 {
-                "name":"www-moodle",
-                "path": "/var/www"
+                    "name":"www-moodle",
+                    "path": "/var/www"
                 }
             ]
         }
@@ -344,10 +345,9 @@ def runBehatTest():
             "commands": [
                 "update-ca-certificates",
                 "cd /var/www/html",
-                # run the test
-                # "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml repository/ocis/tests/behat/uploadFileToMoodle.feature",
+                "ls -l /var/www/behatdata",
+                "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml --tags=@ocis",
             ],
-
             "volumes":[
                 {
                     "name":"www-moodle",

@@ -1,15 +1,4 @@
 clients:
-  - id: web
-    name: ownCloud Web app
-    trusted: true
-    secret: ""
-    redirect_uris:
-      - https://ocis:9200
-      - https://ocis:9200/oidc-callback.html
-      - https://ocis:9200/oidc-silent-redirect.html
-    origins:
-      - "{{OCIS_URL}}"
-    application_type: ""
   - id: moodle-ocis-integration
     name: Integration app
     trusted: false
