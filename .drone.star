@@ -345,7 +345,6 @@ def runBehatTest():
             "commands": [
                 "update-ca-certificates",
                 "cd /var/www/html",
-                "ls -l /var/www/behatdata",
                 "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml --tags=@ocis",
             ],
             "volumes":[
