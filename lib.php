@@ -364,7 +364,7 @@ class repository_ocis extends repository {
         return ['issuerid', 'controlledlinkfoldername',
             'defaultreturntype', 'supportedreturntypes',
             'show_personal_drive', 'show_shares', 'show_project_drives',
-            'personal_drive_icon_url', 'shares_icon_url', 'project_drives_icon_url'];
+            'personal_drive_icon_url', 'shares_icon_url', 'project_drives_icon_url', 'sortorder'];
     }
 
     /**
