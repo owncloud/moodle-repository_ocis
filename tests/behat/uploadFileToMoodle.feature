@@ -15,11 +15,22 @@ Feature: upload the resource in oCIS to moodle
     And I click on "Log in to your account" "button"
     And I switch to a second window
     And I log in to ocis as "admin"
-    And "admin" has created a file "new.txt" in "Personal" space
 
 
   Scenario: upload a file from the personal drive of ocis to moodle
+    Given "admin" uploads file with content "test file" to "/testfile.txt" in "Personal" space
     When I click on "//*[@class='fp-filename-field']/p[text()='Personal']" "xpath_element"
-    And I click on "//*[@class='fp-filename-field']/p[text()='new.txt']" "xpath_element"
+    And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
-    Then I should see "new.txt"
+    Then I should see "testfile.txt"
+
+  Scenario: upload a file from project space of ocis to moodle
+    Given "admin" creates a project space "ProjectMoodle"
+    And "admin" uploads file with content "test file" to "/testfile.txt" in "ProjectMoodle" space
+    And I click on Refresh button
+    When I click on "//*[@class='fp-filename-field']/p[text()='ProjectMoodle']" "xpath_element"
+    And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
+    And I click on "Select this file" "button"
+    Then I should see "testfile.txt"
+
+

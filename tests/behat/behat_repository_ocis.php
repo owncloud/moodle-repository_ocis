@@ -41,9 +41,11 @@ use Sabre\DAV\Client,
  */
 class behat_repository_ocis extends behat_base {
     public array $createdfiles;
+    public array $createdspaces;
 
     public function __construct() {
-        $this->createdfiles = [];
+        $this->createdFiles = [];
+        $this->createdSpaces = [];
     }
 
     /**
@@ -51,9 +53,137 @@ class behat_repository_ocis extends behat_base {
      * @AfterScenario
      */
     public function delete_file_in_ocis(AfterScenarioScope $scope) {
-        foreach ($this->createdfiles as $file) {
+        foreach ($this->createdFiles as $file) {
             $this->delete_file_in_personal_space($file['user'], $file['file']);
         }
+    }
+
+    /**
+     * @param AfterScenarioScope $scope scope passed by event fired after scenario.
+     * @AfterScenario
+     */
+    public function delete_all_project_space(AfterScenarioScope $scope) {
+        $createdspace = $this->get_all_created_project_space();
+        foreach ($createdspace as $space) {
+            $this->delete_space();
+        }
+    }
+
+    private function get_client($user): Client {
+        $username = $this->get_actual_username($user);
+        $password = $this->get_password_for_user($user);
+        $settings = [
+            'baseUri' => getenv('MOODLE_OCIS_URL'),
+            'userName' => $username,
+            'password' => $password,
+        ];
+        return new Client($settings);
+    }
+
+    private function get_admin_client(): Client {
+        $settings = [
+            'baseUri' => getenv('MOODLE_OCIS_URL') ? getenv('MOODLE_OCIS_URL') : 'https://host.docker.internal:9200',
+            'userName' => getenv('OCIS_ADMIN_USERNAME') ? getenv('OCIS_ADMIN_USERNAME') : 'admin',
+            'password' => getenv('OCIS_ADMIN_PASSWORD') ? getenv('OCIS_ADMIN_PASSWORD') : 'admin',
+        ];
+        return new Client($settings);
+    }
+
+    public function get_space_id_by_space($space): string {
+        foreach ($this->get_all_created_project_space() as $createdspace) {
+            if ($createdspace["name"] === $space) {
+                return $createdspace["spaceId"];
+            }
+        }
+    }
+
+    private function add_to_created_space($response) {
+        $this->createdSpaces[] = [
+            "name" => $response->name,
+            "spaceId" => $response->id,
+        ];
+    }
+
+    public function get_all_created_project_space(): array {
+        return $this->createdSpaces;
+    }
+
+    private function get_actual_username(string $username): string {
+        if (strtolower($username) === 'admin') {
+            return getenv('OCIS_ADMIN_USERNAME') ? getenv('OCIS_ADMIN_USERNAME') : "admin";
+        } else {
+            return $username;
+        }
+    }
+
+    private function get_password_for_user(string $username): string {
+        if (strtolower($username) === 'admin') {
+            return getenv('OCIS_ADMIN_PASSWORD') ? getenv('OCIS_ADMIN_PASSWORD') : "admin";
+        } else {
+            return "";
+        }
+    }
+
+    private function create_file_in_personal_space($user, $file) {
+        $client = $this->get_client($user);
+        $response = $client->request('PUT', "/dav/files/$user/$file");
+        if (!in_array($response['statusCode'], [201, 204])) {
+            throw new Exception("Error creating resource in ocis " . var_dump($response['statusCode']));
+        }
+        $this->createdFiles[] = ["file" => $file, "user" => $user];
+    }
+
+    /**
+     * @param string $user
+     * @param string $space
+     *
+     * @return void
+     * @throws JsonException
+     */
+    private function create_project_space(string $user, string $space): void {
+        $client = $this->get_client($user);
+        $body = json_encode(["Name" => $space], JSON_THROW_ON_ERROR);
+        $response = $client->request(
+            'POST',
+            "/graph/v1.0/drives",
+            $body,
+        );
+        if (!isset($response['statusCode']) && $response['statusCode'] !== 201) {
+            throw new Exception("Error creating space in ocis " . var_dump($response['statusCode']));
+        }
+        $responsebody = json_decode($response["body"]);
+        $this->add_to_created_space($responsebody);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function delete_space() {
+        $client = $this->get_admin_client();
+        $spaceid = $this->get_all_created_project_space()[0]["spaceId"];
+        $header = ["Purge" => "T"];
+        $disabledrive = $client->request('DELETE', "/graph/v1.0/drives/$spaceid");
+        $deletedrive = $client->request('DELETE', "/graph/v1.0/drives/$spaceid", null, $header);
+        if ($disabledrive['statusCode'] && $deletedrive['statusCode'] !== 204) {
+            throw new Exception('Error deleting drive');
+        }
+    }
+
+    private function delete_file_in_personal_space($user, $file) {
+        $client = $this->get_client($user);
+        $response = $client->request('DELETE', "/dav/files/$user/$file");
+        if ($response['statusCode'] !== 204) {
+            throw new Exception("Error deleting resource in ocis " . var_dump($response['statusCode']));
+        }
+    }
+
+    public function create_resource_in_project_space($space, $resource, $body): array {
+        $client = $this->get_admin_client();
+        $spaceid = $this->get_space_id_by_space($space);
+        $response = $client->request('PUT', "dav/spaces/$spaceid/$resource", $body);
+        return $response;
     }
 
     /**
@@ -78,55 +208,39 @@ class behat_repository_ocis extends behat_base {
         $this->getSession()->switchToWindow(null);
     }
 
-    private function get_actual_username(string $username): string {
-        if (strtolower($username) === 'admin') {
-            return getenv('OCIS_ADMIN_USERNAME') ? getenv('OCIS_ADMIN_USERNAME') : "admin";
+    /**
+     * @Given :user uploads file with content :content to :file in :space space
+     *
+     * @param string $user
+     * @param string $content
+     * @param string $file
+     * @param string $space
+     */
+    public function user_creates_a_file($user, $content, $file, $space) {
+        if (strtolower($space) === "personal") {
+            $this->create_file_in_personal_space($user, $file);
         } else {
-            return $username;
-        }
-    }
-
-    private function get_password_for_user(string $username): string {
-        if (strtolower($username) === 'admin') {
-            return getenv('OCIS_ADMIN_PASSWORD') ? getenv('OCIS_ADMIN_PASSWORD') : "admin";
-        } else {
-            return "";
+            $this->create_resource_in_project_space($space, $file, $content);
         }
     }
 
     /**
-     * @Given :user has created a file :file in :space space
+     * @Given :user creates a project space :space
+     *
+     * @param string $user
+     * @param string $space
+     *
+     * @return void
      */
-    public function user_has_created_a_file($user, $file, $space) {
-        if (strtolower($space) === "personal") {
-            $this->create_file_in_personal_space($user, $file);
-        }
-        $this->createdfiles[] = ["file" => $file, "user" => $user];
+    public function user_creates_a_project_space(string $user, string $space) {
+        $this->create_project_space($user, $space);
     }
 
-    private function get_client($user, $password): Client {
-        $settings = [
-            'baseUri' => getenv('MOODLE_OCIS_URL'),
-            'userName' => $user,
-            'password' => $password,
-        ];
-        return new Client($settings);
-    }
-
-
-    private function create_file_in_personal_space($user, $file) {
-        $client = $this->get_client($this->get_actual_username($user), $this->get_password_for_user($user));
-        $response = $client->request('PUT', "/dav/files/$user/$file");
-        if (!in_array($response['statusCode'], [201, 204])) {
-            throw new Exception("Error creating resource in ocis " . var_dump($response['statusCode']));
-        }
-    }
-
-    private function delete_file_in_personal_space($user, $file) {
-        $client = $this->get_client($this->get_actual_username($user), $this->get_password_for_user($user));
-        $response = $client->request('DELETE', "/dav/files/$user/$file");
-        if ($response['statusCode'] !== 204) {
-            throw new Exception("Error deleting resource in ocis " . var_dump($response['statusCode']));
-        }
+    /**
+     * @Given I click on Refresh button
+     */
+    public function i_click_on_refresh_button(): void {
+        $refreshbutton = $this->get_selected_node('css_element', '.fp-tb-refresh.enabled');
+        $refreshbutton->click();
     }
 }
