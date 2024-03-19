@@ -40,8 +40,8 @@ use Sabre\DAV\Client,
  * Steps definitions related to repository_ocis.
  */
 class behat_repository_ocis extends behat_base {
-    public array $createdfiles;
-    public array $createdspaces;
+    private array $createdfiles;
+    private array $createdspaces;
 
     public function __construct() {
         $this->createdFiles = [];
