@@ -18,19 +18,18 @@ Feature: upload the resource in oCIS to moodle
 
 
   Scenario: upload a file from the personal drive of ocis to moodle
-    Given "admin" uploads file with content "test file" to "/testfile.txt" in "Personal" space
+    And user "admin" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
     When I click on "//*[@class='fp-filename-field']/p[text()='Personal']" "xpath_element"
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
     Then I should see "testfile.txt"
 
+
   Scenario: upload a file from project space of ocis to moodle
-    Given "admin" creates a project space "ProjectMoodle"
-    And "admin" uploads file with content "test file" to "/testfile.txt" in "ProjectMoodle" space
-    And I click on Refresh button
+    Given "admin" has created the project space "ProjectMoodle"
+    And user "admin" has uploaded a file inside space "ProjectMoodle" with content "some content" to "/testfile.txt"
+    And I refresh the file-picker
     When I click on "//*[@class='fp-filename-field']/p[text()='ProjectMoodle']" "xpath_element"
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
     Then I should see "testfile.txt"
-
-
