@@ -33,3 +33,20 @@ Feature: upload the resource in oCIS to moodle
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
     Then I should see "testfile.txt"
+
+
+  Scenario: upload a file from share space of ocis to moodle
+    Given user "Brian" has been created with default attributes
+    And user "Brian" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
+    And user "Brian" has sent the following share invitation:
+      | resource        | testfile.txt |
+      | space           | Personal     |
+      | sharee          | Admin        |
+      | shareType       | user         |
+      | permissionsRole | Viewer       |
+    And I wait "1" seconds
+    When I click on "//*[@class='fp-filename-field']/p[text()='Shares']" "xpath_element"
+    And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
+    And I click on "Select this file" "button"
+    Then I should see "testfile.txt"
+
