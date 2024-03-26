@@ -36,6 +36,8 @@ require_once(__DIR__ . '/../../vendor/autoload.php');
 use Sabre\DAV\Client,
     Behat\Behat\Hook\Scope\AfterScenarioScope;
 
+use Behat\Gherkin\Node\TableNode as TableNode;
+
 /**
  * Steps definitions related to repository_ocis.
  */
@@ -276,5 +278,30 @@ class behat_repository_ocis extends behat_base {
     public function i_refresh_the_file_picker(): void {
         $refreshbutton = $this->get_selected_node('css_element', '.fp-tb-refresh.enabled');
         $refreshbutton->click();
+    }
+
+    /**
+     * @Given the admin has created a new user with the following attributes:
+     */
+    public function theAdminHasCreatedANewUserWithTheFollowingAttributes(TableNode $table)
+    {
+        $client = $this->get_admin_client ();
+        $rows = $table->getRowsHash();
+        $user = $rows["userName"];
+        $displayName = $rows["displayName"];
+        $email = $rows["email"] ;
+        $password = $rows["password"];
+        $payload['onPremisesSamAccountName'] = $user;
+        $payload['passwordProfile'] = ['password' => $password];
+        $payload['displayName'] = $displayName;
+        $payload['mail'] = $email;
+        $payload['accountEnabled'] = true;
+        $response = $client->request (
+            'POST',
+            '/graph/v1.0/users',
+            json_encode($payload)
+        );
+        print_object($response);
+
     }
 }

@@ -33,3 +33,19 @@ Feature: upload the resource in oCIS to moodle
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
     Then I should see "testfile.txt"
+
+
+  Scenario: upload a file from share space of ocis to moodle
+    And the admin has created a new user with the following attributes:
+      | userName    | Brian             |
+      | displayName | Brian Murphy      |
+      | email       | brian@example.com |
+      | password    | 1234              |
+    And user "Alice" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
+    And user "Carol" has sent the following share invitation:
+      | resource        | <resource> |
+      | space           | Personal   |
+      | sharee          | admin      |
+      | shareType       | user       |
+      | permissionsRole | Viewer     |
+
