@@ -245,6 +245,37 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * @When I change the visibility of :drive drive to :visiblity
+     *
+     * @param string $drive
+     * @param string $visibility
+     * @return void
+     */
+    public function i_change_visibility_of_space_to($drive, $visibility): void {
+        $selector = $this->get_visibility_setting_selector($drive);
+        $this->get_selected_node(
+            "xpath_element",
+            "$selector/option[text()='$visibility']"
+        )->click();
+        $this->get_selected_node("button", "Save")->click();
+    }
+
+    /**
+     * @param string $drive
+     *
+     * @return string
+     */
+    public function get_visibility_setting_selector(string $drive): string {
+        if (strtolower($drive) === "personal") {
+            return "//*[@id='id_show_personal_drive']";
+        } else if (strtolower($drive) === "shares") {
+            return "//*[@id='id_show_shares']";
+        } else {
+            return "//*[@id='id_show_project_drives']";
+        }
+    }
+
+    /**
      * @Given :user has created the project space :space
      *
      * @param string $user
