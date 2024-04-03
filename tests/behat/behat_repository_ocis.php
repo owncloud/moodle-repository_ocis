@@ -279,6 +279,8 @@ class behat_repository_ocis extends behat_base {
             $user,
             $table
         );
+        // phpcs:ignore
+        print_object($response);
         if ($response['statusCode'] !== 200) {
             throw new Exception("Error creating share "
                 . json_decode($response['body'], true)['error']['message']);
