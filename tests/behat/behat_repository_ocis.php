@@ -56,7 +56,7 @@ class behat_repository_ocis extends behat_base {
         $this->createdfiles = [];
         $this->createdspaces = [];
         $this->createdusers = [];
-        $this->graph_helper = new graph_helper();
+        $this->graphhelper = new graph_helper();
     }
 
     /**
@@ -139,7 +139,7 @@ class behat_repository_ocis extends behat_base {
      * @throws Exception
      */
     public function delete_space($spaceid): void {
-        $client = $this->graph_helper->get_admin_client();
+        $client = $this->graphhelper->get_admin_client();
         $header = ["Purge" => "T"];
         $disabledrive = $client->request('DELETE', "/graph/v1.0/drives/$spaceid");
         $deletedrive = $client->request('DELETE', "/graph/v1.0/drives/$spaceid", null, $header);
@@ -149,7 +149,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     private function delete_file_in_personal_space($user, $file) {
-        $client = $this->graph_helper->get_client($user);
+        $client = $this->graphhelper->get_client($user);
         $response = $client->request('DELETE', "/dav/files/$user/$file");
         if ($response['statusCode'] !== 204) {
             throw new Exception("Error deleting resource in ocis " . var_dump($response['statusCode']));
@@ -157,7 +157,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     private function delete_created_user(string $userid) {
-        $client = $this->graph_helper->get_admin_client();
+        $client = $this->graphhelper->get_admin_client();
         $response = $client->request('DELETE', "/graph/v1.0/users/$userid");
         if ($response['statusCode'] !== 204) {
             throw new Exception("Error deleting user ");
@@ -169,11 +169,11 @@ class behat_repository_ocis extends behat_base {
      */
     public function i_log_in_to_ocis($user) {
         $this->execute('behat_forms::set_field_node_value', [
-            $this->find('xpath', "//*[@id='oc-login-username']"), $this->graph_helper->get_actual_username($user),
+            $this->find('xpath', "//*[@id='oc-login-username']"), $this->graphhelper->get_actual_username($user),
         ]);
 
         $this->execute('behat_forms::set_field_node_value', [
-            $this->find('xpath', "//*[@id='oc-login-password']"), $this->graph_helper->get_password_for_user($user),
+            $this->find('xpath', "//*[@id='oc-login-password']"), $this->graphhelper->get_password_for_user($user),
         ]);
 
         $loginbutton = $this->get_selected_node("button", "Log in");
@@ -200,10 +200,10 @@ class behat_repository_ocis extends behat_base {
      */
     public function user_has_uploaded_a_file(string $user, string $space, string $content, string $file): void {
         if (strtolower($space) === "personal") {
-            $this->graph_helper->create_file_in_personal_space($user, $file, $content);
+            $this->graphhelper->create_file_in_personal_space($user, $file, $content);
             $this->createdfiles[] = ["file" => $file, "user" => $user];
         } else {
-            $this->graph_helper->create_resource_in_project_space($space, $file, $content);
+            $this->graphhelper->create_resource_in_project_space($space, $file, $content);
         }
     }
 
@@ -217,7 +217,7 @@ class behat_repository_ocis extends behat_base {
      * @throws JsonException
      */
     public function user_has_created_the_project_space(string $user, string $space) {
-        $client = $this->graph_helper->get_client($user);
+        $client = $this->graphhelper->get_client($user);
         $body = json_encode(["Name" => $space], JSON_THROW_ON_ERROR);
         $response = $client->request(
             'POST',
@@ -249,15 +249,15 @@ class behat_repository_ocis extends behat_base {
      * @throws Exception
      */
     public function user_has_been_created_with_default_attributes(string $user) {
-        $username = $this->graph_helper->get_actual_username($user);
+        $username = $this->graphhelper->get_actual_username($user);
         $email = \str_replace(["@", " "], "", $username) . '@owncloud.com';
         $payload['onPremisesSamAccountName'] = $username;
-        $payload['passwordProfile'] = ['password' => $this->graph_helper->get_password_for_user($username)];
+        $payload['passwordProfile'] = ['password' => $this->graphhelper->get_password_for_user($username)];
         $payload['displayName'] = $username;
         $payload['mail'] = $email;
         $payload['accountEnabled'] = true;
 
-        $client = $this->graph_helper->get_admin_client();
+        $client = $this->graphhelper->get_admin_client();
         $response = $client->request(
             'POST',
             '/graph/v1.0/users',
@@ -272,15 +272,21 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
-     * @Given user :arg1 has sent the following share invitation:
+     * @Given user :user has sent the following share invitation:
+     * @param string $user
+     * @param TableNode $table
+     *
+     * @throws Exception
      */
     public function user_has_sent_the_following_share_invitation(string $user, TableNode $table) {
-        $response = $this->graph_helper->send_share_invitation(
+        $rows = $table->getRowsHash();
+        $response = $this->graphhelper->send_share_invitation(
             $user,
-            $table
+            $rows['shareType'],
+            $rows['sharee'],
+            $rows['space'],
+            $rows['resource']
         );
-        // phpcs:ignore
-        print_object($response);
         if ($response['statusCode'] !== 200) {
             throw new Exception("Error creating share "
                 . json_decode($response['body'], true)['error']['message']);

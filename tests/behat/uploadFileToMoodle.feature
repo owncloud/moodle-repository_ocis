@@ -43,8 +43,6 @@ Feature: upload the resource in oCIS to moodle
       | space           | Personal     |
       | sharee          | Admin        |
       | shareType       | user         |
-      | permissionsRole | Viewer       |
-    And I wait "1" seconds
     When I click on "//*[@class='fp-filename-field']/p[text()='Shares']" "xpath_element"
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"

@@ -32,6 +32,9 @@
 use Sabre\DAV\Client;
 use Behat\Gherkin\Node\TableNode;
 
+/**
+ * helper class for Ocis API request.
+ */
 class graph_helper {
     private const VIEWER_ROLE_PERMISSION_ID = 'b1e2218d-eef8-4d4c-b82d-0f1a1b48f3b5';
     private const ALTERNATE_USER_PASSWORD = '1234';
@@ -126,6 +129,11 @@ class graph_helper {
         }
     }
 
+    /**
+     * @param string $username
+     *
+     * @return string
+     */
     private function get_user_id(string $username): string {
         $client = $this->get_admin_client();
         $response = $client->request(
@@ -142,6 +150,7 @@ class graph_helper {
 
     /**
      * @param string $user
+     *
      * @return array
      */
     public function create_new_user(string $user) {
@@ -162,12 +171,12 @@ class graph_helper {
     }
 
     /**
-     * @param $user
-     * @param $spacename
+     * @param string $user
+     * @param string $spacename
      *
      * @return array
      */
-    public function get_space_by_name($user, $spacename): array {
+    public function get_space_by_name(string $user, string $spacename): array {
         $space = [];
         $spacename = ($spacename === "Personal") ? "personal" : "project";
         $client = $this->get_client($user);
@@ -183,13 +192,13 @@ class graph_helper {
     }
 
     /**
-     * @param $user
-     * @param $resource
-     * @param $space
+     * @param string $user
+     * @param string $resource
+     * @param string $space
      *
      * @return string
      */
-    public function get_resource_id($user, $resource, $space): string {
+    public function get_resource_id(string $user, string $resource, string $space): string {
         $client = $this->get_client($user);
         $spaceid = $this->get_space_by_name($user, $space)['id'];
         $response = $client->request(
@@ -202,27 +211,24 @@ class graph_helper {
 
     /**
      * @param string $user
-     * @param TableNode $table
+     * @param string $sharetype
+     * @param string $sharee
+     * @param string $space
+     * @param string $resource
      *
      * @return array
      */
-    public function send_share_invitation(string $user, TableNode $table): array {
+    public function send_share_invitation(string $user, string $sharetype, string $sharee, string $space, string $resource): array {
         $body = [];
-        $rows = $table->getRowsHash();
-        if ($rows['permissionsRole'] === 'Viewer') {
-            $roleid = self::VIEWER_ROLE_PERMISSION_ID;
-            $body['roles'] = [$roleid];
-        };
-        $sharetype = $rows['shareType'];
-
-        $shareeid = $this->get_user_id($rows['sharee']);
-        $space = $this->get_space_by_name($user, $rows['space']);
-        $spaceid = $space['id'];
+        $roleid = self::VIEWER_ROLE_PERMISSION_ID;
+        $shareeid = $this->get_user_id($sharee);
+        $spaceid = $this->get_space_by_name($user, $space)['id'];
+        $body['roles'] = [$roleid];
         $body['recipients'][] = [
             "@libre.graph.recipient.type" => $sharetype,
             "objectId" => $shareeid,
         ];
-        $itemid = $this->get_resource_id($user, $rows['resource'], $rows['space']);
+        $itemid = $this->get_resource_id($user, $resource, $space);
         $client = $this->get_client($user);
         return $client->request(
             'POST',
