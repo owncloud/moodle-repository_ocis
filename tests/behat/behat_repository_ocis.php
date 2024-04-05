@@ -30,18 +30,14 @@
 
 
 require_once(__DIR__ . '/../../../../lib/behat/core_behat_file_helper.php');
-
 require_once(__DIR__ . '/../../vendor/autoload.php');
+require_once(__DIR__ . '/graph_helper.php');
 
 
-use Sabre\DAV\Client,
-    Behat\Behat\Hook\Scope\AfterScenarioScope;
-
+use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-
 use Behat\Gherkin\Node\TableNode;
-
-require('graph_helper.php');
+use behat\graph_helper;
 
 /**
  * Steps definitions related to repository_ocis.

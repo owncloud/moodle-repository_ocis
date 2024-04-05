@@ -29,8 +29,11 @@
  */
 
 
-use Sabre\DAV\Client;
+namespace behat;
+
 use Behat\Gherkin\Node\TableNode;
+use Exception;
+use Sabre\DAV\Client;
 
 /**
  * helper class for Ocis API request.
@@ -89,7 +92,7 @@ class graph_helper {
         if (strtolower($username) === 'admin') {
             return getenv('OCIS_ADMIN_PASSWORD') ? getenv('OCIS_ADMIN_PASSWORD') : "admin";
         } else {
-            return  self::ALTERNATE_USER_PASSWORD;
+            return self::ALTERNATE_USER_PASSWORD;
         }
     }
 
