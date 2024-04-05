@@ -4,7 +4,7 @@ OC_UBUNTU = "owncloud/ubuntu:20.04"
 PLUGINS_GITHUB_RELEASE = "plugins/github-release:1"
 POSTGRESQL = "postgres:13"
 MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
-OC_OCIS = "owncloud/ocis:5.0.0-rc.2"
+OC_OCIS = "owncloud/ocis:5.0.0-rc.5"
 OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
 SELENIUM = "selenium/standalone-chrome:94.0"
 

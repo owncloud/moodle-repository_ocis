@@ -30,22 +30,29 @@
 
 
 require_once(__DIR__ . '/../../../../lib/behat/core_behat_file_helper.php');
-
 require_once(__DIR__ . '/../../vendor/autoload.php');
+require_once(__DIR__ . '/graph_helper.php');
 
-use Sabre\DAV\Client,
-    Behat\Behat\Hook\Scope\AfterScenarioScope;
+
+use Behat\Behat\Hook\Scope\AfterScenarioScope;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\TableNode;
+use behat\graph_helper;
 
 /**
  * Steps definitions related to repository_ocis.
  */
 class behat_repository_ocis extends behat_base {
+    private graph_helper $graphhelper;
     public array $createdfiles;
     public array $createdspaces;
+    private array $createdusers;
 
     public function __construct() {
         $this->createdfiles = [];
         $this->createdspaces = [];
+        $this->createdusers = [];
+        $this->graphhelper = new graph_helper();
     }
 
     /**
@@ -71,39 +78,16 @@ class behat_repository_ocis extends behat_base {
         }
     }
 
-    private function get_client(string $user): Client {
-        $username = $this->get_actual_username($user);
-        $password = $this->get_password_for_user($user);
-        $settings = [
-            'baseUri' => getenv('MOODLE_OCIS_URL'),
-            'userName' => $username,
-            'password' => $password,
-        ];
-        return new Client($settings);
-    }
-
-    private function get_admin_client(): Client {
-        $settings = [
-            'baseUri' => getenv('MOODLE_OCIS_URL'),
-            'userName' => getenv('OCIS_ADMIN_USERNAME') ? getenv('OCIS_ADMIN_USERNAME') : 'admin',
-            'password' => getenv('OCIS_ADMIN_PASSWORD') ? getenv('OCIS_ADMIN_PASSWORD') : 'admin',
-        ];
-        return new Client($settings);
-    }
-
     /**
-     * @param string $spacename
-     *
-     * @return string
+     * @param AfterScenarioScope $scope scope passed by event fired after scenario.
+     * @AfterScenario
      * @throws Exception
      */
-    private function get_space_id(string $spacename): string {
-        foreach ($this->get_all_created_project_spaces() as $createdspace) {
-            if ($createdspace["name"] === $spacename) {
-                return $createdspace["spaceid"];
-            }
+    public function delete_all_created_users(AfterScenarioScope $scope): void {
+        $createdusers = $this->get_all_created_users();
+        foreach ($createdusers as $user) {
+            $this->delete_created_user($user["user_id"]);
         }
-        throw new Exception("Space " . $spacename . " not found");
     }
 
     /**
@@ -119,44 +103,29 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * @param $response
+     *
+     * @return void
+     */
+    private function add_user_to_created_users_list($response): void {
+        $this->createdusers[] = [
+            "user" => $response->displayName,
+            "user_id" => $response->id,
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function get_all_created_users(): array {
+        return $this->createdusers;
+    }
+
+    /**
      * @return array
      */
     public function get_all_created_project_spaces(): array {
         return $this->createdspaces;
-    }
-
-    private function get_actual_username(string $username): string {
-        if (strtolower($username) === 'admin') {
-            return getenv('OCIS_ADMIN_USERNAME') ? getenv('OCIS_ADMIN_USERNAME') : "admin";
-        } else {
-            return $username;
-        }
-    }
-
-    private function get_password_for_user(string $username): string {
-        if (strtolower($username) === 'admin') {
-            return getenv('OCIS_ADMIN_PASSWORD') ? getenv('OCIS_ADMIN_PASSWORD') : "admin";
-        } else {
-            return "";
-        }
-    }
-
-    /**
-     * @param string $user
-     * @param string $file
-     * @param string $body
-     *
-     * @return void
-     * @throws Exception
-     */
-    private function create_file_in_personal_space(string $user, string $file, string $body): void {
-        $client = $this->get_client($user);
-        $response = $client->request('PUT', "/dav/files/$user/$file", $body);
-        if (!in_array($response['statusCode'], [201, 204])) {
-            throw new Exception("Error creating resource in ocis personal space of user '$user', status code was "
-                . var_dump($response['statusCode']));
-        }
-        $this->createdfiles[] = ["file" => $file, "user" => $user];
     }
 
     /**
@@ -166,7 +135,7 @@ class behat_repository_ocis extends behat_base {
      * @throws Exception
      */
     public function delete_space($spaceid): void {
-        $client = $this->get_admin_client();
+        $client = $this->graphhelper->get_admin_client();
         $header = ["Purge" => "T"];
         $disabledrive = $client->request('DELETE', "/graph/v1.0/drives/$spaceid");
         $deletedrive = $client->request('DELETE', "/graph/v1.0/drives/$spaceid", null, $header);
@@ -176,29 +145,18 @@ class behat_repository_ocis extends behat_base {
     }
 
     private function delete_file_in_personal_space($user, $file) {
-        $client = $this->get_client($user);
+        $client = $this->graphhelper->get_client($user);
         $response = $client->request('DELETE', "/dav/files/$user/$file");
         if ($response['statusCode'] !== 204) {
             throw new Exception("Error deleting resource in ocis " . var_dump($response['statusCode']));
         }
     }
 
-    /**
-     * @param string $space
-     * @param string $resource
-     * @param string $body
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function create_resource_in_project_space(string $space, string $resource, string $body): void {
-        $client = $this->get_admin_client();
-        $spaceid = $this->get_space_id($space);
-        $response = $client->request('PUT', "dav/spaces/$spaceid/$resource", $body);
-        if ($response['statusCode'] != 201) {
-            throw new Exception("Error creating resource in ocis project space '$space', status code was "
-                . var_dump($response['statusCode']));
-            ;
+    private function delete_created_user(string $userid) {
+        $client = $this->graphhelper->get_admin_client();
+        $response = $client->request('DELETE', "/graph/v1.0/users/$userid");
+        if ($response['statusCode'] !== 204) {
+            throw new Exception("Error deleting user ");
         }
     }
 
@@ -207,11 +165,11 @@ class behat_repository_ocis extends behat_base {
      */
     public function i_log_in_to_ocis($user) {
         $this->execute('behat_forms::set_field_node_value', [
-            $this->find('xpath', "//*[@id='oc-login-username']"), $this->get_actual_username($user),
+            $this->find('xpath', "//*[@id='oc-login-username']"), $this->graphhelper->get_actual_username($user),
         ]);
 
         $this->execute('behat_forms::set_field_node_value', [
-            $this->find('xpath', "//*[@id='oc-login-password']"), $this->get_password_for_user($user),
+            $this->find('xpath', "//*[@id='oc-login-password']"), $this->graphhelper->get_password_for_user($user),
         ]);
 
         $loginbutton = $this->get_selected_node("button", "Log in");
@@ -238,9 +196,10 @@ class behat_repository_ocis extends behat_base {
      */
     public function user_has_uploaded_a_file(string $user, string $space, string $content, string $file): void {
         if (strtolower($space) === "personal") {
-            $this->create_file_in_personal_space($user, $file, $content);
+            $this->graphhelper->create_file_in_personal_space($user, $file, $content);
+            $this->createdfiles[] = ["file" => $file, "user" => $user];
         } else {
-            $this->create_resource_in_project_space($space, $file, $content);
+            $this->graphhelper->create_resource_in_project_space($space, $file, $content);
         }
     }
 
@@ -254,7 +213,7 @@ class behat_repository_ocis extends behat_base {
      * @throws JsonException
      */
     public function user_has_created_the_project_space(string $user, string $space) {
-        $client = $this->get_client($user);
+        $client = $this->graphhelper->get_client($user);
         $body = json_encode(["Name" => $space], JSON_THROW_ON_ERROR);
         $response = $client->request(
             'POST',
@@ -276,5 +235,57 @@ class behat_repository_ocis extends behat_base {
     public function i_refresh_the_file_picker(): void {
         $refreshbutton = $this->get_selected_node('css_element', '.fp-tb-refresh.enabled');
         $refreshbutton->click();
+    }
+
+    /**
+     * @Given user :user has been created with default attributes
+     *
+     * @param string $user
+     *
+     * @throws Exception
+     */
+    public function user_has_been_created_with_default_attributes(string $user) {
+        $username = $this->graphhelper->get_actual_username($user);
+        $email = \str_replace(["@", " "], "", $username) . '@owncloud.com';
+        $payload['onPremisesSamAccountName'] = $username;
+        $payload['passwordProfile'] = ['password' => $this->graphhelper->get_password_for_user($username)];
+        $payload['displayName'] = $username;
+        $payload['mail'] = $email;
+        $payload['accountEnabled'] = true;
+
+        $client = $this->graphhelper->get_admin_client();
+        $response = $client->request(
+            'POST',
+            '/graph/v1.0/users',
+            json_encode($payload)
+        );
+        if ($response['statusCode'] !== 201) {
+            throw new Exception("Error creating user '$$user'."
+                . json_decode($response['body'], true)['error']['message']);
+        }
+        $responsebody = json_decode($response["body"]);
+        $this->add_user_to_created_users_list($responsebody);
+    }
+
+    /**
+     * @Given user :user has sent the following share invitation:
+     * @param string $user
+     * @param TableNode $table
+     *
+     * @throws Exception
+     */
+    public function user_has_sent_the_following_share_invitation(string $user, TableNode $table) {
+        $rows = $table->getRowsHash();
+        $response = $this->graphhelper->send_share_invitation(
+            $user,
+            $rows['shareType'],
+            $rows['sharee'],
+            $rows['space'],
+            $rows['resource']
+        );
+        if ($response['statusCode'] !== 200) {
+            throw new Exception("Error creating share "
+                . json_decode($response['body'], true)['error']['message']);
+        }
     }
 }
