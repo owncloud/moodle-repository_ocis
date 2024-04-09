@@ -1,8 +1,25 @@
 <?php
-// phpcs:ignoreFile
+// This file is part of the ocis repository for Moodle - http://moodle.org/
+//
+// The ocis repository for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The ocis repository for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with the ocis repository for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+//
+// ownCloud Infinite Scale for moodle Repository is built with the contributions of:
+// - Staatsinstitut für Schulqualität und Bildungsforschung
+// - JankariTech
+// - ownCloud - a Kiteworks company.
 
-unset($CFG);
-global $CFG;
+global $CFG; // phpcs:ignore moodle.Files.MoodleInternal.MoodleInternalGlobalState
 $CFG = new stdClass();
 
 $CFG->dbtype    = getenv('MOODLE_DBTYPE') ?: 'pgsql';

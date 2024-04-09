@@ -4,6 +4,8 @@ OC_UBUNTU = "owncloud/ubuntu:20.04"
 PLUGINS_GITHUB_RELEASE = "plugins/github-release:1"
 POSTGRESQL = "postgres:13"
 MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
+OC_CI_GOLANG = "owncloudci/golang:1.21"
+OC_CI_NODEJS = "owncloudci/nodejs:18"
 OC_OCIS = "owncloud/ocis:5.0.0-rc.5"
 OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
 SELENIUM = "selenium/standalone-chrome:94.0"
@@ -13,6 +15,7 @@ config = {
         "main",
     ],
     "codestyle": True,
+    "ocisBranches": ["master","stable"],
 }
 
 trigger = {
@@ -32,10 +35,10 @@ POSTGRESQL_ENV = {
 OCIS_ENV = {
     "OCIS_INSECURE": "true",
     "PROXY_ENABLE_BASIC_AUTH": "true",
-    "IDM_ADMIN_PASSWORD": 'admin',
+    "IDM_ADMIN_PASSWORD": "admin",
     "OCIS_URL": "https://ocis:9200",
-    "PROXY_TRANSPORT_TLS_KEY":"/usr/local/share/ca-certificates/ocis.pem",
-    "PROXY_TRANSPORT_TLS_CERT":"/usr/local/share/ca-certificates/ocis.crt",
+    "PROXY_TRANSPORT_TLS_KEY": "/usr/local/share/ca-certificates/ocis.pem",
+    "PROXY_TRANSPORT_TLS_CERT": "/usr/local/share/ca-certificates/ocis.crt",
 }
 
 MOODLE_ENV = {
@@ -51,14 +54,14 @@ MOODLE_ENV = {
     "MOODLE_OCIS_CLIENT_SECRET": "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh",
     "BROWSER": "chrome",
     "BEHAT_DATAROOT": "/var/www/behatdata",
-    "BEHAT_WWWROOT": "https://apache",
+    "BEHAT_WWWROOT": "https://apache/moodle",
     "SELENIUM_HOST": "selenium",
     "POSTGRES_USER": "moodle",
     "POSTGRES_PASSWORD": "moodle",
     "POSTGRES_DB": "moodle",
-    "OCIS_ADMIN_USERNAME":"admin",
-    "OCIS_ADMIN_PASSWORD":"admin",
-    "MOODLE_DOCKER_BEHAT_FAILDUMP":"/drone/src/tests"
+    "OCIS_ADMIN_USERNAME": "admin",
+    "OCIS_ADMIN_PASSWORD": "admin",
+    "MOODLE_DOCKER_BEHAT_FAILDUMP": "/drone/src/tests",
 }
 
 def main(ctx):
@@ -70,7 +73,7 @@ def main(ctx):
     )
     releasePipeline = release (ctx)
     uiTestPipeLine = behattest()
-    dependsOn(testPipelines,uiTestPipeLine)
+    dependsOn(testPipelines , uiTestPipeLine)
     dependsOn(testPipelines + uiTestPipeLine , releasePipeline)
     return testPipelines + uiTestPipeLine + releasePipeline
 
@@ -163,85 +166,137 @@ def release(ctx):
                 "ref": [
                     "refs/tags/v*",
                 ],
-            }
-        }
-    ]
-
-def behattest():
-    return [
-        {
-            "kind": "pipeline",
-            "type": "docker",
-            "name": "behatUItest",
-            "depends_on": [],
-            "steps":generateSSLCert() + runOcis() + waitForService("ocis",9200) + \
-                    databaseService() + waitForService("postgresql",5432) + \
-                    apacheService() + waitForService("apache",443) + seleniumService() + \
-                    waitForService("selenium",4444) + setupMoodle() + runBehatTest() ,
-            "volumes":[
-                {
-                    "name":"www-moodle",
-                    "temp": {}
-                },
-                {
-                    "name":"update-cert",
-                    "temp":{}
-                },
-            ],
-            "trigger": {
-                "ref": [
-                    "refs/pull/**",
-                ],
             },
         },
     ]
+
+def behattest():
+    pipelines = []
+    for branch in config["ocisBranches"]:
+        pipelines += [{
+            "kind": "pipeline",
+            "type": "docker",
+            "name": "behatUItest-%s" % branch,
+            "depends_on": [],
+            "steps":generateSSLCert() + apacheService() + waitForService("apache",443) + runOcis(branch) + \
+                    waitForService("ocis",9200) + databaseService() + waitForService("postgresql",5432) + \
+                    seleniumService() + waitForService("selenium",4444) + setupMoodle() + runBehatTest() ,
+            "volumes": [
+                {
+                    "name": "www-moodle",
+                    "temp": {},
+                },
+                {
+                    "name": "update-cert",
+                    "temp": {},
+                },
+            ],
+            "trigger": trigger,
+        }]
+    return pipelines
 
 def databaseService():
     return [
         {
             "name": "postgresql",
             "image": POSTGRESQL,
-            "detach":True,
-            "environment": POSTGRESQL_ENV
+            "detach": True,
+            "environment": POSTGRESQL_ENV,
         },
     ]
 
-def waitForService(name,port):
+def waitForService(name, port):
     return [
         {
             "name": "wait-for-%s" % name,
             "image": OC_CI_WAIT_FOR,
-            "commands": ["wait-for -it %s:%s -t 600" % (name,port)]
-        }
+            "commands": ["wait-for -it %s:%s -t 600" % (name, port)],
+        },
     ]
 
-def runOcis():
+def getCommitId(branch):
+    if branch == "master":
+        return "$OCIS_COMMITID"
+    return "$OCIS_STABLE_COMMITID"
+
+def getBranchName(branch):
+    if branch == "master":
+        return "$OCIS_BRANCH"
+    return "$OCIS_STABLE_BRANCH"
+
+def runOcis(branch):
+    ocis_commit_id = getCommitId(branch)
+    ocis_branch = getBranchName(branch)
+    ocis_repo_url = "https://github.com/owncloud/ocis.git"
     return [
         {
-            "name": "ocis",
-            "image": OC_OCIS,
-            "detach": True,
-            "environment": OCIS_ENV,
+            "name": "clone-ocis-%s" % branch,
+            "image": OC_CI_GOLANG,
             "commands": [
-                "ocis init",
-                "cp tests/drone/idp.yaml /etc/ocis",
-                "ocis server",
+                "source .drone.env",
+                "cd /var/www/html",
+                "git clone -b %s --single-branch %s" % (ocis_branch, ocis_repo_url),
+                "cd ocis",
+                "git checkout %s" % ocis_commit_id,
             ],
-            "volumes":[
+            "volumes": [
                 {
-                    "name":"www-moodle",
-                    "path": "/var/www"
+                    "name": "www-moodle",
+                    "path": "/var/www",
                 },
                 {
-                    "name":"update-cert",
-                    "path":"/usr/local/share/ca-certificates/"
+                    "name": "update-cert",
+                    "path": "/usr/local/share/ca-certificates/",
                 },
             ],
-        }
+        },
+        {
+            "name": "generate-ocis-%s" % branch,
+            "image": OC_CI_NODEJS,
+            "commands": [
+                "cd /var/www/html/ocis/ocis",
+                "retry -t 3 'make ci-node-generate'",
+            ],
+            "volumes": [
+                {
+                    "name": "www-moodle",
+                    "path": "/var/www",
+                },
+                {
+                    "name": "update-cert",
+                    "path": "/usr/local/share/ca-certificates/",
+                },
+            ],
+        },
+        {
+            "name": "ocis",
+            "image": OC_CI_GOLANG,
+            "detach": True,
+            "commands": [
+                "update-ca-certificates",
+                "source .drone.env",
+                "cd /var/www/html/ocis/ocis",
+                "retry -t 3 'make build'",
+                "bin/ocis init",
+                "cp /drone/src/tests/drone/idp.yaml /root/.ocis/config/",
+                "bin/ocis server",
+            ],
+            "environment": OCIS_ENV,
+            "volumes": [
+                {
+                    "name": "www-moodle",
+                    "path": "/var/www",
+                },
+                {
+                    "name": "update-cert",
+                    "path": "/usr/local/share/ca-certificates/",
+                },
+            ],
+        },
     ]
 
 def generateSSLCert():
-    return  [
+    return [
         {
             "name": "generate-ssl-certs",
             "image": MOODLEHQ_APACHE,
@@ -251,17 +306,17 @@ def generateSSLCert():
                 "openssl req -x509  -newkey rsa:2048 -keyout moodle.key -out moodle.crt -nodes -days 365 -subj '/CN=apache'",
                 "chmod -R 755 /usr/local/share/ca-certificates/",
             ],
-            "volumes":[
+            "volumes": [
                 {
-                    "name":"www-moodle",
-                    "path": "/var/www"
+                    "name": "www-moodle",
+                    "path": "/var/www",
                 },
                 {
-                    "name":"update-cert",
-                    "path":"/usr/local/share/ca-certificates/"
+                    "name": "update-cert",
+                    "path": "/usr/local/share/ca-certificates/",
                 },
             ],
-        }
+        },
     ]
 
 def apacheService():
@@ -269,9 +324,9 @@ def apacheService():
         {
             "name": "apache",
             "image": MOODLEHQ_APACHE,
-            "detach":True,
+            "detach": True,
             "environment": MOODLE_ENV,
-            "commands":[
+            "commands": [
                 "cd /usr/local/share/ca-certificates/",
                 "update-ca-certificates",
                 "cp moodle.crt /etc/ssl/certs/ssl-cert-snakeoil.pem",
@@ -280,16 +335,16 @@ def apacheService():
                 "a2enmod ssl",
                 "moodle-docker-php-entrypoint apache2-foreground",
             ],
-            "volumes":[
+            "volumes": [
                 {
-                    "name":"www-moodle",
-                    "path": "/var/www"
+                    "name": "www-moodle",
+                    "path": "/var/www",
                 },
                 {
-                    "name":"update-cert",
-                    "path":"/usr/local/share/ca-certificates"
+                    "name": "update-cert",
+                    "path": "/usr/local/share/ca-certificates",
                 },
-            ]
+            ],
         },
     ]
 
@@ -302,63 +357,62 @@ def setupMoodle():
             "commands": [
                 "cd /var/www/html",
                 "update-ca-certificates",
-                "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git .",
+                "git clone --branch MOODLE_402_STABLE --single-branch --depth=1 https://github.com/moodle/moodle.git",
+                "cd moodle",
                 "cp -r /drone/src repository/ocis",
                 "cp /drone/src/tests/drone/config.php ./",
-                "sed -i 's/$$CFG->dataroot = $$CFG->behat_dataroot;/$$CFG->dataroot = $$CFG->behat_dataroot;\\\\\n\\\\\t$$CFG->sslproxy = true;/' lib/setup.php",
                 "php admin/tool/behat/cli/init.php",
             ],
-            "volumes":[
+            "volumes": [
                 {
-                    "name":"www-moodle",
-                    "path": "/var/www"
+                    "name": "www-moodle",
+                    "path": "/var/www",
                 },
                 {
-                    "name":"update-cert",
-                    "path":"/usr/local/share/ca-certificates"
+                    "name": "update-cert",
+                    "path": "/usr/local/share/ca-certificates",
                 },
-            ]
+            ],
         },
     ]
 
 def seleniumService():
     return [
         {
-            "name":"selenium",
-            "image":SELENIUM,
-            "detach":True,
-            "volumes":[
+            "name": "selenium",
+            "image": SELENIUM,
+            "detach": True,
+            "volumes": [
                 {
-                    "name":"www-moodle",
-                    "path": "/var/www"
-                }
-            ]
-        }
+                    "name": "www-moodle",
+                    "path": "/var/www",
+                },
+            ],
+        },
     ]
 
 def runBehatTest():
     return [
         {
-            "name":"behat-test",
-            "image":MOODLEHQ_APACHE,
+            "name": "behat-test",
+            "image": MOODLEHQ_APACHE,
             "environment": MOODLE_ENV,
             "commands": [
                 "update-ca-certificates",
-                "cd /var/www/html",
+                "cd /var/www/html/moodle",
                 "vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml --tags=@ocis",
             ],
-            "volumes":[
+            "volumes": [
                 {
-                    "name":"www-moodle",
-                    "path": "/var/www"
+                    "name": "www-moodle",
+                    "path": "/var/www",
                 },
                 {
-                    "name":"update-cert",
-                    "path":"/usr/local/share/ca-certificates"
+                    "name": "update-cert",
+                    "path": "/usr/local/share/ca-certificates",
                 },
-            ]
-
-        }
+            ],
+        },
     ]
 
 def dependsOn(earlierStages, nextStages):
