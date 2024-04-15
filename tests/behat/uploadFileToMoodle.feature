@@ -1,9 +1,8 @@
-@ocis @javascript
+@ocis @javascript @repository_ocis @repository
 Feature: upload the resource in oCIS to moodle
   As a user who manages moodle content
   I want to make resources from oCIS available in moodle
   So that the resource content can be integrated into moodle course content
-
 
   Background:
     Given I log in as "admin"
@@ -16,14 +15,12 @@ Feature: upload the resource in oCIS to moodle
     And I switch to a second window
     And I log in to ocis as "admin"
 
-
   Scenario: upload a file from the personal drive of ocis to moodle
     And user "admin" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
     When I click on "//*[@class='fp-filename-field']/p[text()='Personal']" "xpath_element"
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
     Then I should see "testfile.txt"
-
 
   Scenario: upload a file from project space of ocis to moodle
     Given "admin" has created the project space "ProjectMoodle"
@@ -33,7 +30,6 @@ Feature: upload the resource in oCIS to moodle
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
     Then I should see "testfile.txt"
-
 
   Scenario: upload a file from share space of ocis to moodle
     Given user "Brian" has been created with default attributes
@@ -47,4 +43,3 @@ Feature: upload the resource in oCIS to moodle
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
     Then I should see "testfile.txt"
-

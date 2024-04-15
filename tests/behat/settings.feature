@@ -1,16 +1,15 @@
-@ocis @javascript
-Feature: upload the resource in oCIS to moodle
+@ocis @javascript @repository_ocis @repository
+Feature: changing settings of oCIS plugin
   As a user who manages moodle content
   I want to restrict users access to a drive
   So that the users can only access what is necessary for them
 
-  Background: 
+  Background:
     Given I log in as "admin"
     And "admin" has created the project space "ProjectMoodle"
     And user "admin" has uploaded a file inside space "ProjectMoodle" with content "some content" to "/testfile.txt"
     And I navigate to "Plugins > Repositories > ownCloud Infinite Scale repository" in site administration
     And I click on "Settings" "link"
-
 
   Scenario Outline: hide personal/shares drive
     When I change the visibility of "<hiddenDrive>" drive to "No"
@@ -25,13 +24,12 @@ Feature: upload the resource in oCIS to moodle
     Then I should not see "<hiddenDrive>"
     And I should see "<visibleDrive>"
     And I should see "<visibleDrive1>"
-    Examples: 
+    Examples:
       | hiddenDrive | visibleDrive | visibleDrive1 |
       | Shares      | Personal     | ProjectMoodle |
       | Personal    | Shares       | ProjectMoodle |
       | Project     | Personal     | Shares        |
 
-  
   Scenario: change image of drives
     When I set the following fields to these values:
       | Icon URL for personal drive | image.png  |

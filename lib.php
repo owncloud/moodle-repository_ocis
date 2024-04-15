@@ -25,7 +25,7 @@
  * @package    repository_ocis
  * @copyright  2017 Project seminar (Learnweb, University of Münster)
  * @copyright  2023 ownCloud GmbH
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 use core\oauth2\api as oauth2_api;
