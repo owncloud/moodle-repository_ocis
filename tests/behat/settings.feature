@@ -34,9 +34,9 @@ Feature: upload the resource in oCIS to moodle
   
   Scenario: change image of drives
     When I set the following fields to these values:
-      | Icon URL for Personal Drive | image.png  |
-      | Icon URL for Shares         | image1.png |
-      | Icon URL for Project Drive  | image2.png |
+      | Icon URL for personal drive | image.png  |
+      | Icon URL for shares         | image1.png |
+      | Icon URL for project drive  | image2.png |
     And I click on "Save" "button"
     And I follow "Profile" in the user menu
     And I click on "Blog entries" "link"
