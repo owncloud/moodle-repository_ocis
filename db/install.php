@@ -45,10 +45,6 @@ function xmldb_repository_ocis_install() {
     if (!$id = $ocisplugin->create(true)) {
         $result = false;
     }
-    if (strtolower(getenv('MOODLE_DISABLE_CURL_SECURITY')) === 'true') {
-        set_config('curlsecurityblockedhosts', '');
-        set_config('curlsecurityallowedport', '');
-    }
 
     $ocisurl = getenv('MOODLE_OCIS_URL');
     $ocislogourl = getenv('MOODLE_OCIS_LOGO_URL');
