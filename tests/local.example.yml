@@ -11,7 +11,6 @@ services:
       - host.docker.internal:host-gateway
       - moodle.webserver:host-gateway
     environment:
-      MOODLE_DISABLE_CURL_SECURITY: "true" # optional, but useful for testing on localhost or host.docker.internal
       MOODLE_OCIS_URL: "https://host.docker.internal:9200" # optional, used to create OAuth 2 services and repository instance during installation
       OCIS_ADMIN_PASSWORD: admin
       OCIS_ADMIN_USERNAME: admin

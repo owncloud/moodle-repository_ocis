@@ -48,7 +48,6 @@ MOODLE_ENV = {
     "MOODLE_DBPASS": "moodle",
     "MOODLE_DATAROOT": "/var/www/moodledata",
     "MOODLE_OCIS_URL": "https://ocis:9200",
-    "MOODLE_DISABLE_CURL_SECURITY": "true",
     "MOODLE_OCIS_CLIENT_ID": "moodle-ocis-integration",
     "MOODLE_OCIS_CLIENT_SECRET": "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh",
     "BROWSER": "chrome",

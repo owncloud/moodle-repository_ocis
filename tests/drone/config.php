@@ -58,6 +58,6 @@ $CFG->behat_profiles = [
 ];
 $CFG->curlsecurityblockedhosts = '';
 $CFG->curlsecurityallowedport = '';
-$CFG->behat_extraallowedsettings = array('curlsecurityblockedhosts', 'curlsecurityallowedport');
+$CFG->behat_extraallowedsettings = ['curlsecurityblockedhosts', 'curlsecurityallowedport'];
 
 require_once(__DIR__ . '/lib/setup.php');
