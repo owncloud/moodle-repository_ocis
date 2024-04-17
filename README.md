@@ -66,6 +66,9 @@ There are three different modes for the Moodle user to link files from oCIS to M
       export MOODLE_DOCKER_DB=pgsql
       export MOODLE_DOCKER_PHP_VERSION=8.1
       cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/config.php
+      # disable some security settings, that would block access to non standard ports and local addresses
+      # !DON'T DO THAT FOR PRODUCTION INSTALLATIONS!
+      sed -i "s|require_once(__DIR__ . '/lib/setup.php');|\$CFG->curlsecurityblockedhosts = '';\n\$CFG->curlsecurityallowedport = '';\n\$CFG->behat_extraallowedsettings = ['curlsecurityblockedhosts', 'curlsecurityallowedport'];\nrequire_once(__DIR__ . '/lib/setup.php');|" $MOODLE_DOCKER_WWWROOT/config.php
       # allow container to access docker host via 'host.docker.internal'
       cat > local.yml <<'EOF'
       services:
@@ -73,7 +76,6 @@ There are three different modes for the Moodle user to link files from oCIS to M
           extra_hosts:
             - host.docker.internal:host-gateway
           environment:
-            MOODLE_DISABLE_CURL_SECURITY: "true" # optional, but useful for testing on localhost or host.docker.internal
             MOODLE_OCIS_URL: "https://host.docker.internal:9200" # optional, used to create OAuth 2 services and repository instance during installation
             MOODLE_OCIS_CLIENT_ID: "xdXOt13JKxym1B1QcEncf2XDkLAexMBFwiT9j6EfhhHFJhs2KM9jbjTmf8JBXE69"  # optional, used to create OAuth 2 services and repository instance during installation
             MOODLE_OCIS_CLIENT_SECRET: "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh" # optional, used to create OAuth 2 services and repository instance during installation
@@ -152,7 +154,6 @@ There are three different modes for the Moodle user to link files from oCIS to M
 
 To reduce the setup steps specially when doing development and running automated tests these environment variables can be set to auto-provision the plugin:
 
-- `MOODLE_DISABLE_CURL_SECURITY="true"` to disable and delete all curl security checks, useful for testing on localhost or host.docker.internal
 - `MOODLE_OCIS_URL`, `MOODLE_OCIS_CLIENT_ID`, `MOODLE_OCIS_CLIENT_SECRET`, `MOODLE_OCIS_LOGO_URL` to create OAuth 2 services and repository instance during installation. Note: the auto-provisioning will be triggered only if all of `MOODLE_OCIS_URL`, `MOODLE_OCIS_CLIENT_ID`, `MOODLE_OCIS_CLIENT_SECRET` variables are set.
 
 ### Run tests

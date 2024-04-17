@@ -32,8 +32,6 @@
  * If the env. variables MOODLE_OCIS_URL, MOODLE_OCIS_CLIENT_ID & MOODLE_OCIS_CLIENT_SECRET are set
  * a new oauth2 issuer and a repository instance will be created
  *
- * The env. variable MOODLE_DISABLE_CURL_SECURITY can be used to disable curl security settings, this can be useful
- * to test on localhost and similar environments.
  *
  * @return bool Returns true if the installation is successful, false otherwise.
  */
@@ -44,10 +42,6 @@ function xmldb_repository_ocis_install() {
     $ocisplugin = new repository_type('ocis', [], true);
     if (!$id = $ocisplugin->create(true)) {
         $result = false;
-    }
-    if (strtolower(getenv('MOODLE_DISABLE_CURL_SECURITY')) === 'true') {
-        set_config('curlsecurityblockedhosts', '');
-        set_config('curlsecurityallowedport', '');
     }
 
     $ocisurl = getenv('MOODLE_OCIS_URL');

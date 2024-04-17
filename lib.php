@@ -83,10 +83,6 @@ class repository_ocis extends repository {
      * @throws coding_exception|dml_exception
      */
     public function __construct($repositoryid, $context = SYSCONTEXTID, $options = []) {
-        if (strtolower(getenv('MOODLE_DISABLE_CURL_SECURITY')) === 'true') {
-            set_config('curlsecurityblockedhosts', '');
-            set_config('curlsecurityallowedport', '');
-        }
         parent::__construct($repositoryid, $context, $options);
         // Issuer from repository instance config.
         $issuerid = $this->get_option('issuerid');
