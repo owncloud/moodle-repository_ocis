@@ -35,7 +35,6 @@ require_once(__DIR__ . '/graph_helper.php');
 
 
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\TableNode;
 use behat\graph_helper;
 
@@ -43,11 +42,30 @@ use behat\graph_helper;
  * Steps definitions related to repository_ocis.
  */
 class behat_repository_ocis extends behat_base {
+    /**
+     * A helper class to make API requests
+     * @var graph_helper $graphhelper
+     */
     private graph_helper $graphhelper;
+    /**
+     * Stores all resources created by tests
+     * @var array $createdfiles
+     */
     public array $createdfiles;
+    /**
+     * Stores all spaces created by tests
+     * @var array $createdspaces
+     */
     public array $createdspaces;
+    /**
+     * Stores all users created by tests
+     * @var graph_helper $createdusers
+     */
     private array $createdusers;
 
+    /**
+     * Constructor
+     */
     public function __construct() {
         $this->createdfiles = [];
         $this->createdspaces = [];
@@ -56,6 +74,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Delete all created files in oCIS
      * @param AfterScenarioScope $scope scope passed by event fired after scenario.
      * @AfterScenario
      */
@@ -66,6 +85,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Delete all created project spaces
      * @param AfterScenarioScope $scope scope passed by event fired after scenario.
      * @AfterScenario
      *
@@ -79,9 +99,11 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Delete all users created by tests in oCIS
      * @param AfterScenarioScope $scope scope passed by event fired after scenario.
      * @AfterScenario
      * @throws Exception
+     * @return void
      */
     public function delete_all_created_users(AfterScenarioScope $scope): void {
         $createdusers = $this->get_all_created_users();
@@ -91,8 +113,8 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
-     *
-     * @param $response
+     * Adds a space to the 'created spaces storage'
+     * @param mixed $response
      * @return void
      */
     private function add_to_created_spaces($response): void {
@@ -103,7 +125,8 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
-     * @param $response
+     * Add users to created user list
+     * @param mixed $response
      *
      * @return void
      */
@@ -115,6 +138,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Get all created users
      * @return array
      */
     private function get_all_created_users(): array {
@@ -122,6 +146,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Get all created spaces
      * @return array
      */
     public function get_all_created_project_spaces(): array {
@@ -129,12 +154,13 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
-     * @param $spaceid
+     * Delete a space
+     * @param string $spaceid
      *
      * @return void
      * @throws Exception
      */
-    public function delete_space($spaceid): void {
+    public function delete_space(string $spaceid): void {
         $client = $this->graphhelper->get_admin_client();
         $header = ["Purge" => "T"];
         $disabledrive = $client->request('DELETE', "/graph/v1.0/drives/$spaceid");
@@ -143,8 +169,14 @@ class behat_repository_ocis extends behat_base {
             throw new Exception('Error deleting drive');
         }
     }
-
-    private function delete_file_in_personal_space($user, $file) {
+    /**
+     * Delete a file in the personal space
+     *
+     * @param string $user
+     * @param string $file
+     * @return void
+     */
+    private function delete_file_in_personal_space(string $user, string $file) {
         $client = $this->graphhelper->get_client($user);
         $response = $client->request('DELETE', "/dav/files/$user/$file");
         if ($response['statusCode'] !== 204) {
@@ -152,6 +184,12 @@ class behat_repository_ocis extends behat_base {
         }
     }
 
+    /**
+     * Delete a users
+     *
+     * @param string $userid
+     * @return void
+     */
     private function delete_created_user(string $userid) {
         $client = $this->graphhelper->get_admin_client();
         $response = $client->request('DELETE', "/graph/v1.0/users/$userid");
@@ -161,9 +199,11 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Login to oCIS
      * @Given I log in to ocis as :user
+     * @param string $user
      */
-    public function i_log_in_to_ocis($user) {
+    public function i_log_in_to_ocis(string $user) {
         $this->execute('behat_forms::set_field_node_value', [
             $this->find('xpath', "//*[@id='oc-login-username']"), $this->graphhelper->get_actual_username($user),
         ]);
@@ -183,6 +223,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Upload a file to oCIS
      * @Given user :user has uploaded a file inside space :space with content :content to :file
      *
      * @param string $user
@@ -204,13 +245,14 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Change visibility of a drives
      * @When I change the visibility of :drive drive to :visiblity
      *
      * @param string $drive
      * @param string $visibility
      * @return void
      */
-    public function i_change_visibility_of_space_to($drive, $visibility): void {
+    public function i_change_visibility_of_space_to(string $drive, string $visibility): void {
         $selector = $this->get_visibility_setting_selector($drive);
         $this->get_selected_node(
             "xpath_element",
@@ -220,6 +262,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Get the visibility setting selector
      * @param string $drive
      *
      * @return string
@@ -235,6 +278,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Create a project space
      * @Given :user has created the project space :space
      *
      * @param string $user
@@ -259,6 +303,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Refresh the file picker
      * @Given I refresh the file-picker
      *
      * @return void
@@ -269,6 +314,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Create a user in oCIS
      * @Given user :user has been created with default attributes
      *
      * @param string $user
@@ -299,6 +345,7 @@ class behat_repository_ocis extends behat_base {
     }
 
     /**
+     * Send a share invitation
      * @Given user :user has sent the following share invitation:
      * @param string $user
      * @param TableNode $table

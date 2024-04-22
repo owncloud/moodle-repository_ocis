@@ -19,6 +19,15 @@
 // - JankariTech
 // - ownCloud - a Kiteworks company.
 
+/**
+ * Configuration to run behat tests of repository_ocis in drone CI.
+ *
+ * @package    repository_ocis
+ * @copyright  2017 Project seminar (Learnweb, University of Münster)
+ * @copyright  2023 ownCloud GmbH
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 global $CFG; // phpcs:ignore moodle.Files.MoodleInternal.MoodleInternalGlobalState
 $CFG = new stdClass();
 

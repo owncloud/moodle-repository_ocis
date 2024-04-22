@@ -31,7 +31,6 @@
 
 namespace behat;
 
-use Behat\Gherkin\Node\TableNode;
 use Exception;
 use Sabre\DAV\Client;
 
@@ -39,12 +38,18 @@ use Sabre\DAV\Client;
  * helper class for Ocis API request.
  */
 class graph_helper {
+    /**
+     * id of viewer role permission
+     */
     private const VIEWER_ROLE_PERMISSION_ID = 'b1e2218d-eef8-4d4c-b82d-0f1a1b48f3b5';
+    /**
+     * Alternative password for a user
+     */
     private const ALTERNATE_USER_PASSWORD = '1234';
 
     /**
+     * Get a new SabreDAV client
      * @param string $user
-     *
      * @return Client
      */
     public function get_client(string $user): Client {
@@ -59,6 +64,7 @@ class graph_helper {
     }
 
     /**
+     * Get the SabreDAV client for the admin user
      * @return Client
      */
     public function get_admin_client(): Client {
@@ -71,8 +77,8 @@ class graph_helper {
     }
 
     /**
+     * Returns actual name of a oCIS user
      * @param string $username
-     *
      * @return string
      */
     public function get_actual_username(string $username): string {
@@ -84,8 +90,8 @@ class graph_helper {
     }
 
     /**
+     * Returns password of a user
      * @param string $username
-     *
      * @return string
      */
     public function get_password_for_user(string $username): string {
@@ -97,6 +103,7 @@ class graph_helper {
     }
 
     /**
+     * Create a file in personal space
      * @param string $user
      * @param string $file
      * @param string $body
@@ -114,6 +121,7 @@ class graph_helper {
     }
 
     /**
+     * Create a resource in a project space
      * @param string $space
      * @param string $resource
      * @param string $body
@@ -133,9 +141,11 @@ class graph_helper {
     }
 
     /**
+     * the user id from the user name
      * @param string $username
      *
      * @return string
+     * @throws Exception
      */
     private function get_user_id(string $username): string {
         $client = $this->get_admin_client();
@@ -149,9 +159,11 @@ class graph_helper {
                 return $createduser["id"];
             }
         }
+        throw new Exception("User $username does not exist", 1);
     }
 
     /**
+     * Create a new user
      * @param string $user
      *
      * @return array
@@ -174,6 +186,7 @@ class graph_helper {
     }
 
     /**
+     * Get space by name
      * @param string $user
      * @param string $spacename
      *
@@ -195,6 +208,7 @@ class graph_helper {
     }
 
     /**
+     * Get the id of a resource
      * @param string $user
      * @param string $resource
      * @param string $space
@@ -213,6 +227,7 @@ class graph_helper {
     }
 
     /**
+     * Send a share invitation
      * @param string $user
      * @param string $sharetype
      * @param string $sharee
