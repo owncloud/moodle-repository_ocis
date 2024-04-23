@@ -16,7 +16,7 @@ Feature: upload the resource in oCIS to moodle
     And I log in to ocis as "admin"
 
   Scenario: upload a file from the personal drive of ocis to moodle
-    And user "admin" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
+    Given user "admin" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
     When I click on "//*[@class='fp-filename-field']/p[text()='Personal']" "xpath_element"
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
@@ -43,3 +43,30 @@ Feature: upload the resource in oCIS to moodle
     And I click on "//*[@class='fp-filename-field']/p[text()='testfile.txt']" "xpath_element"
     And I click on "Select this file" "button"
     Then I should see "testfile.txt"
+
+  Scenario: click refresh button to get latest resource on Personal drive
+    Given I click on "Personal" "link"
+    When user "admin" uploads a file inside space "Personal" with content "some content" to "testfile.txt"
+    Then I should not see "testfile.txt"
+    But I should see "testfile.txt" after refreshing the file-picker
+
+  Scenario: click refresh button to get latest resource on Project drive
+    When "admin" creates the project space "ProjectMoodle"
+    Then I should not see "ProjectMoodle"
+    But I should see "ProjectMoodle" after refreshing the file-picker
+    When I click on "ProjectMoodle" "link"
+    And user "admin" uploads a file inside space "ProjectMoodle" with content "some content" to "testfile.txt"
+    Then I should not see "testfile.txt"
+    But I should see "testfile.txt" after refreshing the file-picker
+
+  Scenario: click refresh button to get latest resource of Share drive
+    Given I click on "Shares" "link"
+    And user "Brian" has been created with default attributes
+    And user "Brian" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
+    When user "Brian" sends the following share invitation:
+      | resource        | testfile.txt |
+      | space           | Personal     |
+      | sharee          | Admin        |
+      | shareType       | user         |
+    Then I should not see "testfile.txt"
+    But I should see "testfile.txt" after refreshing the file-picker

@@ -224,7 +224,7 @@ class behat_repository_ocis extends behat_base {
 
     /**
      * Upload a file to oCIS
-     * @Given user :user has uploaded a file inside space :space with content :content to :file
+     * @Given /^user "([^"]*)" (?:uploads|has uploaded) a file inside space "([^"]*)" with content "([^"]*)" to "([^"]*)"$/
      *
      * @param string $user
      * @param string $space
@@ -279,7 +279,7 @@ class behat_repository_ocis extends behat_base {
 
     /**
      * Create a project space
-     * @Given :user has created the project space :space
+     * @Given /^"([^"]*)" (?:creates|has created) the project space "([^"]*)"$/
      *
      * @param string $user
      * @param string $space
@@ -346,7 +346,7 @@ class behat_repository_ocis extends behat_base {
 
     /**
      * Send a share invitation
-     * @Given user :user has sent the following share invitation:
+     * @Given /^user "([^"]*)" (?:sends|has sent) the following share invitation:$/
      * @param string $user
      * @param TableNode $table
      *
@@ -365,5 +365,18 @@ class behat_repository_ocis extends behat_base {
             throw new Exception("Error creating share "
                 . json_decode($response['body'], true)['error']['message']);
         }
+    }
+
+    /**
+     * Check if refreshing file picker shows the latest changes of oCIS server
+     * @Then I should see :arg1 after refreshing the file-picker
+     *
+     * @param string $text
+     * @return void
+     */
+    public function i_should_see_after_refreshing_the_file_picker(string $text) {
+        $refreshbutton = $this->get_selected_node('css_element', '.fp-tb-refresh.enabled');
+        $refreshbutton->click();
+        $this->execute('behat_general::assert_page_contains_text', [$text]);
     }
 }
