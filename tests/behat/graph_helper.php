@@ -46,6 +46,15 @@ class graph_helper {
      * Alternative password for a user
      */
     private const ALTERNATE_USER_PASSWORD = '1234';
+    /**
+     * shares space id
+     */
+    private const SHARES_SPACE_ID = 'a0ca6a90-a365-4782-871e-d44447bbc668$a0ca6a90-a365-4782-871e-d44447bbc668';
+    /***
+     * array for storing response from share
+     * @var array $lastcreatedshare
+     */
+    private array $lastcreatedshare;
 
     /**
      * Get a new SabreDAV client
@@ -248,9 +257,55 @@ class graph_helper {
         ];
         $itemid = $this->get_resource_id($user, $resource, $space);
         $client = $this->get_client($user);
-        return $client->request(
+        $response = $client->request(
             'POST',
             "/graph/v1beta1/drives/$spaceid/items/$itemid/invite",
+            json_encode($body)
+        );
+        $this->lastcreatedshare = $response;
+        return $response;
+    }
+
+    /**
+     * send request to disable sync of share
+     * @param string $user
+     *
+     * @return array
+     */
+    public function disable_share_sync(string $user): array {
+        $lastresponse = $this->lastcreatedshare;
+        $resbody = json_decode($lastresponse["body"], true);
+        $shareitemid = $resbody["value"][0]["id"];
+        $sharespaceid = self::SHARES_SPACE_ID;
+        $itemid = $sharespaceid . '!' . $shareitemid;
+        $client = $this->get_client($user);
+        return $client->request(
+            'DELETE',
+            "/graph/v1beta1/drives/$sharespaceid/items/$itemid",
+        );
+    }
+
+    /**
+     * send request to disable sync of share
+     * @param string $user
+     * @param string $share
+     * @param string $offeredby
+     * @param string $space
+     *
+     * @return array
+     */
+    public function enable_share_sync(string $user, string $share, string $offeredby, string $space): array {
+        $itemid = $this->get_resource_id($offeredby, $share, $space);
+        $body = [
+            "remoteItem" => [
+                "id" => $itemid,
+            ],
+        ];
+        $sharespaceid = self::SHARES_SPACE_ID;
+        $client = $this->get_client($user);
+        return $client->request(
+            'POST',
+            "/graph/v1beta1/drives/$sharespaceid/root/children",
             json_encode($body)
         );
     }
