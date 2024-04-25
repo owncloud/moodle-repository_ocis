@@ -70,3 +70,36 @@ Feature: upload the resource in oCIS to moodle
       | shareType       | user         |
     Then I should not see "testfile.txt"
     But I should see "testfile.txt" after refreshing the file-picker
+
+  Scenario: navigate using links in file-picker from root to Personal drive and back
+    Given user "admin" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
+    And I click on "Personal" "link"
+    And I should see "testfile.txt"
+    When I click on "oCIS" "link"
+    Then I should see "Personal"
+    And I should see "Shares"
+
+  Scenario: navigate using links in file-picker from root to Project drive and back
+    Given user "Brian" has been created with default attributes
+    And user "Brian" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
+    And user "Brian" has sent the following share invitation:
+      | resource        | testfile.txt |
+      | space           | Personal     |
+      | sharee          | Admin        |
+      | shareType       | user         |
+    And I click on "Shares" "link"
+    And I should see "testfile.txt"
+    When I click on "oCIS" "link"
+    Then I should see "Personal"
+    And I should see "Shares"
+
+  Scenario: navigate using links in file-picker from root to Shares drive and back
+    Given "admin" has created the project space "ProjectMoodle"
+    And user "admin" has uploaded a file inside space "ProjectMoodle" with content "some content" to "/testfile.txt"
+    And I refresh the file-picker
+    And I click on "ProjectMoodle" "link"
+    And I should see "testfile.txt"
+    When I click on "oCIS" "link"
+    Then I should see "Personal"
+    And I should see "Shares"
+    And I should see "ProjectMoodle"
