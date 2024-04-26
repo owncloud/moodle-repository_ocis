@@ -103,3 +103,19 @@ Feature: upload the resource in oCIS to moodle
     Then I should see "Personal"
     And I should see "Shares"
     And I should see "ProjectMoodle"
+
+  @skipOnStable @ocis-issue-8961
+  Scenario: enable/disable sync of shared resource shared from Personal Space
+    Given user "Brian" has been created with default attributes
+    And user "Brian" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
+    And user "Brian" has sent the following share invitation:
+      | resource  | testfile.txt |
+      | space     | Personal     |
+      | sharee    | Admin        |
+      | shareType | user         |
+    When user "Admin" disables sync of share "testfile.txt"
+    And I click on "//*[@class='fp-filename-field']/p[text()='Shares']" "xpath_element"
+    Then I should not see "testfile.txt"
+    When user "Admin" enables sync of share "testfile.txt" offered by "Brian" from "Personal" space
+    And I refresh the file-picker
+    Then I should see "testfile.txt"

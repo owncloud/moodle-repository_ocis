@@ -379,4 +379,37 @@ class behat_repository_ocis extends behat_base {
         $refreshbutton->click();
         $this->execute('behat_general::assert_page_contains_text', [$text]);
     }
+
+    /**
+     * Step definition for disabling sync of share
+     * @When user :user disables sync of share :share
+     *
+     * @param string $user
+     *
+     * @throws Exception
+     */
+    public function user_disables_sync_of_share(string $user) {
+        $response = $this->graphhelper->disable_share_sync($user);
+        if ((!in_array($response['statusCode'], [200, 204]))) {
+            throw new Exception("Error disabling sync of share " . var_dump($response['statusCode']));
+        }
+    }
+
+    /**
+     * Step definition for enabling sync of share
+     * @When user :user enables sync of share :share offered by :offeredBy from :space space
+     *
+     * @param string $user
+     * @param string $share
+     * @param string $offeredby
+     * @param string $space
+     *
+     * @throws Exception
+     */
+    public function user_enables_sync_of_share(string $user, string $share, string $offeredby, string $space) {
+        $response = $this->graphhelper->enable_share_sync($user, $share, $offeredby, $space);
+        if ($response['statusCode'] !== 201) {
+            throw new Exception("Error enabling sync of share");
+        }
+    }
 }
