@@ -167,11 +167,11 @@ def behatTest():
         pipelines += [{
             "kind": "pipeline",
             "type": "docker",
-            "name": "behatUItest-%s" % branch,
+            "name": "behatUITest-on-ocis-%s" % branch,
             "depends_on": [],
             "steps": generateSSLCert() + apacheService() + waitForService("apache", 443) + runOcis(branch) +
-                     waitForService("ocis", 9200) + databaseService() + waitForService("postgresql", 5432) +
-                     seleniumService() + waitForService("selenium", 4444) + setupMoodle() + runBehatTest(branch),
+                     waitForService("ocis", 9200) + waitForService("postgresql", 5432) +
+                     waitForService("selenium", 4444) + setupMoodle() + runBehatUITest(branch),
             "volumes": [
                 {
                     "name": "www-moodle",
@@ -182,6 +182,7 @@ def behatTest():
                     "temp": {},
                 },
             ],
+            "services": postgresService() + seleniumService(),
             "trigger": {
                 "ref": [
                     "refs/pull/**",
@@ -190,12 +191,11 @@ def behatTest():
         }]
     return pipelines
 
-def databaseService():
+def postgresService():
     return [
         {
             "name": "postgresql",
             "image": POSTGRESQL,
-            "detach": True,
             "environment": POSTGRESQL_ENV,
         },
     ]
@@ -239,14 +239,10 @@ def runOcis(branch):
                     "name": "www-moodle",
                     "path": "/var/www",
                 },
-                {
-                    "name": "update-cert",
-                    "path": "/usr/local/share/ca-certificates/",
-                },
             ],
         },
         {
-            "name": "generate-ocis-%s" % branch,
+            "name": "generate-ocis",
             "image": OC_CI_NODEJS,
             "commands": [
                 "cd /var/www/html/ocis/ocis",
@@ -256,10 +252,6 @@ def runOcis(branch):
                 {
                     "name": "www-moodle",
                     "path": "/var/www",
-                },
-                {
-                    "name": "update-cert",
-                    "path": "/usr/local/share/ca-certificates/",
                 },
             ],
         },
@@ -386,14 +378,14 @@ def seleniumService():
         },
     ]
 
-def runBehatTest(branch):
+def runBehatUITest(branch):
     if branch == "master":
         tags = "@ocis"
     else:
         tags = "@ocis &&~@skipOnStable"
     return [
         {
-            "name": "behat-test",
+            "name": "behat-UI-test",
             "image": MOODLEHQ_APACHE,
             "environment": MOODLE_ENV,
             "commands": [
