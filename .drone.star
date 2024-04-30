@@ -183,11 +183,7 @@ def behatTest():
                 },
             ],
             "services": postgresService() + seleniumService(),
-            "trigger": {
-                "ref": [
-                    "refs/pull/**",
-                ],
-            },
+            "trigger": trigger,
         }]
     return pipelines
 
