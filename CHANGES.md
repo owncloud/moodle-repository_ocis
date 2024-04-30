@@ -11,6 +11,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Details
 
+# Changelog for [1.0.0] (2024-05-02)
+
+## Summary
+* Enhancement - added sortorder option name in repository instances [#87](https://github.com/owncloud/moodle-repository_ocis/pull/87)
+* Bugfix - fix: adjust case in strings [#101](https://github.com/owncloud/moodle-repository_ocis/pull/101)
+* Enhancement - Remove moodle's core security settings from source code [#104](https://github.com/owncloud/moodle-repository_ocis/pull/104)
+* Change - updated to ocis-php-sdk 1.0.0
+
+## Details
+
+* Enhancement - added sortorder option name in repository instances [#87](https://github.com/owncloud/moodle-repository_ocis/pull/87)
+  Added sortorder option in get_instance_option_names to resolve moodle bug[MDL-81005](https://tracker.moodle.org/browse/MDL-81005)
+
+* Bugfix - fix: adjust case in strings [#101](https://github.com/owncloud/moodle-repository_ocis/pull/101)
+  Revised string case according to moodle standard.
+
+  https://github.com/owncloud/moodle-repository_ocis/issues/95
+  https://github.com/owncloud/moodle-repository_ocis/pull/101
+
+* Enhancement - Remove moodle's core security settings from source code [#104](https://github.com/owncloud/moodle-repository_ocis/pull/104)
+  The core security configurations of Moodle, which enable automatic provisioning of port and URL blocking/allowing, have been eliminated.
+  This decision was made in adherence to Moodle standards, as this practice is deemed impermissible.
+
+* Change - updated to ocis-php-sdk 1.0.0 [#110](https://github.com/owncloud/moodle-repository_ocis/pull/110)
+  We have updated to the newest versions of the dependencies that are adjusted to changes in oCIS
+
 # Changelog for [1.0.0-rc.2] (2024-02-26)
 
 ## Summary
