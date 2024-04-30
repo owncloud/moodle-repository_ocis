@@ -1,20 +1,18 @@
+MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
+OC_CI_BAZEL_BUILDIFIER = "owncloudci/bazel-buildifier:latest"
+OC_CI_GOLANG = "owncloudci/golang:1.22"
+OC_CI_NODEJS = "owncloudci/nodejs:18"
 OC_CI_PHP = "owncloudci/php:%s"
-DEFAULT_PHP_VERSION = "8.1"
+OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
 OC_UBUNTU = "owncloud/ubuntu:20.04"
 PLUGINS_GITHUB_RELEASE = "plugins/github-release:1"
 POSTGRESQL = "postgres:13"
-MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
-OC_CI_GOLANG = "owncloudci/golang:1.22"
-OC_CI_NODEJS = "owncloudci/nodejs:18"
-OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
 SELENIUM = "selenium/standalone-chrome:94.0"
 
+DEFAULT_PHP_VERSION = "8.1"
+
 config = {
-    "branches": [
-        "main",
-    ],
-    "codestyle": True,
-    "ocisBranches": ["master","stable"],
+    "ocisBranches": ["master", "stable"],
 }
 
 trigger = {
@@ -63,40 +61,35 @@ MOODLE_ENV = {
 }
 
 def main(ctx):
-    testPipelines = tests(
-        ctx,
-        [
-            ["codestyle", "make test-php-style"],
-        ],
-    )
-    releasePipeline = release (ctx)
-    uiTestPipeLine = behattest()
-    dependsOn(testPipelines,uiTestPipeLine)
-    dependsOn(testPipelines + uiTestPipeLine , releasePipeline)
-    return testPipelines + uiTestPipeLine + releasePipeline
+    initialPipeline = checkStarlark()
+    beforePipeline = checkCodeStyle()
+    releasePipeline = release(ctx)
+    uiTestPipeLine = behatTest()
+    dependsOn(initialPipeline, beforePipeline)
+    dependsOn(beforePipeline, uiTestPipeLine)
+    dependsOn(beforePipeline + uiTestPipeLine, releasePipeline)
+    return initialPipeline + beforePipeline + uiTestPipeLine + releasePipeline
 
-def tests(ctx, tests):
-    pipelines = []
-    for test in tests:
-        if test[0] in config and config[test[0]]:
-            pipelines += [
+def checkCodeStyle():
+    return [
+        {
+            "kind": "pipeline",
+            "type": "docker",
+            "name": "coding-standard-php%s" % DEFAULT_PHP_VERSION,
+            "steps": [
                 {
-                    "kind": "pipeline",
-                    "name": test[0],
-                    "steps": [
-                        {
-                            "name": test[0],
-                            "image": OC_CI_PHP % DEFAULT_PHP_VERSION,
-                            "commands": [
-                                "composer install",
-                                test[1],
-                            ],
-                        },
+                    "name": "check-php-style",
+                    "image": OC_CI_PHP % DEFAULT_PHP_VERSION,
+                    "commands": [
+                        "composer install",
+                        "make test-php-style",
                     ],
-                    "trigger": trigger,
                 },
-            ]
-    return pipelines
+            ],
+            "trigger": trigger,
+            "depends_on": ["check-starlark"],
+        },
+    ]
 
 def release(ctx):
     return [
@@ -118,7 +111,7 @@ def release(ctx):
                     ],
                 },
                 {
-                    "name": "release to GitHub",
+                    "name": "release-on-github",
                     "image": PLUGINS_GITHUB_RELEASE,
                     "settings": {
                         "api_key": {
@@ -134,7 +127,7 @@ def release(ctx):
                     },
                 },
                 {
-                    "name": "release to moodle",
+                    "name": "release-on-moodle",
                     "image": OC_UBUNTU,
                     "environment": {
                         "ZIPURL": "https://github.com/owncloud/moodle-repository_ocis/releases/download/%s/moodle-repository_ocis_%s.zip" % (ctx.build.ref.replace("refs/tags/", ""), ctx.build.ref.replace("refs/tags/v", "")),
@@ -168,7 +161,7 @@ def release(ctx):
         }
     ]
 
-def behattest():
+def behatTest():
     pipelines = []
     for branch in config["ocisBranches"]:
         pipelines += [{
@@ -426,3 +419,38 @@ def dependsOn(earlierStages, nextStages):
     for earlierStage in earlierStages:
         for nextStage in nextStages:
             nextStage["depends_on"].append(earlierStage["name"])
+
+def checkStarlark():
+    return [{
+        "kind": "pipeline",
+        "type": "docker",
+        "name": "check-starlark",
+        "steps": [
+            {
+                "name": "format-check-starlark",
+                "image": OC_CI_BAZEL_BUILDIFIER,
+                "commands": [
+                    "buildifier --mode=check .drone.star",
+                ],
+            },
+            {
+                "name": "show-diff",
+                "image": OC_CI_BAZEL_BUILDIFIER,
+                "commands": [
+                    "buildifier --mode=fix .drone.star",
+                    "git diff",
+                ],
+                "when": {
+                    "status": [
+                        "failure",
+                    ],
+                },
+            },
+        ],
+        "depends_on": [],
+        "trigger": {
+            "ref": [
+                "refs/pull/**",
+            ],
+        },
+    }]
