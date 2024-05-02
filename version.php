@@ -29,8 +29,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2024022600;
+$plugin->version = 2024050200;
 $plugin->requires = 2023041800;
 $plugin->component = 'repository_ocis';
-$plugin->maturity = MATURITY_RC;
-$plugin->release = '1.0.0_RC.2';
+$plugin->maturity = MATURITY_STABLE;
+$plugin->release = '1.0.0';
