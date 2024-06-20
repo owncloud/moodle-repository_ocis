@@ -296,6 +296,7 @@ class graph_helper {
     public function enable_share_sync(string $user, string $share, string $offeredby, string $space): array {
         $itemid = $this->get_resource_id($offeredby, $share, $space);
         $body = [
+            "name" => $share,
             "remoteItem" => [
                 "id" => $itemid,
             ],

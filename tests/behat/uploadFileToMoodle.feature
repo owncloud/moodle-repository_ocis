@@ -104,7 +104,6 @@ Feature: upload the resource in oCIS to moodle
     And I should see "Shares"
     And I should see "ProjectMoodle"
 
-  @skipOnStable @ocis-issue-8961
   Scenario: enable/disable sync of shared resource shared from Personal Space
     Given user "Brian" has been created with default attributes
     And user "Brian" has uploaded a file inside space "Personal" with content "some content" to "/testfile.txt"
