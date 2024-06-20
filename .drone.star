@@ -171,7 +171,7 @@ def behatTest():
             "depends_on": [],
             "steps": generateSSLCert() + apacheService() + waitForService("apache", 443) + runOcis(branch) +
                      waitForService("ocis", 9200) + waitForService("postgresql", 5432) +
-                     waitForService("selenium", 4444) + setupMoodle() + runBehatUITest(branch),
+                     waitForService("selenium", 4444) + setupMoodle() + runBehatUITest(),
             "volumes": [
                 {
                     "name": "www-moodle",
@@ -374,11 +374,7 @@ def seleniumService():
         },
     ]
 
-def runBehatUITest(branch):
-    if branch == "master":
-        tags = "@ocis"
-    else:
-        tags = "@ocis &&~@skipOnStable"
+def runBehatUITest():
     return [
         {
             "name": "behat-UI-test",
@@ -387,7 +383,7 @@ def runBehatUITest(branch):
             "commands": [
                 "update-ca-certificates",
                 "cd /var/www/html/moodle",
-                'vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml --tags="%s"' % tags,
+                'vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml --tags="@ocis"',
             ],
             "volumes": [
                 {
