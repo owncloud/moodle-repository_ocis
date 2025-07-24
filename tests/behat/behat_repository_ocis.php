@@ -289,7 +289,7 @@ class behat_repository_ocis extends behat_base {
      */
     public function user_has_created_the_project_space(string $user, string $space) {
         $client = $this->graphhelper->get_client($user);
-        $body = json_encode(["Name" => $space], JSON_THROW_ON_ERROR);
+        $body = json_encode(["name" => $space], JSON_THROW_ON_ERROR);
         $response = $client->request(
             'POST',
             "/graph/v1.0/drives",

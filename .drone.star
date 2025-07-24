@@ -1,6 +1,6 @@
 MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
 OC_CI_BAZEL_BUILDIFIER = "owncloudci/bazel-buildifier:latest"
-OC_CI_GOLANG = "owncloudci/golang:1.22"
+OC_CI_GOLANG = "owncloudci/golang:1.24"
 OC_CI_NODEJS = "owncloudci/nodejs:18"
 OC_CI_PHP = "owncloudci/php:%s"
 OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
@@ -8,6 +8,7 @@ OC_UBUNTU = "owncloud/ubuntu:20.04"
 PLUGINS_GITHUB_RELEASE = "plugins/github-release:1"
 POSTGRESQL = "postgres:13"
 SELENIUM = "selenium/standalone-chrome:94.0"
+OC_CI_ALPINE = "owncloudci/alpine:latest"
 
 DEFAULT_PHP_VERSION = "8.1"
 
@@ -64,7 +65,7 @@ def main(ctx):
     initialPipeline = checkStarlark()
     beforePipeline = checkCodeStyle()
     releasePipeline = release(ctx)
-    uiTestPipeLine = behatTest()
+    uiTestPipeLine = behatTest(ctx)
     dependsOn(initialPipeline, beforePipeline)
     dependsOn(beforePipeline, uiTestPipeLine)
     dependsOn(beforePipeline + uiTestPipeLine, releasePipeline)
@@ -161,7 +162,7 @@ def release(ctx):
         },
     ]
 
-def behatTest():
+def behatTest(ctx):
     pipelines = []
     for branch in config["ocisBranches"]:
         pipelines += [{
@@ -169,7 +170,7 @@ def behatTest():
             "type": "docker",
             "name": "behatUITest-on-ocis-%s" % branch,
             "depends_on": [],
-            "steps": generateSSLCert() + apacheService() + waitForService("apache", 443) + runOcis(branch) +
+            "steps": generateSSLCert() + apacheService() + waitForService("apache", 443) + runOcis(ctx, branch) +
                      waitForService("ocis", 9200) + waitForService("postgresql", 5432) +
                      waitForService("selenium", 4444) + setupMoodle() + runBehatUITest(),
             "volumes": [
@@ -205,18 +206,31 @@ def waitForService(name, port):
         },
     ]
 
-def getCommitId(branch):
+def getCommitId(ctx, branch):
     if branch == "master":
+        if ctx.build.event == "cron":
+            return getOcislatestCommitId(branch)
         return "$OCIS_COMMITID"
     return "$OCIS_STABLE_COMMITID"
+
+def getOcislatestCommitId(branch):
+    return [
+        {
+            "name": "get-ocis-latest-commit-id",
+            "image": OC_CI_ALPINE,
+            "commands": [
+                "bash get-latest-ocis-commit-id.sh %s" % getBranchName(branch),
+            ],
+        },
+    ]
 
 def getBranchName(branch):
     if branch == "master":
         return "$OCIS_BRANCH"
     return "$OCIS_STABLE_BRANCH"
 
-def runOcis(branch):
-    ocis_commit_id = getCommitId(branch)
+def runOcis(ctx, branch):
+    ocis_commit_id = getCommitId(ctx, branch)
     ocis_branch = getBranchName(branch)
     ocis_repo_url = "https://github.com/owncloud/ocis.git"
     return [
