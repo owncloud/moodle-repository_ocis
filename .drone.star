@@ -208,18 +208,16 @@ def waitForService(name, port):
 
 def getCommitId(ctx, branch):
     if branch == "master":
-        if ctx.build.event == "cron":
-            return getOcislatestCommitId(branch)
         return "$OCIS_COMMITID"
     return "$OCIS_STABLE_COMMITID"
 
-def getOcislatestCommitId(branch):
+def getOcisLatestMasterCommitId(branch):
     return [
         {
             "name": "get-ocis-latest-commit-id",
             "image": OC_CI_ALPINE,
             "commands": [
-                "bash get-latest-ocis-commit-id.sh %s" % getBranchName(branch),
+                "bash tests/drone/get-latest-ocis-commit-id.sh master",
             ],
         },
     ]
@@ -233,7 +231,12 @@ def runOcis(ctx, branch):
     ocis_commit_id = getCommitId(ctx, branch)
     ocis_branch = getBranchName(branch)
     ocis_repo_url = "https://github.com/owncloud/ocis.git"
-    return [
+    steps = []
+
+    if ctx.build.event == "cron":
+        steps += getOcisLatestMasterCommitId(branch)
+
+    steps += [
         {
             "name": "clone-ocis-%s" % branch,
             "image": OC_CI_GOLANG,
@@ -291,6 +294,7 @@ def runOcis(ctx, branch):
             ],
         },
     ]
+    return steps
 
 def generateSSLCert():
     return [
