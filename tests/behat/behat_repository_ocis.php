@@ -412,4 +412,46 @@ class behat_repository_ocis extends behat_base {
             throw new Exception("Error enabling sync of share");
         }
     }
+
+    /**
+     * Step definition for upload a file from disk
+     * @Given user :user has uploaded file :source to :destination
+     *
+     * @param string $user
+     * @param string $source
+     * @param string $destination
+     *
+     * @return void
+     */
+    public function user_has_uploaded_a_file_to(string $user, string $source, string $destination): void {
+        $response = $this->graphhelper->uploadFile($user, $source, $destination);
+        if (!in_array($response['statusCode'], [201, 204])) {
+            $error = json_decode($response['body'], true);
+            $message = $error['error']['message'] ?? 'Unknown error';
+            throw new Exception("Error creating resource in personal space: $message");
+        }
+    }
+
+    /**
+     * Step definition for checking if error message is present on screen
+     * @When I should see error :errorMessage
+     *
+     * @param string $errormessage The content of error message
+     *
+     * @return void
+     */
+    public function i_should_see_error(string $errormessage): void {
+        $actualmessage = '';
+        try {
+            $this->execute('behat_general::assert_page_contains_text', [$errormessage]);
+        } catch (Exception $e) {
+            $actualmessage = $e->getMessage();
+        }
+
+        if (str_contains($actualmessage, $errormessage)) {
+            die();
+        } else {
+            throw new Exception("Expected message: $errormessage\nBut got: $actualmessage", 1);
+        }
+    }
 }

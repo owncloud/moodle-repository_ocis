@@ -402,6 +402,7 @@ def runBehatUITest():
                 "update-ca-certificates",
                 "cd /var/www/html/moodle",
                 'vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml --tags="@ocis"',
+                'vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml --tags="@max_uploas"',
             ],
             "volumes": [
                 {

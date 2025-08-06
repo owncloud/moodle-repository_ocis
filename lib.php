@@ -379,10 +379,21 @@ class repository_ocis extends repository {
      * @throws moodle_exception
      */
     public function get_file($fileid, $filename = ''): array {
+        global $CFG;
+
         $localpath = $this->prepare_file($fileid);
         try {
             $file = $this->getocismanager()->get_ocis_client()->getResourceById($fileid);
-            file_put_contents($localpath, $file->getContentStream());
+            if ($file->getSize() > (int)$CFG->maxbytes && (int)$CFG->maxbytes !== 0) {
+                throw new moodle_exception(
+                    'exceed_maxbytes_error',
+                    'repository_ocis',
+                    '',
+                    null,
+                );
+            } else {
+                file_put_contents($localpath, $file->getContentStream());
+            }
         } catch (HttpException $e) {
             throw new moodle_exception(
                 'could_not_connect_error',
