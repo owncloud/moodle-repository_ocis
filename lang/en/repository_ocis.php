@@ -62,3 +62,4 @@ $string['unrecoverable_server_error'] = 'The ownCloud Infinite Scale server ran 
 $string['webfinger_error'] = 'Could not get user-information from webfinger service.';
 $string['personal_drive'] = 'Personal';
 $string['shares_drive'] = 'Shares';
+$string['exceed_maxbytes_error'] = 'File exceeds maximum uploaded file size limit';
