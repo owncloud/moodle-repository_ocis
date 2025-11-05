@@ -388,6 +388,10 @@ def seleniumService():
                     "name": "www-moodle",
                     "path": "/var/www",
                 },
+                {
+                    "name": "update-cert",
+                    "path": "/usr/local/share/ca-certificates",
+                },
             ],
         },
     ]
