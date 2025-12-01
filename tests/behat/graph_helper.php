@@ -308,4 +308,31 @@ class graph_helper {
             json_encode($body)
         );
     }
+
+    /**
+     * upload a file from disk
+     * @param string $user
+     * @param string $source
+     * @param string $destination
+     *
+     * @return array
+     */
+    public function uploadfile(
+        string $user,
+        string $source,
+        string $destination,
+    ): array {
+        $filepath = __DIR__ . '/../' . $source;
+
+        if (!file_exists($filepath)) {
+            throw new Exception("Source file not found: $filepath");
+        }
+        $filecontents = file_get_contents($filepath);
+        $client = $this->get_client($user);
+        return $client->request(
+            'PUT',
+            "/dav/files/$user/$destination",
+            $filecontents,
+        );
+    }
 }
