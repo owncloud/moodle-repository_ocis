@@ -455,6 +455,10 @@ class MeUserApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -482,7 +486,7 @@ class MeUserApi
      *
      * Update the current user
      *
-     * @param  \OpenAPI\Client\Model\User|null $user New user values (optional)
+     * @param  \OpenAPI\Client\Model\UserUpdate|null $user_update New user values (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateOwnUser'] to see the possible values for this operation
      *
      * @throws ApiException on non-2xx response or if the response body is not in the expected format
@@ -490,11 +494,11 @@ class MeUserApi
      * @return \OpenAPI\Client\Model\User|\OpenAPI\Client\Model\OdataError
      */
     public function updateOwnUser(
-        ?\OpenAPI\Client\Model\User $user = null,
+        ?\OpenAPI\Client\Model\UserUpdate $user_update = null,
         string $contentType = self::contentTypes['updateOwnUser'][0]
     )
     {
-        list($response) = $this->updateOwnUserWithHttpInfo($user, $contentType);
+        list($response) = $this->updateOwnUserWithHttpInfo($user_update, $contentType);
         return $response;
     }
 
@@ -503,7 +507,7 @@ class MeUserApi
      *
      * Update the current user
      *
-     * @param  \OpenAPI\Client\Model\User|null $user New user values (optional)
+     * @param  \OpenAPI\Client\Model\UserUpdate|null $user_update New user values (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateOwnUser'] to see the possible values for this operation
      *
      * @throws ApiException on non-2xx response or if the response body is not in the expected format
@@ -511,11 +515,11 @@ class MeUserApi
      * @return array of \OpenAPI\Client\Model\User|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
      */
     public function updateOwnUserWithHttpInfo(
-        ?\OpenAPI\Client\Model\User $user = null,
+        ?\OpenAPI\Client\Model\UserUpdate $user_update = null,
         string $contentType = self::contentTypes['updateOwnUser'][0]
     ): array
     {
-        $request = $this->updateOwnUserRequest($user, $contentType);
+        $request = $this->updateOwnUserRequest($user_update, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -665,18 +669,18 @@ class MeUserApi
      *
      * Update the current user
      *
-     * @param  \OpenAPI\Client\Model\User|null $user New user values (optional)
+     * @param  \OpenAPI\Client\Model\UserUpdate|null $user_update New user values (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateOwnUser'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
      * @return PromiseInterface
      */
     public function updateOwnUserAsync(
-        ?\OpenAPI\Client\Model\User $user = null,
+        ?\OpenAPI\Client\Model\UserUpdate $user_update = null,
         string $contentType = self::contentTypes['updateOwnUser'][0]
     ): PromiseInterface
     {
-        return $this->updateOwnUserAsyncWithHttpInfo($user, $contentType)
+        return $this->updateOwnUserAsyncWithHttpInfo($user_update, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -689,19 +693,19 @@ class MeUserApi
      *
      * Update the current user
      *
-     * @param  \OpenAPI\Client\Model\User|null $user New user values (optional)
+     * @param  \OpenAPI\Client\Model\UserUpdate|null $user_update New user values (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateOwnUser'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
      * @return PromiseInterface
      */
     public function updateOwnUserAsyncWithHttpInfo(
-        $user = null,
+        $user_update = null,
         string $contentType = self::contentTypes['updateOwnUser'][0]
     ): PromiseInterface
     {
         $returnType = '\OpenAPI\Client\Model\User';
-        $request = $this->updateOwnUserRequest($user, $contentType);
+        $request = $this->updateOwnUserRequest($user_update, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -742,14 +746,14 @@ class MeUserApi
     /**
      * Create request for operation 'updateOwnUser'
      *
-     * @param  \OpenAPI\Client\Model\User|null $user New user values (optional)
+     * @param  \OpenAPI\Client\Model\UserUpdate|null $user_update New user values (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateOwnUser'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
     public function updateOwnUserRequest(
-        $user = null,
+        $user_update = null,
         string $contentType = self::contentTypes['updateOwnUser'][0]
     ): Request
     {
@@ -774,12 +778,12 @@ class MeUserApi
         );
 
         // for model (json/xml)
-        if (isset($user)) {
+        if (isset($user_update)) {
             if (stripos($headers['Content-Type'], 'application/json') !== false) {
                 # if Content-Type contains "application/json", json_encode the body
-                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($user));
+                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($user_update));
             } else {
-                $httpBody = $user;
+                $httpBody = $user_update;
             }
         } elseif (count($formParams) > 0) {
             if ($multipart) {
@@ -805,6 +809,10 @@ class MeUserApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

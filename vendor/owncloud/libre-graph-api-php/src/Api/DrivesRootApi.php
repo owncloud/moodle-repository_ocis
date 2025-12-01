@@ -74,7 +74,28 @@ class DrivesRootApi
         'createDriveItem' => [
             'application/json',
         ],
+        'createLinkSpaceRoot' => [
+            'application/json',
+        ],
+        'deletePermissionSpaceRoot' => [
+            'application/json',
+        ],
+        'getPermissionSpaceRoot' => [
+            'application/json',
+        ],
         'getRoot' => [
+            'application/json',
+        ],
+        'inviteSpaceRoot' => [
+            'application/json',
+        ],
+        'listPermissionsSpaceRoot' => [
+            'application/json',
+        ],
+        'setPermissionPasswordSpaceRoot' => [
+            'application/json',
+        ],
+        'updatePermissionSpaceRoot' => [
             'application/json',
         ],
     ];
@@ -478,6 +499,10 @@ class DrivesRootApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -494,6 +519,1052 @@ class DrivesRootApi
         $query = ObjectSerializer::buildQuery($queryParams);
         return new Request(
             'POST',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation createLinkSpaceRoot
+     *
+     * Create a sharing link for the root item of a Drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemCreateLink|null $drive_item_create_link In the request body, provide a JSON object with the following parameters. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createLinkSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return \OpenAPI\Client\Model\Permission|\OpenAPI\Client\Model\OdataError
+     */
+    public function createLinkSpaceRoot(
+        string $drive_id,
+        ?\OpenAPI\Client\Model\DriveItemCreateLink $drive_item_create_link = null,
+        string $contentType = self::contentTypes['createLinkSpaceRoot'][0]
+    )
+    {
+        list($response) = $this->createLinkSpaceRootWithHttpInfo($drive_id, $drive_item_create_link, $contentType);
+        return $response;
+    }
+
+    /**
+     * Operation createLinkSpaceRootWithHttpInfo
+     *
+     * Create a sharing link for the root item of a Drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemCreateLink|null $drive_item_create_link In the request body, provide a JSON object with the following parameters. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createLinkSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return array of \OpenAPI\Client\Model\Permission|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function createLinkSpaceRootWithHttpInfo(
+        string $drive_id,
+        ?\OpenAPI\Client\Model\DriveItemCreateLink $drive_item_create_link = null,
+        string $contentType = self::contentTypes['createLinkSpaceRoot'][0]
+    ): array
+    {
+        $request = $this->createLinkSpaceRootRequest($drive_id, $drive_item_create_link, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            switch($statusCode) {
+                case 200:
+                    if ('\OpenAPI\Client\Model\Permission' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\Permission' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\Permission', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                default:
+                    if ('\OpenAPI\Client\Model\OdataError' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\OdataError', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            $returnType = '\OpenAPI\Client\Model\Permission';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\Permission',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+                default:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation createLinkSpaceRootAsync
+     *
+     * Create a sharing link for the root item of a Drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemCreateLink|null $drive_item_create_link In the request body, provide a JSON object with the following parameters. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createLinkSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function createLinkSpaceRootAsync(
+        string $drive_id,
+        ?\OpenAPI\Client\Model\DriveItemCreateLink $drive_item_create_link = null,
+        string $contentType = self::contentTypes['createLinkSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        return $this->createLinkSpaceRootAsyncWithHttpInfo($drive_id, $drive_item_create_link, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation createLinkSpaceRootAsyncWithHttpInfo
+     *
+     * Create a sharing link for the root item of a Drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemCreateLink|null $drive_item_create_link In the request body, provide a JSON object with the following parameters. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createLinkSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function createLinkSpaceRootAsyncWithHttpInfo(
+        $drive_id,
+        $drive_item_create_link = null,
+        string $contentType = self::contentTypes['createLinkSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        $returnType = '\OpenAPI\Client\Model\Permission';
+        $request = $this->createLinkSpaceRootRequest($drive_id, $drive_item_create_link, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'createLinkSpaceRoot'
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemCreateLink|null $drive_item_create_link In the request body, provide a JSON object with the following parameters. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createLinkSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function createLinkSpaceRootRequest(
+        $drive_id,
+        $drive_item_create_link = null,
+        string $contentType = self::contentTypes['createLinkSpaceRoot'][0]
+    ): Request
+    {
+
+        // verify the required parameter 'drive_id' is set
+        if ($drive_id === null || (is_array($drive_id) && count($drive_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_id when calling createLinkSpaceRoot'
+            );
+        }
+
+
+
+        $resourcePath = '/v1beta1/drives/{drive-id}/root/createLink';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+        // path params
+        if ($drive_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'drive-id' . '}',
+                ObjectSerializer::toPathValue($drive_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            ['application/json', ],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (isset($drive_item_create_link)) {
+            if (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the body
+                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($drive_item_create_link));
+            } else {
+                $httpBody = $drive_item_create_link;
+            }
+        } elseif (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'POST',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation deletePermissionSpaceRoot
+     *
+     * Remove access to a Drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deletePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return void
+     */
+    public function deletePermissionSpaceRoot(
+        string $drive_id,
+        string $perm_id,
+        string $contentType = self::contentTypes['deletePermissionSpaceRoot'][0]
+    )
+    {
+        $this->deletePermissionSpaceRootWithHttpInfo($drive_id, $perm_id, $contentType);
+    }
+
+    /**
+     * Operation deletePermissionSpaceRootWithHttpInfo
+     *
+     * Remove access to a Drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deletePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function deletePermissionSpaceRootWithHttpInfo(
+        string $drive_id,
+        string $perm_id,
+        string $contentType = self::contentTypes['deletePermissionSpaceRoot'][0]
+    ): array
+    {
+        $request = $this->deletePermissionSpaceRootRequest($drive_id, $perm_id, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            return [null, $statusCode, $response->getHeaders()];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+                default:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation deletePermissionSpaceRootAsync
+     *
+     * Remove access to a Drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deletePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function deletePermissionSpaceRootAsync(
+        string $drive_id,
+        string $perm_id,
+        string $contentType = self::contentTypes['deletePermissionSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        return $this->deletePermissionSpaceRootAsyncWithHttpInfo($drive_id, $perm_id, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation deletePermissionSpaceRootAsyncWithHttpInfo
+     *
+     * Remove access to a Drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deletePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function deletePermissionSpaceRootAsyncWithHttpInfo(
+        $drive_id,
+        $perm_id,
+        string $contentType = self::contentTypes['deletePermissionSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        $returnType = '';
+        $request = $this->deletePermissionSpaceRootRequest($drive_id, $perm_id, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'deletePermissionSpaceRoot'
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deletePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function deletePermissionSpaceRootRequest(
+        $drive_id,
+        $perm_id,
+        string $contentType = self::contentTypes['deletePermissionSpaceRoot'][0]
+    ): Request
+    {
+
+        // verify the required parameter 'drive_id' is set
+        if ($drive_id === null || (is_array($drive_id) && count($drive_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_id when calling deletePermissionSpaceRoot'
+            );
+        }
+
+        // verify the required parameter 'perm_id' is set
+        if ($perm_id === null || (is_array($perm_id) && count($perm_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $perm_id when calling deletePermissionSpaceRoot'
+            );
+        }
+
+
+        $resourcePath = '/v1beta1/drives/{drive-id}/root/permissions/{perm-id}';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+        // path params
+        if ($drive_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'drive-id' . '}',
+                ObjectSerializer::toPathValue($drive_id),
+                $resourcePath
+            );
+        }
+        // path params
+        if ($perm_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'perm-id' . '}',
+                ObjectSerializer::toPathValue($perm_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            ['application/json', ],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'DELETE',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation getPermissionSpaceRoot
+     *
+     * Get a single sharing permission for the root item of a drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getPermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return \OpenAPI\Client\Model\Permission|\OpenAPI\Client\Model\OdataError
+     */
+    public function getPermissionSpaceRoot(
+        string $drive_id,
+        string $perm_id,
+        string $contentType = self::contentTypes['getPermissionSpaceRoot'][0]
+    )
+    {
+        list($response) = $this->getPermissionSpaceRootWithHttpInfo($drive_id, $perm_id, $contentType);
+        return $response;
+    }
+
+    /**
+     * Operation getPermissionSpaceRootWithHttpInfo
+     *
+     * Get a single sharing permission for the root item of a drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getPermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return array of \OpenAPI\Client\Model\Permission|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function getPermissionSpaceRootWithHttpInfo(
+        string $drive_id,
+        string $perm_id,
+        string $contentType = self::contentTypes['getPermissionSpaceRoot'][0]
+    ): array
+    {
+        $request = $this->getPermissionSpaceRootRequest($drive_id, $perm_id, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            switch($statusCode) {
+                case 200:
+                    if ('\OpenAPI\Client\Model\Permission' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\Permission' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\Permission', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                default:
+                    if ('\OpenAPI\Client\Model\OdataError' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\OdataError', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            $returnType = '\OpenAPI\Client\Model\Permission';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\Permission',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+                default:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation getPermissionSpaceRootAsync
+     *
+     * Get a single sharing permission for the root item of a drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getPermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function getPermissionSpaceRootAsync(
+        string $drive_id,
+        string $perm_id,
+        string $contentType = self::contentTypes['getPermissionSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        return $this->getPermissionSpaceRootAsyncWithHttpInfo($drive_id, $perm_id, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation getPermissionSpaceRootAsyncWithHttpInfo
+     *
+     * Get a single sharing permission for the root item of a drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getPermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function getPermissionSpaceRootAsyncWithHttpInfo(
+        $drive_id,
+        $perm_id,
+        string $contentType = self::contentTypes['getPermissionSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        $returnType = '\OpenAPI\Client\Model\Permission';
+        $request = $this->getPermissionSpaceRootRequest($drive_id, $perm_id, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'getPermissionSpaceRoot'
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getPermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function getPermissionSpaceRootRequest(
+        $drive_id,
+        $perm_id,
+        string $contentType = self::contentTypes['getPermissionSpaceRoot'][0]
+    ): Request
+    {
+
+        // verify the required parameter 'drive_id' is set
+        if ($drive_id === null || (is_array($drive_id) && count($drive_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_id when calling getPermissionSpaceRoot'
+            );
+        }
+
+        // verify the required parameter 'perm_id' is set
+        if ($perm_id === null || (is_array($perm_id) && count($perm_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $perm_id when calling getPermissionSpaceRoot'
+            );
+        }
+
+
+        $resourcePath = '/v1beta1/drives/{drive-id}/root/permissions/{perm-id}';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+        // path params
+        if ($drive_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'drive-id' . '}',
+                ObjectSerializer::toPathValue($drive_id),
+                $resourcePath
+            );
+        }
+        // path params
+        if ($perm_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'perm-id' . '}',
+                ObjectSerializer::toPathValue($perm_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            ['application/json', ],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'GET',
             $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
             $headers,
             $httpBody
@@ -835,6 +1906,10 @@ class DrivesRootApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -851,6 +1926,1641 @@ class DrivesRootApi
         $query = ObjectSerializer::buildQuery($queryParams);
         return new Request(
             'GET',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation inviteSpaceRoot
+     *
+     * Send a sharing invitation
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemInvite|null $drive_item_invite In the request body, provide a JSON object with the following parameters. To create a custom role submit a list of actions instead of roles. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['inviteSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return \OpenAPI\Client\Model\CollectionOfPermissions|\OpenAPI\Client\Model\OdataError|\OpenAPI\Client\Model\OdataError
+     */
+    public function inviteSpaceRoot(
+        string $drive_id,
+        ?\OpenAPI\Client\Model\DriveItemInvite $drive_item_invite = null,
+        string $contentType = self::contentTypes['inviteSpaceRoot'][0]
+    )
+    {
+        list($response) = $this->inviteSpaceRootWithHttpInfo($drive_id, $drive_item_invite, $contentType);
+        return $response;
+    }
+
+    /**
+     * Operation inviteSpaceRootWithHttpInfo
+     *
+     * Send a sharing invitation
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemInvite|null $drive_item_invite In the request body, provide a JSON object with the following parameters. To create a custom role submit a list of actions instead of roles. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['inviteSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return array of \OpenAPI\Client\Model\CollectionOfPermissions|\OpenAPI\Client\Model\OdataError|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function inviteSpaceRootWithHttpInfo(
+        string $drive_id,
+        ?\OpenAPI\Client\Model\DriveItemInvite $drive_item_invite = null,
+        string $contentType = self::contentTypes['inviteSpaceRoot'][0]
+    ): array
+    {
+        $request = $this->inviteSpaceRootRequest($drive_id, $drive_item_invite, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            switch($statusCode) {
+                case 200:
+                    if ('\OpenAPI\Client\Model\CollectionOfPermissions' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\CollectionOfPermissions' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\CollectionOfPermissions', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                case 400:
+                    if ('\OpenAPI\Client\Model\OdataError' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\OdataError', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                default:
+                    if ('\OpenAPI\Client\Model\OdataError' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\OdataError', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            $returnType = '\OpenAPI\Client\Model\CollectionOfPermissions';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\CollectionOfPermissions',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+                case 400:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+                default:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation inviteSpaceRootAsync
+     *
+     * Send a sharing invitation
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemInvite|null $drive_item_invite In the request body, provide a JSON object with the following parameters. To create a custom role submit a list of actions instead of roles. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['inviteSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function inviteSpaceRootAsync(
+        string $drive_id,
+        ?\OpenAPI\Client\Model\DriveItemInvite $drive_item_invite = null,
+        string $contentType = self::contentTypes['inviteSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        return $this->inviteSpaceRootAsyncWithHttpInfo($drive_id, $drive_item_invite, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation inviteSpaceRootAsyncWithHttpInfo
+     *
+     * Send a sharing invitation
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemInvite|null $drive_item_invite In the request body, provide a JSON object with the following parameters. To create a custom role submit a list of actions instead of roles. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['inviteSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function inviteSpaceRootAsyncWithHttpInfo(
+        $drive_id,
+        $drive_item_invite = null,
+        string $contentType = self::contentTypes['inviteSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        $returnType = '\OpenAPI\Client\Model\CollectionOfPermissions';
+        $request = $this->inviteSpaceRootRequest($drive_id, $drive_item_invite, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'inviteSpaceRoot'
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  \OpenAPI\Client\Model\DriveItemInvite|null $drive_item_invite In the request body, provide a JSON object with the following parameters. To create a custom role submit a list of actions instead of roles. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['inviteSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function inviteSpaceRootRequest(
+        $drive_id,
+        $drive_item_invite = null,
+        string $contentType = self::contentTypes['inviteSpaceRoot'][0]
+    ): Request
+    {
+
+        // verify the required parameter 'drive_id' is set
+        if ($drive_id === null || (is_array($drive_id) && count($drive_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_id when calling inviteSpaceRoot'
+            );
+        }
+
+
+
+        $resourcePath = '/v1beta1/drives/{drive-id}/root/invite';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+        // path params
+        if ($drive_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'drive-id' . '}',
+                ObjectSerializer::toPathValue($drive_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            ['application/json', ],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (isset($drive_item_invite)) {
+            if (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the body
+                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($drive_item_invite));
+            } else {
+                $httpBody = $drive_item_invite;
+            }
+        } elseif (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'POST',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation listPermissionsSpaceRoot
+     *
+     * List the effective permissions on the root item of a drive.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissionsSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return \OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues|\OpenAPI\Client\Model\OdataError
+     */
+    public function listPermissionsSpaceRoot(
+        string $drive_id,
+        ?string $filter = null,
+        ?array $select = null,
+        string $contentType = self::contentTypes['listPermissionsSpaceRoot'][0]
+    )
+    {
+        list($response) = $this->listPermissionsSpaceRootWithHttpInfo($drive_id, $filter, $select, $contentType);
+        return $response;
+    }
+
+    /**
+     * Operation listPermissionsSpaceRootWithHttpInfo
+     *
+     * List the effective permissions on the root item of a drive.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissionsSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return array of \OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function listPermissionsSpaceRootWithHttpInfo(
+        string $drive_id,
+        ?string $filter = null,
+        ?array $select = null,
+        string $contentType = self::contentTypes['listPermissionsSpaceRoot'][0]
+    ): array
+    {
+        $request = $this->listPermissionsSpaceRootRequest($drive_id, $filter, $select, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            switch($statusCode) {
+                case 200:
+                    if ('\OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                default:
+                    if ('\OpenAPI\Client\Model\OdataError' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\OdataError', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            $returnType = '\OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+                default:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation listPermissionsSpaceRootAsync
+     *
+     * List the effective permissions on the root item of a drive.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissionsSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function listPermissionsSpaceRootAsync(
+        string $drive_id,
+        ?string $filter = null,
+        ?array $select = null,
+        string $contentType = self::contentTypes['listPermissionsSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        return $this->listPermissionsSpaceRootAsyncWithHttpInfo($drive_id, $filter, $select, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation listPermissionsSpaceRootAsyncWithHttpInfo
+     *
+     * List the effective permissions on the root item of a drive.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissionsSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function listPermissionsSpaceRootAsyncWithHttpInfo(
+        $drive_id,
+        $filter = null,
+        $select = null,
+        string $contentType = self::contentTypes['listPermissionsSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        $returnType = '\OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues';
+        $request = $this->listPermissionsSpaceRootRequest($drive_id, $filter, $select, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'listPermissionsSpaceRoot'
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissionsSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function listPermissionsSpaceRootRequest(
+        $drive_id,
+        $filter = null,
+        $select = null,
+        string $contentType = self::contentTypes['listPermissionsSpaceRoot'][0]
+    ): Request
+    {
+
+        // verify the required parameter 'drive_id' is set
+        if ($drive_id === null || (is_array($drive_id) && count($drive_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_id when calling listPermissionsSpaceRoot'
+            );
+        }
+
+
+        
+
+        $resourcePath = '/v1beta1/drives/{drive-id}/root/permissions';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+        // query params
+        $queryParams = array_merge($queryParams, ObjectSerializer::toQueryValue(
+            $filter,
+            '$filter', // param base name
+            'string', // openApiType
+            'form', // style
+            true, // explode
+            false // required
+        ) ?? []);
+        // query params
+        $queryParams = array_merge($queryParams, ObjectSerializer::toQueryValue(
+            $select,
+            '$select', // param base name
+            'array', // openApiType
+            'form', // style
+            false, // explode
+            false // required
+        ) ?? []);
+
+
+        // path params
+        if ($drive_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'drive-id' . '}',
+                ObjectSerializer::toPathValue($drive_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            ['application/json', ],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'GET',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation setPermissionPasswordSpaceRoot
+     *
+     * Set sharing link password for the root item of a drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\SharingLinkPassword $sharing_link_password New password value (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['setPermissionPasswordSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return \OpenAPI\Client\Model\Permission|\OpenAPI\Client\Model\OdataError
+     */
+    public function setPermissionPasswordSpaceRoot(
+        string $drive_id,
+        string $perm_id,
+        \OpenAPI\Client\Model\SharingLinkPassword $sharing_link_password,
+        string $contentType = self::contentTypes['setPermissionPasswordSpaceRoot'][0]
+    )
+    {
+        list($response) = $this->setPermissionPasswordSpaceRootWithHttpInfo($drive_id, $perm_id, $sharing_link_password, $contentType);
+        return $response;
+    }
+
+    /**
+     * Operation setPermissionPasswordSpaceRootWithHttpInfo
+     *
+     * Set sharing link password for the root item of a drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\SharingLinkPassword $sharing_link_password New password value (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['setPermissionPasswordSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return array of \OpenAPI\Client\Model\Permission|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function setPermissionPasswordSpaceRootWithHttpInfo(
+        string $drive_id,
+        string $perm_id,
+        \OpenAPI\Client\Model\SharingLinkPassword $sharing_link_password,
+        string $contentType = self::contentTypes['setPermissionPasswordSpaceRoot'][0]
+    ): array
+    {
+        $request = $this->setPermissionPasswordSpaceRootRequest($drive_id, $perm_id, $sharing_link_password, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            switch($statusCode) {
+                case 200:
+                    if ('\OpenAPI\Client\Model\Permission' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\Permission' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\Permission', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                default:
+                    if ('\OpenAPI\Client\Model\OdataError' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\OdataError', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            $returnType = '\OpenAPI\Client\Model\Permission';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\Permission',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+                default:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation setPermissionPasswordSpaceRootAsync
+     *
+     * Set sharing link password for the root item of a drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\SharingLinkPassword $sharing_link_password New password value (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['setPermissionPasswordSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function setPermissionPasswordSpaceRootAsync(
+        string $drive_id,
+        string $perm_id,
+        \OpenAPI\Client\Model\SharingLinkPassword $sharing_link_password,
+        string $contentType = self::contentTypes['setPermissionPasswordSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        return $this->setPermissionPasswordSpaceRootAsyncWithHttpInfo($drive_id, $perm_id, $sharing_link_password, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation setPermissionPasswordSpaceRootAsyncWithHttpInfo
+     *
+     * Set sharing link password for the root item of a drive
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\SharingLinkPassword $sharing_link_password New password value (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['setPermissionPasswordSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function setPermissionPasswordSpaceRootAsyncWithHttpInfo(
+        $drive_id,
+        $perm_id,
+        $sharing_link_password,
+        string $contentType = self::contentTypes['setPermissionPasswordSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        $returnType = '\OpenAPI\Client\Model\Permission';
+        $request = $this->setPermissionPasswordSpaceRootRequest($drive_id, $perm_id, $sharing_link_password, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'setPermissionPasswordSpaceRoot'
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\SharingLinkPassword $sharing_link_password New password value (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['setPermissionPasswordSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function setPermissionPasswordSpaceRootRequest(
+        $drive_id,
+        $perm_id,
+        $sharing_link_password,
+        string $contentType = self::contentTypes['setPermissionPasswordSpaceRoot'][0]
+    ): Request
+    {
+
+        // verify the required parameter 'drive_id' is set
+        if ($drive_id === null || (is_array($drive_id) && count($drive_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_id when calling setPermissionPasswordSpaceRoot'
+            );
+        }
+
+        // verify the required parameter 'perm_id' is set
+        if ($perm_id === null || (is_array($perm_id) && count($perm_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $perm_id when calling setPermissionPasswordSpaceRoot'
+            );
+        }
+
+        // verify the required parameter 'sharing_link_password' is set
+        if ($sharing_link_password === null || (is_array($sharing_link_password) && count($sharing_link_password) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $sharing_link_password when calling setPermissionPasswordSpaceRoot'
+            );
+        }
+
+
+        $resourcePath = '/v1beta1/drives/{drive-id}/root/permissions/{perm-id}/setPassword';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+        // path params
+        if ($drive_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'drive-id' . '}',
+                ObjectSerializer::toPathValue($drive_id),
+                $resourcePath
+            );
+        }
+        // path params
+        if ($perm_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'perm-id' . '}',
+                ObjectSerializer::toPathValue($perm_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            ['application/json', ],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (isset($sharing_link_password)) {
+            if (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the body
+                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($sharing_link_password));
+            } else {
+                $httpBody = $sharing_link_password;
+            }
+        } elseif (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'POST',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation updatePermissionSpaceRoot
+     *
+     * Update sharing permission
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\Permission $permission New property values (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updatePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return \OpenAPI\Client\Model\Permission|\OpenAPI\Client\Model\OdataError
+     */
+    public function updatePermissionSpaceRoot(
+        string $drive_id,
+        string $perm_id,
+        \OpenAPI\Client\Model\Permission $permission,
+        string $contentType = self::contentTypes['updatePermissionSpaceRoot'][0]
+    )
+    {
+        list($response) = $this->updatePermissionSpaceRootWithHttpInfo($drive_id, $perm_id, $permission, $contentType);
+        return $response;
+    }
+
+    /**
+     * Operation updatePermissionSpaceRootWithHttpInfo
+     *
+     * Update sharing permission
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\Permission $permission New property values (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updatePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return array of \OpenAPI\Client\Model\Permission|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function updatePermissionSpaceRootWithHttpInfo(
+        string $drive_id,
+        string $perm_id,
+        \OpenAPI\Client\Model\Permission $permission,
+        string $contentType = self::contentTypes['updatePermissionSpaceRoot'][0]
+    ): array
+    {
+        $request = $this->updatePermissionSpaceRootRequest($drive_id, $perm_id, $permission, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            switch($statusCode) {
+                case 200:
+                    if ('\OpenAPI\Client\Model\Permission' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\Permission' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\Permission', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                default:
+                    if ('\OpenAPI\Client\Model\OdataError' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\OdataError', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            $returnType = '\OpenAPI\Client\Model\Permission';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\Permission',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+                default:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation updatePermissionSpaceRootAsync
+     *
+     * Update sharing permission
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\Permission $permission New property values (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updatePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function updatePermissionSpaceRootAsync(
+        string $drive_id,
+        string $perm_id,
+        \OpenAPI\Client\Model\Permission $permission,
+        string $contentType = self::contentTypes['updatePermissionSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        return $this->updatePermissionSpaceRootAsyncWithHttpInfo($drive_id, $perm_id, $permission, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation updatePermissionSpaceRootAsyncWithHttpInfo
+     *
+     * Update sharing permission
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\Permission $permission New property values (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updatePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function updatePermissionSpaceRootAsyncWithHttpInfo(
+        $drive_id,
+        $perm_id,
+        $permission,
+        string $contentType = self::contentTypes['updatePermissionSpaceRoot'][0]
+    ): PromiseInterface
+    {
+        $returnType = '\OpenAPI\Client\Model\Permission';
+        $request = $this->updatePermissionSpaceRootRequest($drive_id, $perm_id, $permission, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'updatePermissionSpaceRoot'
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $perm_id key: id of permission (required)
+     * @param  \OpenAPI\Client\Model\Permission $permission New property values (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updatePermissionSpaceRoot'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function updatePermissionSpaceRootRequest(
+        $drive_id,
+        $perm_id,
+        $permission,
+        string $contentType = self::contentTypes['updatePermissionSpaceRoot'][0]
+    ): Request
+    {
+
+        // verify the required parameter 'drive_id' is set
+        if ($drive_id === null || (is_array($drive_id) && count($drive_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_id when calling updatePermissionSpaceRoot'
+            );
+        }
+
+        // verify the required parameter 'perm_id' is set
+        if ($perm_id === null || (is_array($perm_id) && count($perm_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $perm_id when calling updatePermissionSpaceRoot'
+            );
+        }
+
+        // verify the required parameter 'permission' is set
+        if ($permission === null || (is_array($permission) && count($permission) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $permission when calling updatePermissionSpaceRoot'
+            );
+        }
+
+
+        $resourcePath = '/v1beta1/drives/{drive-id}/root/permissions/{perm-id}';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+        // path params
+        if ($drive_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'drive-id' . '}',
+                ObjectSerializer::toPathValue($drive_id),
+                $resourcePath
+            );
+        }
+        // path params
+        if ($perm_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'perm-id' . '}',
+                ObjectSerializer::toPathValue($perm_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            ['application/json', ],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (isset($permission)) {
+            if (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the body
+                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($permission));
+            } else {
+                $httpBody = $permission;
+            }
+        } elseif (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'PATCH',
             $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
             $headers,
             $httpBody

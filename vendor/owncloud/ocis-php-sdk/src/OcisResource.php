@@ -68,7 +68,7 @@ class OcisResource
         array $metadata,
         array $connectionConfig,
         string $serviceUrl,
-        string &$accessToken
+        string &$accessToken,
     ) {
         $this->metadata = $metadata;
         $this->accessToken = &$accessToken;
@@ -80,6 +80,13 @@ class OcisResource
             ->setHost($this->serviceUrl . '/graph');
 
         $this->connectionConfig = $connectionConfig;
+    }
+
+    private function createWebDavClient(): WebDavClient
+    {
+        $webDavClient = new WebDavClient(['baseUri' => $this->serviceUrl . '/dav/spaces/']);
+        $webDavClient->setCustomSetting($this->connectionConfig, $this->accessToken);
+        return $webDavClient;
     }
 
     /**
@@ -94,17 +101,25 @@ class OcisResource
         // for metadata accept status codes of 200 and 425 (too early) status codes
         // any other status code is regarded as an error
         foreach ([200, 425] as $statusCode) {
-            if (
-                array_key_exists($statusCode, $this->metadata) &&
-                array_key_exists($property->value, $this->metadata[$statusCode])
-            ) {
+            if (!array_key_exists($statusCode, $this->metadata)) {
+                continue;
+            }
+
+            if ($property->getKey() === "id" && !array_key_exists($property->value, $this->metadata[$statusCode])) {
+                $fileIdKey = ResourceMetadata::FILEID;
+                if (array_key_exists($fileIdKey->value, $this->metadata[$statusCode])) {
+                    $metadata[$property->getKey()] = $this->metadata[$statusCode][$fileIdKey->value];
+                    break;
+                }
+            }
+            if (array_key_exists($property->value, $this->metadata[$statusCode])) {
                 $metadata[$property->getKey()] = $this->metadata[$statusCode][$property->value];
                 break;
             }
         }
         if ($metadata === []) {
             throw new InvalidResponseException(
-                'Could not find property "' . $property->getKey() . '" in response'
+                'Could not find property "' . $property->getKey() . '" in response',
             );
         }
         if ($metadata[$property->getKey()] === null && $property->getKey() !== "tags") {
@@ -116,7 +131,7 @@ class OcisResource
         if ($metadata[$property->getKey()] === null) {
             return (string)$metadata[$property->getKey()];
         }
-        /** @phpstan-ignore-next-line because next line might return mixed data*/
+
         return $metadata[$property->getKey()];
     }
 
@@ -134,7 +149,7 @@ class OcisResource
     public function getRoles(): array
     {
         $guzzle = new Client(
-            Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
+            Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken),
         );
 
         if (array_key_exists('drivesPermissionsApi', $this->connectionConfig)) {
@@ -142,7 +157,7 @@ class OcisResource
         } else {
             $apiInstance = new DrivesPermissionsApi(
                 $guzzle,
-                $this->graphApiConfig
+                $this->graphApiConfig,
             );
         }
         try {
@@ -152,7 +167,7 @@ class OcisResource
         }
         if ($collectionOfPermissions instanceof OdataError) {
             throw new InvalidResponseException(
-                "listPermissions returned an OdataError - " . $collectionOfPermissions->getError()
+                "listPermissions returned an OdataError - " . $collectionOfPermissions->getError(),
             );
         }
         $apiRoles = $collectionOfPermissions->getAtLibreGraphPermissionsRolesAllowedValues() ?? [];
@@ -199,11 +214,11 @@ class OcisResource
             $apiInstance = $this->connectionConfig['drivesPermissionsApi'];
         } else {
             $guzzle = new Client(
-                Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
+                Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken),
             );
             $apiInstance = new DrivesPermissionsApi(
                 $guzzle,
-                $this->graphApiConfig
+                $this->graphApiConfig,
             );
         }
 
@@ -215,7 +230,7 @@ class OcisResource
         }
         if ($permissions instanceof OdataError) {
             throw new InvalidResponseException(
-                "invite returned an OdataError - " . $permissions->getError()
+                "invite returned an OdataError - " . $permissions->getError(),
             );
         }
         $permissionsValue = $permissions->getValue();
@@ -225,7 +240,7 @@ class OcisResource
             !($permissionsValue[0] instanceof Permission)
         ) {
             throw new InvalidResponseException(
-                "invite returned invalid data " . print_r($permissionsValue, true)
+                "invite returned invalid data " . print_r($permissionsValue, true),
             );
         }
 
@@ -235,7 +250,7 @@ class OcisResource
             $this->getSpaceId(),
             $this->connectionConfig,
             $this->serviceUrl,
-            $this->accessToken
+            $this->accessToken,
         );
     }
 
@@ -254,17 +269,17 @@ class OcisResource
         SharingLinkType $type = SharingLinkType::VIEW,
         ?\DateTimeImmutable $expiration = null,
         ?string $password = null,
-        ?string $displayName = null
+        ?string $displayName = null,
     ): ShareLink {
         if (array_key_exists('drivesPermissionsApi', $this->connectionConfig)) {
             $apiInstance = $this->connectionConfig['drivesPermissionsApi'];
         } else {
             $guzzle = new Client(
-                Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
+                Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken),
             );
             $apiInstance = new DrivesPermissionsApi(
                 $guzzle,
-                $this->graphApiConfig
+                $this->graphApiConfig,
             );
         }
         if ($expiration !== null) {
@@ -277,7 +292,7 @@ class OcisResource
             'type' => $type,
             'password' => $password,
             'expiration_date_time' => $expirationMutable,
-            'display_name' => $displayName
+            'display_name' => $displayName,
         ]);
         try {
             $permission = $apiInstance->createLink($this->getSpaceId(), $this->getId(), $createLinkData);
@@ -286,7 +301,7 @@ class OcisResource
         }
         if ($permission instanceof OdataError) {
             throw new InvalidResponseException(
-                "createLink returned an OdataError - " . $permission->getError()
+                "createLink returned an OdataError - " . $permission->getError(),
             );
         }
 
@@ -296,7 +311,7 @@ class OcisResource
             $this->getSpaceId(),
             $this->connectionConfig,
             $this->serviceUrl,
-            $this->accessToken
+            $this->accessToken,
         );
 
     }
@@ -392,7 +407,7 @@ class OcisResource
             return "file";
         }
         throw new InvalidResponseException(
-            "Received invalid data for the key \"resourcetype\" in the response array"
+            "Received invalid data for the key \"resourcetype\" in the response array",
         );
     }
 
@@ -500,7 +515,7 @@ class OcisResource
         $privateLink = $this->getMetadata(ResourceMetadata::PRIVATELINK);
         if (!is_string($privateLink)) {
             throw new InvalidResponseException(
-                'Invalid private link in response from server: ' . print_r($privateLink, true)
+                'Invalid private link in response from server: ' . print_r($privateLink, true),
             );
         }
         return rawurldecode($privateLink);
@@ -554,8 +569,28 @@ class OcisResource
      */
     private function getFileResponseInterface(string $fileId): ResponseInterface
     {
-        $webDavClient = new WebDavClient(['baseUri' => $this->serviceUrl . '/dav/spaces/']);
-        $webDavClient->setCustomSetting($this->connectionConfig, $this->accessToken);
+        $webDavClient = $this->createWebDavClient();
         return $webDavClient->sendRequest("GET", $fileId);
+    }
+
+    /**
+     * the aspect-ratio of previews will be preserved even if not matching sizes are requested
+     *
+     */
+    public function getPreview(int $width, int $height): string
+    {
+        $webDavClient = $this->createWebDavClient();
+        $urlParameters = [
+            'scalingup' => 0,
+            'preview' => '1',
+            'a' => '1',
+            'processor' => 'fit',
+            'c' => $this->getEtag(),
+            'x' => $width,
+            'y' => $height,
+        ];
+        $urlParameters = $this->getId() . '?' . http_build_query($urlParameters, '', '&');
+
+        return $webDavClient->sendRequest("GET", $urlParameters)->getBodyAsString();
     }
 }

@@ -5,13 +5,21 @@ namespace Owncloud\OcisPhpSdk;
 use DateTime;
 use GuzzleHttp\Client;
 use OpenAPI\Client\Api\DrivesApi;
+use OpenAPI\Client\Api\DrivesRootApi;
 use OpenAPI\Client\ApiException;
 use OpenAPI\Client\Configuration;
+use OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues;
 use OpenAPI\Client\Model\Drive as ApiDrive;
+use OpenAPI\Client\Model\DriveUpdate;
 use OpenAPI\Client\Model\DriveItem;
+use OpenAPI\Client\Model\DriveItemInvite;
+use OpenAPI\Client\Model\DriveRecipient;
 use OpenAPI\Client\Model\OdataError;
+use OpenAPI\Client\Model\Permission;
 use OpenAPI\Client\Model\Quota;
 use Owncloud\OcisPhpSdk\Exception\BadRequestException;
+use Owncloud\OcisPhpSdk\Exception\ConflictException;
+use Owncloud\OcisPhpSdk\Exception\EndPointNotImplementedException;
 use Owncloud\OcisPhpSdk\Exception\ExceptionHelper;
 use Owncloud\OcisPhpSdk\Exception\ForbiddenException;
 use Owncloud\OcisPhpSdk\Exception\HttpException;
@@ -19,6 +27,7 @@ use Owncloud\OcisPhpSdk\Exception\InternalServerErrorException;
 use Owncloud\OcisPhpSdk\Exception\InvalidResponseException;
 use Owncloud\OcisPhpSdk\Exception\NotFoundException;
 use Owncloud\OcisPhpSdk\Exception\NotImplementedException;
+use Owncloud\OcisPhpSdk\Exception\TooEarlyException;
 use Owncloud\OcisPhpSdk\Exception\UnauthorizedException;
 use Sabre\HTTP\ClientException as SabreClientException;
 use Sabre\HTTP\ClientHttpException as SabreClientHttpException;
@@ -40,6 +49,10 @@ class Drive
     private array $connectionConfig;
     private Configuration $graphApiConfig;
     private string $serviceUrl;
+    private string $ocisVersion;
+
+    // inviting users/groups to a drive is only possible starting from oCIS 6.0.0
+    private const MIN_OCIS_VERSION_DRIVE_INVITE = "6.0.0";
 
     /**
      * @ignore The developer using the SDK does not need to create drives manually, but should use the Ocis class
@@ -51,11 +64,13 @@ class Drive
         ApiDrive $apiDrive,
         array $connectionConfig,
         string $serviceUrl,
-        string &$accessToken
+        string &$accessToken,
+        string $ocisVersion,
     ) {
         $this->apiDrive = $apiDrive;
         $this->accessToken = &$accessToken;
         $this->serviceUrl = $serviceUrl;
+        $this->ocisVersion = $ocisVersion;
         if (!Ocis::isConnectionConfigValid($connectionConfig)) {
             throw new \InvalidArgumentException('connection configuration not valid');
         }
@@ -96,7 +111,7 @@ class Drive
             return $driveType;
         }
         throw new InvalidResponseException(
-            'Invalid DriveType returned by apiDrive: "' . print_r($driveTypeString, true) . '"'
+            'Invalid DriveType returned by apiDrive: "' . print_r($driveTypeString, true) . '"',
         );
     }
 
@@ -138,7 +153,7 @@ class Drive
             return $date;
         }
         throw new InvalidResponseException(
-            'Invalid LastModifiedDateTime returned: "' . print_r($date, true) . '"'
+            'Invalid LastModifiedDateTime returned: "' . print_r($date, true) . '"',
         );
     }
 
@@ -157,13 +172,31 @@ class Drive
             return $quota;
         }
         throw new InvalidResponseException(
-            'Invalid quota returned: "' . print_r($quota, true) . '"'
+            'Invalid quota returned: "' . print_r($quota, true) . '"',
         );
     }
 
     public function getRawData(): mixed
     {
         return $this->apiDrive->jsonSerialize();
+    }
+
+    /**
+     * @return DrivesRootApi
+     */
+    private function getDrivesRootApi(): DrivesRootApi
+    {
+        if (array_key_exists('drivesRootApi', $this->connectionConfig)) {
+            return $this->connectionConfig['drivesRootApi'];
+        }
+
+        $guzzle = new Client(
+            Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken),
+        );
+        return new DrivesRootApi(
+            $guzzle,
+            $this->graphApiConfig,
+        );
     }
 
     /**
@@ -177,31 +210,11 @@ class Drive
      */
     public function isDisabled(): bool
     {
-        $guzzle = new Client(
-            Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
-        );
-
-        $apiInstance = new DrivesApi(
-            $guzzle,
-            $this->graphApiConfig
-        );
-        // need to re-read the drive data, because it might have changed by now
-        try {
-            $apiDrive = $apiInstance->getDrive($this->getId());
-        } catch (ApiException $e) {
-            throw ExceptionHelper::getHttpErrorException($e);
-        }
-
-        if ($apiDrive instanceof OdataError) {
-            throw new InvalidResponseException(
-                "getDrive returned an OdataError - " . $apiDrive->getError()
-            );
-        }
-        $this->apiDrive = $apiDrive;
+        $this->updateDriveObject();
         $root = $this->apiDrive->getRoot();
         if (!($root instanceof DriveItem)) {
             throw new InvalidResponseException(
-                'Could not get root of drive "' . print_r($root, true) . '"'
+                'Could not get root of drive "' . print_r($root, true) . '"',
             );
         }
         $deleted = $root->getDeleted();
@@ -231,15 +244,15 @@ class Drive
     {
         $connectionConfig = array_merge(
             $this->connectionConfig,
-            ['headers' => ['Purge' => 'T']]
+            ['headers' => ['Purge' => 'T']],
         );
         $guzzle = new Client(
-            Ocis::createGuzzleConfig($connectionConfig, $this->accessToken)
+            Ocis::createGuzzleConfig($connectionConfig, $this->accessToken),
         );
 
         $apiInstance = new DrivesApi(
             $guzzle,
-            $this->graphApiConfig
+            $this->graphApiConfig,
         );
         try {
             $apiInstance->deleteDrive($this->getId());
@@ -264,11 +277,11 @@ class Drive
     public function disable(): void
     {
         $guzzle = new Client(
-            Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken)
+            Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken),
         );
         $apiInstance = new DrivesApi(
             $guzzle,
-            $this->graphApiConfig
+            $this->graphApiConfig,
         );
         try {
             $apiInstance->deleteDrive($this->getId());
@@ -293,18 +306,18 @@ class Drive
     {
         $connectionConfig = array_merge(
             $this->connectionConfig,
-            ['headers' => ['Restore' => 'true']]
+            ['headers' => ['Restore' => 'true']],
         );
         $guzzle = new Client(
-            Ocis::createGuzzleConfig($connectionConfig, $this->accessToken)
+            Ocis::createGuzzleConfig($connectionConfig, $this->accessToken),
         );
 
         $apiInstance = new DrivesApi(
             $guzzle,
-            $this->graphApiConfig
+            $this->graphApiConfig,
         );
         try {
-            $apiInstance->updateDrive($this->getId(), new ApiDrive(['name' => $this->getName()]));
+            $apiInstance->updateDrive($this->getId(), new DriveUpdate(['name' => $this->getName()]));
         } catch (ApiException $e) {
             throw ExceptionHelper::getHttpErrorException($e);
         }
@@ -336,8 +349,11 @@ class Drive
 
     /**
      * @todo This function is not implemented yet! Place, name and signature of the function might change!
+     *
+     * The type of $image is likely to be \GdImage when implemented.
+     * That would require the php-gd extension to be installed.
      */
-    public function setImage(\GdImage $image): Drive
+    public function setImage(object $image): Drive
     {
         // upload image to dav/spaces/<space-id>/.space/<image-name>
         // PATCH space
@@ -367,27 +383,9 @@ class Drive
      */
     public function getResources(string $path = "/"): array
     {
-        $resources = [];
-        $webDavClient = $this->createWebDavClient();
-        try {
-            $properties = [];
-            foreach (ResourceMetadata::cases() as $property) {
-                $properties[] = $property->value;
-            }
-            $responses = $webDavClient->propFindUnfiltered(rawurlencode(ltrim($path, "/")), $properties, 1);
-            foreach ($responses as $response) {
-                $resources[] = new OcisResource(
-                    $response,
-                    $this->connectionConfig,
-                    $this->serviceUrl,
-                    $this->accessToken
-                );
-            }
-            unset($resources[0]); // skip first propfind response, because its the parent folder
-        } catch (SabreClientHttpException|SabreClientException $e) {
-            throw ExceptionHelper::getHttpErrorException($e);
-        }
+        $resources = $this->makePropfindRequest($path);
 
+        unset($resources[0]); // skip first propfind response, because its the parent folder
         // make sure there is again an element with index 0
         return array_values($resources);
     }
@@ -427,7 +425,7 @@ class Drive
         $webDavClient = $this->createWebDavClient();
         return $webDavClient->sendRequest(
             "GET",
-            $this->webDavUrl . rawurlencode(ltrim($path, "/"))
+            $this->webDavUrl . rawurlencode(ltrim($path, "/")),
         )->getBodyAsStream();
     }
 
@@ -447,11 +445,45 @@ class Drive
     }
 
     /**
-     * @todo This function is not implemented yet! Place, name and signature of the function might change!
+     * send propfind request
+     * @param string $path
+     *
+     * @return array<OcisResource>
      */
-    public function getResourceMetadata(string $path = "/"): \stdClass
+    private function makePropfindRequest(string $path = "/"): array
     {
-        throw new NotImplementedException(Ocis::FUNCTION_NOT_IMPLEMENTED_YET_ERROR_MESSAGE);
+        $resources = [];
+        $webDavClient = $this->createWebDavClient();
+        try {
+            $properties = [];
+            foreach (ResourceMetadata::cases() as $property) {
+                $properties[] = $property->value;
+            }
+            $responses = $webDavClient->propFindUnfiltered(rawurlencode(ltrim($path, "/")), $properties, 1);
+            foreach ($responses as $response) {
+                $resources[] = new OcisResource(
+                    $response,
+                    $this->connectionConfig,
+                    $this->serviceUrl,
+                    $this->accessToken,
+                );
+            }
+            return $resources;
+        } catch (SabreClientHttpException|SabreClientException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+    }
+
+    /**
+     * get a specific resource in the current drive
+     * @param string $path
+     *
+     * @return OcisResource
+     */
+    public function getResource(string $path = "/"): OcisResource
+    {
+        $resources = $this->makePropfindRequest($path);
+        return $resources[0];
     }
 
     /**
@@ -566,6 +598,277 @@ class Drive
         $webDavClient = $this->createWebDavClient();
         $webDavClient->sendRequest('DELETE', "/dav/spaces/trash-bin/" . $this->getId());
         return true;
+    }
+
+    private function updateDriveObject(): void
+    {
+        $guzzle = new Client(
+            Ocis::createGuzzleConfig($this->connectionConfig, $this->accessToken),
+        );
+        $apiInstance = new DrivesApi(
+            $guzzle,
+            $this->graphApiConfig,
+        );
+        try {
+            $apiDrive = $apiInstance->getDrive($this->getId());
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+
+        if ($apiDrive instanceof OdataError) {
+            throw new InvalidResponseException(
+                "getDrive returned an OdataError - " . $apiDrive->getError(),
+            );
+        }
+
+        $this->apiDrive = $apiDrive;
+    }
+
+    /**
+     * Invite a user or group to the drive.
+     *
+     * @param User|Group $recipient
+     * @param SharingRole $role
+     * @param \DateTimeImmutable|null $expiration
+     * @return Permission
+     *
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     * @throws InternalServerErrorException
+     * @throws EndPointNotImplementedException
+     */
+    public function invite(User|Group $recipient, SharingRole $role, ?\DateTimeImmutable $expiration = null): Permission
+    {
+        if (version_compare($this->ocisVersion, self::MIN_OCIS_VERSION_DRIVE_INVITE, '<')) {
+            throw new EndPointNotImplementedException(Ocis::ENDPOINT_NOT_IMPLEMENTED_ERROR_MESSAGE);
+        }
+
+        $driveInviteData = [];
+        $driveInviteData['recipients'] = [];
+        $recipientData = [];
+        $recipientData['object_id'] = $recipient->getId();
+        if ($recipient instanceof Group) {
+            $recipientData['at_libre_graph_recipient_type'] = "group";
+        }
+        $driveInviteData['recipients'][] = new DriveRecipient($recipientData);
+        $driveInviteData['roles'] = [$role->getId()];
+        if ($expiration !== null) {
+            $expirationMutable = \DateTime::createFromImmutable($expiration);
+            $driveInviteData['expiration_date_time'] = $expirationMutable;
+        }
+
+        $inviteData = new DriveItemInvite($driveInviteData);
+        try {
+            $permissions = $this->getDrivesRootApi()->inviteSpaceRoot($this->getId(), $inviteData);
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+        if ($permissions instanceof OdataError) {
+            throw new InvalidResponseException(
+                "invite returned an OdataError - " . $permissions->getError(),
+            );
+        }
+        $permissionsValue = $permissions->getValue();
+        if (
+            $permissionsValue === null ||
+            !array_key_exists(0, $permissionsValue) ||
+            !($permissionsValue[0] instanceof Permission)
+        ) {
+            throw new InvalidResponseException(
+                "invite returned invalid data " . print_r($permissionsValue, true),
+            );
+        }
+
+        $this->updateDriveObject();
+        return $permissionsValue[0];
+    }
+
+    /**
+     * Gets all possible roles for the drive ( Project drive )
+     * @return array<SharingRole>
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     * @throws InvalidResponseException
+     * @throws InternalServerErrorException
+     * @throws EndPointNotImplementedException
+     */
+    public function getRoles(): array
+    {
+        if (version_compare($this->ocisVersion, self::MIN_OCIS_VERSION_DRIVE_INVITE, '<')) {
+            throw new EndPointNotImplementedException(Ocis::ENDPOINT_NOT_IMPLEMENTED_ERROR_MESSAGE);
+        }
+        $apiRoles = $this->sendGetPermissionsRequest()->getAtLibreGraphPermissionsRolesAllowedValues();
+        if (empty($apiRoles)) {
+            throw new InvalidResponseException(
+                'Drive has no roles',
+            );
+        }
+        $roles = [];
+        foreach ($apiRoles as $role) {
+            $roles[] = new SharingRole($role);
+        }
+        return $roles;
+    }
+
+    /**
+     * Permanently delete the current drive share
+     * $permissionId will be provided by getPermissionId()
+     * @param string $permissionId
+     * @return bool
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     * @throws InvalidResponseException
+     * @throws InternalServerErrorException
+     */
+    public function deletePermission(string $permissionId): bool
+    {
+        try {
+            $this->getDrivesRootApi()->deletePermissionSpaceRoot(
+                $this->getId(),
+                $permissionId,
+            );
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+        $this->updateDriveObject();
+        return true;
+    }
+
+    /**
+     * get permissions collection information
+     * @return CollectionOfPermissionsWithAllowedValues
+     * owner/co-owner receives all sharing permissions
+     * non-owner receives only the sharing permissions that apply to the caller
+     *
+     * @throws BadRequestException
+     * @throws ConflictException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws InternalServerErrorException
+     * @throws InvalidResponseException
+     * @throws NotFoundException
+     * @throws TooEarlyException
+     * @throws UnauthorizedException
+     */
+    private function sendGetPermissionsRequest(): CollectionOfPermissionsWithAllowedValues
+    {
+        try {
+            $collectionOfPermissions = $this->getDrivesRootApi()->listPermissionsSpaceRoot($this->getId());
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+
+        if ($collectionOfPermissions instanceof OdataError) {
+            throw new InvalidResponseException(
+                "listPermissions returned an OdataError - " . $collectionOfPermissions->getError(),
+            );
+        }
+        return $collectionOfPermissions;
+    }
+
+    /**
+     * get all permission assigned on drive
+     * @return array<Permission>
+     * @throws InvalidResponseException
+     * @throws EndPointNotImplementedException
+     */
+    public function getPermissions(): array
+    {
+        if (version_compare($this->ocisVersion, self::MIN_OCIS_VERSION_DRIVE_INVITE, '<')) {
+            throw new EndPointNotImplementedException(Ocis::ENDPOINT_NOT_IMPLEMENTED_ERROR_MESSAGE);
+        }
+        $permissions = $this->sendGetPermissionsRequest()->getValue();
+        if (empty($permissions)) {
+            throw new InvalidResponseException(
+                'Expected Collection of Permission but got empty array.',
+            );
+        }
+        return $permissions;
+    }
+
+    /**
+     * @throws TooEarlyException
+     * @throws UnauthorizedException
+     * @throws ForbiddenException
+     * @throws BadRequestException
+     * @throws ConflictException
+     * @throws NotFoundException
+     * @throws InternalServerErrorException
+     * @throws HttpException
+     * @throws InvalidResponseException
+     */
+    private function updatePermission(string $permissionId, Permission $apiPermission): bool
+    {
+        try {
+            $permission = $this->getDrivesRootApi()->updatePermissionSpaceRoot(
+                $this->getId(),
+                $permissionId,
+                $apiPermission,
+            );
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+        if ($permission instanceof OdataError) {
+            throw new InvalidResponseException(
+                "updatePermission returned an OdataError - " . $permission->getError(),
+            );
+        }
+        $this->updateDriveObject();
+        return true;
+    }
+
+    /**
+     * Change the Role of the particular Drive Share.
+     * Possible roles are defined by the drive and have to be queried using Drive::getRoles()
+     * Roles for shares are not to be confused with the types of share links!
+     * @see Drive::getRoles()
+     * @throws UnauthorizedException
+     * @throws ForbiddenException
+     * @throws InvalidResponseException
+     * @throws BadRequestException
+     * @throws HttpException
+     * @throws NotFoundException
+     * @throws InternalServerErrorException
+     */
+    public function setPermissionRole(string $permissionId, SharingRole $role): bool
+    {
+        $apiPermission = new Permission();
+        $apiPermission->setRoles([$role->getId()]);
+        return $this->updatePermission($permissionId, $apiPermission);
+    }
+
+    /**
+     * Change the Expiration date for the current drive share
+     * Set to null to remove the expiration date
+     *
+     * @throws UnauthorizedException
+     * @throws ForbiddenException
+     * @throws InvalidResponseException
+     * @throws BadRequestException
+     * @throws HttpException
+     * @throws NotFoundException
+     * @throws InternalServerErrorException
+     */
+    public function setPermissionExpiration(string $permissionId, ?\DateTimeImmutable $expiration): bool
+    {
+        if ($expiration !== null) {
+            $expirationMutable = \DateTime::createFromImmutable($expiration);
+        } else {
+            $expirationMutable = null;
+        }
+        $apiPermission = new Permission();
+        $apiPermission->setExpirationDateTime($expirationMutable);
+        return $this->updatePermission($permissionId, $apiPermission);
     }
 
     /**

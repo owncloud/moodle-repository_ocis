@@ -518,6 +518,10 @@ class DrivesPermissionsApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -820,6 +824,10 @@ class DrivesPermissionsApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1227,6 +1235,10 @@ class DrivesPermissionsApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1662,6 +1674,10 @@ class DrivesPermissionsApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1691,6 +1707,8 @@ class DrivesPermissionsApi
      *
      * @param  string $drive_id key: id of drive (required)
      * @param  string $item_id key: id of item (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissions'] to see the possible values for this operation
      *
      * @throws ApiException on non-2xx response or if the response body is not in the expected format
@@ -1700,10 +1718,12 @@ class DrivesPermissionsApi
     public function listPermissions(
         string $drive_id,
         string $item_id,
+        ?string $filter = null,
+        ?array $select = null,
         string $contentType = self::contentTypes['listPermissions'][0]
     )
     {
-        list($response) = $this->listPermissionsWithHttpInfo($drive_id, $item_id, $contentType);
+        list($response) = $this->listPermissionsWithHttpInfo($drive_id, $item_id, $filter, $select, $contentType);
         return $response;
     }
 
@@ -1714,6 +1734,8 @@ class DrivesPermissionsApi
      *
      * @param  string $drive_id key: id of drive (required)
      * @param  string $item_id key: id of item (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissions'] to see the possible values for this operation
      *
      * @throws ApiException on non-2xx response or if the response body is not in the expected format
@@ -1723,10 +1745,12 @@ class DrivesPermissionsApi
     public function listPermissionsWithHttpInfo(
         string $drive_id,
         string $item_id,
+        ?string $filter = null,
+        ?array $select = null,
         string $contentType = self::contentTypes['listPermissions'][0]
     ): array
     {
-        $request = $this->listPermissionsRequest($drive_id, $item_id, $contentType);
+        $request = $this->listPermissionsRequest($drive_id, $item_id, $filter, $select, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1878,6 +1902,8 @@ class DrivesPermissionsApi
      *
      * @param  string $drive_id key: id of drive (required)
      * @param  string $item_id key: id of item (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissions'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
@@ -1886,10 +1912,12 @@ class DrivesPermissionsApi
     public function listPermissionsAsync(
         string $drive_id,
         string $item_id,
+        ?string $filter = null,
+        ?array $select = null,
         string $contentType = self::contentTypes['listPermissions'][0]
     ): PromiseInterface
     {
-        return $this->listPermissionsAsyncWithHttpInfo($drive_id, $item_id, $contentType)
+        return $this->listPermissionsAsyncWithHttpInfo($drive_id, $item_id, $filter, $select, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1904,6 +1932,8 @@ class DrivesPermissionsApi
      *
      * @param  string $drive_id key: id of drive (required)
      * @param  string $item_id key: id of item (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissions'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
@@ -1912,11 +1942,13 @@ class DrivesPermissionsApi
     public function listPermissionsAsyncWithHttpInfo(
         $drive_id,
         $item_id,
+        $filter = null,
+        $select = null,
         string $contentType = self::contentTypes['listPermissions'][0]
     ): PromiseInterface
     {
         $returnType = '\OpenAPI\Client\Model\CollectionOfPermissionsWithAllowedValues';
-        $request = $this->listPermissionsRequest($drive_id, $item_id, $contentType);
+        $request = $this->listPermissionsRequest($drive_id, $item_id, $filter, $select, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1959,6 +1991,8 @@ class DrivesPermissionsApi
      *
      * @param  string $drive_id key: id of drive (required)
      * @param  string $item_id key: id of item (required)
+     * @param  string|null $filter Filter items by property values. By default all permissions are returned and the avalable sharing roles are limited to normal users. To get a list of sharing roles applicable to federated users use the example $select query and combine it with $filter to omit the list of permissions. (optional)
+     * @param  string[]|null $select Select properties to be returned. By default all properties are returned. Select the roles property to fetch the available sharing roles without resolving all the permissions. Combine this with the $filter parameter to fetch the actions applicable to federated users. (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['listPermissions'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
@@ -1967,6 +2001,8 @@ class DrivesPermissionsApi
     public function listPermissionsRequest(
         $drive_id,
         $item_id,
+        $filter = null,
+        $select = null,
         string $contentType = self::contentTypes['listPermissions'][0]
     ): Request
     {
@@ -1986,6 +2022,8 @@ class DrivesPermissionsApi
         }
 
 
+        
+
         $resourcePath = '/v1beta1/drives/{drive-id}/items/{item-id}/permissions';
         $formParams = [];
         $queryParams = [];
@@ -1993,6 +2031,24 @@ class DrivesPermissionsApi
         $httpBody = '';
         $multipart = false;
 
+        // query params
+        $queryParams = array_merge($queryParams, ObjectSerializer::toQueryValue(
+            $filter,
+            '$filter', // param base name
+            'string', // openApiType
+            'form', // style
+            true, // explode
+            false // required
+        ) ?? []);
+        // query params
+        $queryParams = array_merge($queryParams, ObjectSerializer::toQueryValue(
+            $select,
+            '$select', // param base name
+            'array', // openApiType
+            'form', // style
+            false, // explode
+            false // required
+        ) ?? []);
 
 
         // path params
@@ -2044,6 +2100,10 @@ class DrivesPermissionsApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2475,6 +2535,10 @@ class DrivesPermissionsApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2906,6 +2970,10 @@ class DrivesPermissionsApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

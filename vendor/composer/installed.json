@@ -7,12 +7,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/libre-graph-api-php.git",
-                "reference": "c728b27030e08689768562ea3b79694f9e5b09aa"
+                "reference": "b3661876f81c740ab2790020646501eb0c20db99"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/c728b27030e08689768562ea3b79694f9e5b09aa",
-                "reference": "c728b27030e08689768562ea3b79694f9e5b09aa",
+                "url": "https://api.github.com/repos/owncloud/libre-graph-api-php/zipball/b3661876f81c740ab2790020646501eb0c20db99",
+                "reference": "b3661876f81c740ab2790020646501eb0c20db99",
                 "shasum": ""
             },
             "require": {
@@ -28,7 +28,7 @@
                 "overtrue/phplint": "^9.0",
                 "phpunit/phpunit": "^9.0"
             },
-            "time": "2024-01-30T15:23:40+00:00",
+            "time": "2025-11-07T08:48:51+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
@@ -66,33 +66,35 @@
         },
         {
             "name": "owncloud/ocis-php-sdk",
-            "version": "v1.0.0",
-            "version_normalized": "1.0.0.0",
+            "version": "v1.2.2",
+            "version_normalized": "1.2.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owncloud/ocis-php-sdk.git",
-                "reference": "482b54b8a49a725277227e1598490610fa8049e1"
+                "reference": "bd893afbe941f3f268051dae838732ae123a59cb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/482b54b8a49a725277227e1598490610fa8049e1",
-                "reference": "482b54b8a49a725277227e1598490610fa8049e1",
+                "url": "https://api.github.com/repos/owncloud/ocis-php-sdk/zipball/bd893afbe941f3f268051dae838732ae123a59cb",
+                "reference": "bd893afbe941f3f268051dae838732ae123a59cb",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
+                "ext-dom": "*",
                 "ext-json": "*",
-                "owncloud/libre-graph-api-php": "dev-main#c728b27030e08689768562ea3b79694f9e5b09aa",
+                "owncloud/libre-graph-api-php": "dev-main#0e5491aa123a6db48b2f00f90e734961ee8c4aba",
                 "php": "^8.1",
                 "sabre/dav": "^4.6"
             },
             "require-dev": {
+                "ext-gd": "*",
                 "friendsofphp/php-cs-fixer": "^3.26",
                 "phan/phan": "^5.4",
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^10.5"
             },
-            "time": "2024-04-18T07:30:43+00:00",
+            "time": "2025-04-10T05:38:32+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -104,30 +106,30 @@
                 "Apache-2.0"
             ],
             "support": {
-                "source": "https://github.com/owncloud/ocis-php-sdk/tree/v1.0.0",
+                "source": "https://github.com/owncloud/ocis-php-sdk/tree/v1.2.2",
                 "issues": "https://github.com/owncloud/ocis-php-sdk/issues"
             },
             "install-path": "../owncloud/ocis-php-sdk"
         },
         {
             "name": "psr/log",
-            "version": "3.0.0",
-            "version_normalized": "3.0.0.0",
+            "version": "3.0.2",
+            "version_normalized": "3.0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001"
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/fe5ea303b0887d5caefd3d431c3e61ad47037001",
-                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.0.0"
             },
-            "time": "2021-07-14T16:46:02+00:00",
+            "time": "2024-09-11T13:17:53+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -158,23 +160,23 @@
                 "psr-3"
             ],
             "support": {
-                "source": "https://github.com/php-fig/log/tree/3.0.0"
+                "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
             "install-path": "../psr/log"
         },
         {
             "name": "sabre/dav",
-            "version": "4.6.0",
-            "version_normalized": "4.6.0.0",
+            "version": "4.7.0",
+            "version_normalized": "4.7.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sabre-io/dav.git",
-                "reference": "554145304b4a026477d130928d16e626939b0b2a"
+                "reference": "074373bcd689a30bcf5aaa6bbb20a3395964ce7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sabre-io/dav/zipball/554145304b4a026477d130928d16e626939b0b2a",
-                "reference": "554145304b4a026477d130928d16e626939b0b2a",
+                "url": "https://api.github.com/repos/sabre-io/dav/zipball/074373bcd689a30bcf5aaa6bbb20a3395964ce7a",
+                "reference": "074373bcd689a30bcf5aaa6bbb20a3395964ce7a",
                 "shasum": ""
             },
             "require": {
@@ -208,7 +210,7 @@
                 "ext-imap": "*",
                 "ext-pdo": "*"
             },
-            "time": "2023-12-11T13:01:23+00:00",
+            "time": "2024-10-29T11:46:02+00:00",
             "bin": [
                 "bin/sabredav",
                 "bin/naturalselection"
@@ -250,28 +252,28 @@
         },
         {
             "name": "sabre/event",
-            "version": "5.1.4",
-            "version_normalized": "5.1.4.0",
+            "version": "5.1.7",
+            "version_normalized": "5.1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sabre-io/event.git",
-                "reference": "d7da22897125d34d7eddf7977758191c06a74497"
+                "reference": "86d57e305c272898ba3c28e9bd3d65d5464587c2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sabre-io/event/zipball/d7da22897125d34d7eddf7977758191c06a74497",
-                "reference": "d7da22897125d34d7eddf7977758191c06a74497",
+                "url": "https://api.github.com/repos/sabre-io/event/zipball/86d57e305c272898ba3c28e9bd3d65d5464587c2",
+                "reference": "86d57e305c272898ba3c28e9bd3d65d5464587c2",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "~2.17.1",
+                "friendsofphp/php-cs-fixer": "~2.17.1||^3.63",
                 "phpstan/phpstan": "^0.12",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.0"
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.6"
             },
-            "time": "2021-11-04T06:51:17+00:00",
+            "time": "2024-08-27T11:23:05+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -319,17 +321,17 @@
         },
         {
             "name": "sabre/http",
-            "version": "5.1.10",
-            "version_normalized": "5.1.10.0",
+            "version": "5.1.13",
+            "version_normalized": "5.1.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sabre-io/http.git",
-                "reference": "f9f3d1fba8916fa2f4ec25636c4fedc26cb94e02"
+                "reference": "7c2a14097d1a0de2347dcbdc91a02f38e338f4db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sabre-io/http/zipball/f9f3d1fba8916fa2f4ec25636c4fedc26cb94e02",
-                "reference": "f9f3d1fba8916fa2f4ec25636c4fedc26cb94e02",
+                "url": "https://api.github.com/repos/sabre-io/http/zipball/7c2a14097d1a0de2347dcbdc91a02f38e338f4db",
+                "reference": "7c2a14097d1a0de2347dcbdc91a02f38e338f4db",
                 "shasum": ""
             },
             "require": {
@@ -341,14 +343,14 @@
                 "sabre/uri": "^2.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "~2.17.1",
+                "friendsofphp/php-cs-fixer": "~2.17.1||3.63.2",
                 "phpstan/phpstan": "^0.12",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.0"
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.6"
             },
             "suggest": {
                 "ext-curl": " to make http requests with the Client class"
             },
-            "time": "2023-08-18T01:55:28+00:00",
+            "time": "2025-09-09T10:21:47+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -385,31 +387,31 @@
         },
         {
             "name": "sabre/uri",
-            "version": "2.3.3",
-            "version_normalized": "2.3.3.0",
+            "version": "2.3.4",
+            "version_normalized": "2.3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sabre-io/uri.git",
-                "reference": "7e0e7dfd0b7e14346a27eabd66e843a6e7f1812b"
+                "reference": "b76524c22de90d80ca73143680a8e77b1266c291"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sabre-io/uri/zipball/7e0e7dfd0b7e14346a27eabd66e843a6e7f1812b",
-                "reference": "7e0e7dfd0b7e14346a27eabd66e843a6e7f1812b",
+                "url": "https://api.github.com/repos/sabre-io/uri/zipball/b76524c22de90d80ca73143680a8e77b1266c291",
+                "reference": "b76524c22de90d80ca73143680a8e77b1266c291",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.17",
-                "phpstan/extension-installer": "^1.3",
-                "phpstan/phpstan": "^1.10",
-                "phpstan/phpstan-phpunit": "^1.3",
-                "phpstan/phpstan-strict-rules": "^1.5",
+                "friendsofphp/php-cs-fixer": "^3.63",
+                "phpstan/extension-installer": "^1.4",
+                "phpstan/phpstan": "^1.12",
+                "phpstan/phpstan-phpunit": "^1.4",
+                "phpstan/phpstan-strict-rules": "^1.6",
                 "phpunit/phpunit": "^9.6"
             },
-            "time": "2023-06-09T06:54:04+00:00",
+            "time": "2024-08-27T12:18:16+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -448,17 +450,17 @@
         },
         {
             "name": "sabre/vobject",
-            "version": "4.5.4",
-            "version_normalized": "4.5.4.0",
+            "version": "4.5.7",
+            "version_normalized": "4.5.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sabre-io/vobject.git",
-                "reference": "a6d53a3e5bec85ed3dd78868b7de0f5b4e12f772"
+                "reference": "ff22611a53782e90c97be0d0bc4a5f98a5c0a12c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sabre-io/vobject/zipball/a6d53a3e5bec85ed3dd78868b7de0f5b4e12f772",
-                "reference": "a6d53a3e5bec85ed3dd78868b7de0f5b4e12f772",
+                "url": "https://api.github.com/repos/sabre-io/vobject/zipball/ff22611a53782e90c97be0d0bc4a5f98a5c0a12c",
+                "reference": "ff22611a53782e90c97be0d0bc4a5f98a5c0a12c",
                 "shasum": ""
             },
             "require": {
@@ -468,14 +470,14 @@
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "~2.17.1",
-                "phpstan/phpstan": "^0.12",
+                "phpstan/phpstan": "^0.12 || ^1.12 || ^2.0",
                 "phpunit/php-invoker": "^2.0 || ^3.1",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.0"
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.6"
             },
             "suggest": {
                 "hoa/bench": "If you would like to run the benchmark scripts"
             },
-            "time": "2023-11-09T12:54:37+00:00",
+            "time": "2025-04-17T09:22:48+00:00",
             "bin": [
                 "bin/vobject",
                 "bin/generate_vcards"
@@ -555,17 +557,17 @@
         },
         {
             "name": "sabre/xml",
-            "version": "2.2.6",
-            "version_normalized": "2.2.6.0",
+            "version": "2.2.11",
+            "version_normalized": "2.2.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sabre-io/xml.git",
-                "reference": "9cde7cdab1e50893cc83b037b40cd47bfde42a2b"
+                "reference": "01a7927842abf3e10df3d9c2d9b0cc9d813a3fcc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sabre-io/xml/zipball/9cde7cdab1e50893cc83b037b40cd47bfde42a2b",
-                "reference": "9cde7cdab1e50893cc83b037b40cd47bfde42a2b",
+                "url": "https://api.github.com/repos/sabre-io/xml/zipball/01a7927842abf3e10df3d9c2d9b0cc9d813a3fcc",
+                "reference": "01a7927842abf3e10df3d9c2d9b0cc9d813a3fcc",
                 "shasum": ""
             },
             "require": {
@@ -577,11 +579,11 @@
                 "sabre/uri": ">=1.0,<3.0.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "~2.17.1",
+                "friendsofphp/php-cs-fixer": "~2.17.1||3.63.2",
                 "phpstan/phpstan": "^0.12",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.0"
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.6"
             },
-            "time": "2023-06-28T12:56:05+00:00",
+            "time": "2024-09-06T07:37:46+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {

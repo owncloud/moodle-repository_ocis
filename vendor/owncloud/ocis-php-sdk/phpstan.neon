@@ -1,7 +1,0 @@
-parameters:
-  level: 9
-  bootstrapFiles:
-    - tests/unit/bootstrap.php
-  ignoreErrors:
-  excludePaths:
-     - */tests/integration/ocis/*

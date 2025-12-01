@@ -36,7 +36,7 @@ use OpenAPI\Client\ObjectSerializer;
 /**
  * GeoCoordinates Class Doc Comment
  *
- * @description The GeoCoordinates resource provides geographic coordinates and elevation of a location based on metadata contained within the file. If a DriveItem has a non-null location facet, the item represents a file with a known location assocaited with it.
+ * @description The GeoCoordinates resource provides geographic coordinates and elevation of a location based on metadata contained within the file. If a DriveItem has a non-null location facet, the item represents a file with a known location associated with it.
  * @package  OpenAPI\Client
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
