@@ -55,7 +55,7 @@ class Group
         OpenApiGroup $openApiGroup,
         string $serviceUrl,
         array $connectionConfig,
-        string &$accessToken
+        string &$accessToken,
     ) {
         $this->id = $openApiGroup->getId();
         $this->displayName = $openApiGroup->getDisplayName();
@@ -72,7 +72,7 @@ class Group
         $this->graphApiConfig = Configuration::getDefaultConfiguration()
             ->setHost($this->serviceUrl . '/graph');
         $this->guzzle = new Client(
-            Ocis::createGuzzleConfig($connectionConfig, $this->accessToken)
+            Ocis::createGuzzleConfig($connectionConfig, $this->accessToken),
         );
     }
 
@@ -84,7 +84,7 @@ class Group
     {
         return (($this->id === null) || ($this->id === '')) ?
         throw new InvalidResponseException(
-            "Invalid id returned for group '" . print_r($this->id, true) . "'"
+            "Invalid id returned for group '" . print_r($this->id, true) . "'",
         ) : (string)$this->id;
     }
 
@@ -103,7 +103,7 @@ class Group
     {
         return (($this->displayName === null) || ($this->displayName === '')) ?
         throw new InvalidResponseException(
-            "Invalid displayName returned for group '" . print_r($this->displayName, true) . "'"
+            "Invalid displayName returned for group '" . print_r($this->displayName, true) . "'",
         ) : $this->displayName;
     }
 
@@ -124,15 +124,6 @@ class Group
     }
 
     /**
-     * Set the value of members
-     * @param User $member
-     */
-    public function setMembers(User $member): void
-    {
-        $this->members[] = $member;
-    }
-
-    /**
      * @param User $user
      *
      * @throws BadRequestException
@@ -150,15 +141,15 @@ class Group
         $apiInstance = new GroupApi($this->guzzle, $this->graphApiConfig);
         $memberRef = new MemberReference(
             [
-                "at_odata_id" => $this->graphApiConfig->getHost(). "/v1.0/users/" . $user->getId()
-            ]
+                "at_odata_id" => $this->graphApiConfig->getHost(). "/v1.0/users/" . $user->getId(),
+            ],
         );
         try {
             $apiInstance->addMember($this->getId(), $memberRef);
         } catch (ApiException $e) {
             throw ExceptionHelper::getHttpErrorException($e);
         }
-        $this->setMembers($user);
+        $this->members[] = $user;
     }
 
     /**
@@ -182,7 +173,7 @@ class Group
         } catch (ApiException $e) {
             throw ExceptionHelper::getHttpErrorException($e);
         }
-        foreach($this->members as $memberIndex => $member) {
+        foreach ($this->members as $memberIndex => $member) {
             if ($member->getId() === $user->getId()) {
                 unset($this->members[$memberIndex]);
             }
@@ -207,6 +198,34 @@ class Group
         $apiInstance = new GroupApi($this->guzzle, $this->graphApiConfig);
         try {
             $apiInstance->deleteGroup($this->getId());
+        } catch (ApiException $e) {
+            throw ExceptionHelper::getHttpErrorException($e);
+        }
+    }
+
+    /**
+     * Rename group
+     *
+     * @param string $name
+     *
+     * @return bool
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws HttpException
+     * @throws InternalServerErrorException
+     * @throws InvalidResponseException
+     * @throws NotFoundException
+     * @throws UnauthorizedException
+     */
+    public function rename(string $name): bool
+    {
+        $apiInstance = new GroupApi($this->guzzle, $this->graphApiConfig);
+        $groupProperties = new OpenApiGroup([
+            "display_name" => $name,
+        ], );
+        try {
+            $apiInstance->updateGroup($this->getId(), $groupProperties);
+            return true;
         } catch (ApiException $e) {
             throw ExceptionHelper::getHttpErrorException($e);
         }

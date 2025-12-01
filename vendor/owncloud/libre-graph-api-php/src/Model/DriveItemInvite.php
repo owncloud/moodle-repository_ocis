@@ -321,7 +321,7 @@ class DriveItemInvite implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets recipients
      *
-     * @param \OpenAPI\Client\Model\DriveRecipient[]|null $recipients A collection of recipients who will receive access and the sharing invitation. Currently, only internal users or gorups are supported.
+     * @param \OpenAPI\Client\Model\DriveRecipient[]|null $recipients A collection of recipients who will receive access and the sharing invitation. Currently, only internal users or groups are supported.
      *
      * @return $this
      */

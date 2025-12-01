@@ -73,7 +73,9 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => 'string',
         'given_name' => 'string',
         'user_type' => 'string',
-        'preferred_language' => 'string'
+        'preferred_language' => 'string',
+        'sign_in_activity' => '\OpenAPI\Client\Model\SignInActivity',
+        'external_id' => 'string'
     ];
 
     /**
@@ -96,7 +98,9 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => null,
         'given_name' => null,
         'user_type' => null,
-        'preferred_language' => null
+        'preferred_language' => null,
+        'sign_in_activity' => null,
+        'external_id' => null
     ];
 
     /**
@@ -119,7 +123,9 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
 		'surname' => false,
 		'given_name' => false,
 		'user_type' => false,
-		'preferred_language' => false
+		'preferred_language' => false,
+		'sign_in_activity' => false,
+		'external_id' => false
     ];
 
     /**
@@ -222,7 +228,9 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => 'surname',
         'given_name' => 'givenName',
         'user_type' => 'userType',
-        'preferred_language' => 'preferredLanguage'
+        'preferred_language' => 'preferredLanguage',
+        'sign_in_activity' => 'signInActivity',
+        'external_id' => 'externalID'
     ];
 
     /**
@@ -245,7 +253,9 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => 'setSurname',
         'given_name' => 'setGivenName',
         'user_type' => 'setUserType',
-        'preferred_language' => 'setPreferredLanguage'
+        'preferred_language' => 'setPreferredLanguage',
+        'sign_in_activity' => 'setSignInActivity',
+        'external_id' => 'setExternalId'
     ];
 
     /**
@@ -268,7 +278,9 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => 'getSurname',
         'given_name' => 'getGivenName',
         'user_type' => 'getUserType',
-        'preferred_language' => 'getPreferredLanguage'
+        'preferred_language' => 'getPreferredLanguage',
+        'sign_in_activity' => 'getSignInActivity',
+        'external_id' => 'getExternalId'
     ];
 
     /**
@@ -342,6 +354,8 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
         $this->setIfExists('given_name', $data ?? [], null);
         $this->setIfExists('user_type', $data ?? [], null);
         $this->setIfExists('preferred_language', $data ?? [], null);
+        $this->setIfExists('sign_in_activity', $data ?? [], null);
+        $this->setIfExists('external_id', $data ?? [], null);
     }
 
     /**
@@ -371,10 +385,16 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
+        if ($this->container['display_name'] === null) {
+            $invalidProperties[] = "'display_name' can't be null";
+        }
         if (!is_null($this->container['drives']) && (count($this->container['drives']) > 100)) {
             $invalidProperties[] = "invalid value for 'drives', number of items must be less than or equal to 100.";
         }
 
+        if ($this->container['on_premises_sam_account_name'] === null) {
+            $invalidProperties[] = "'on_premises_sam_account_name' can't be null";
+        }
         return $invalidProperties;
     }
 
@@ -474,9 +494,9 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets display_name
      *
-     * @return string|null
+     * @return string
      */
-    public function getDisplayName(): ?string
+    public function getDisplayName(): string
     {
         return $this->container['display_name'];
     }
@@ -484,11 +504,11 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets display_name
      *
-     * @param string|null $display_name The name displayed in the address book for the user. This value is usually the combination of the user's first name, middle initial, and last name. This property is required when a user is created and it cannot be cleared during updates. Returned by default. Supports $orderby.
+     * @param string $display_name The name displayed in the address book for the user. This value is usually the combination of the user's first name, middle initial, and last name. This property is required when a user is created and it cannot be cleared during updates. Returned by default. Supports $orderby.
      *
      * @return $this
      */
-    public function setDisplayName(?string $display_name): static
+    public function setDisplayName(string $display_name): static
     {
         if (is_null($display_name)) {
             throw new InvalidArgumentException('non-nullable display_name cannot be null');
@@ -640,9 +660,9 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets on_premises_sam_account_name
      *
-     * @return string|null
+     * @return string
      */
-    public function getOnPremisesSamAccountName(): ?string
+    public function getOnPremisesSamAccountName(): string
     {
         return $this->container['on_premises_sam_account_name'];
     }
@@ -650,11 +670,11 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets on_premises_sam_account_name
      *
-     * @param string|null $on_premises_sam_account_name Contains the on-premises SAM account name synchronized from the on-premises directory. Read-only.
+     * @param string $on_premises_sam_account_name Contains the on-premises SAM account name synchronized from the on-premises directory.
      *
      * @return $this
      */
-    public function setOnPremisesSamAccountName(?string $on_premises_sam_account_name): static
+    public function setOnPremisesSamAccountName(string $on_premises_sam_account_name): static
     {
         if (is_null($on_premises_sam_account_name)) {
             throw new InvalidArgumentException('non-nullable on_premises_sam_account_name cannot be null');
@@ -758,7 +778,7 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets user_type
      *
-     * @param string|null $user_type The user`s type. This can be either \"Member\" for regular user, or \"Guest\" for guest users.
+     * @param string|null $user_type The user`s type. This can be either \"Member\" for regular user, \"Guest\" for guest users or \"Federated\" for users imported from a federated instance.
      *
      * @return $this
      */
@@ -795,6 +815,60 @@ class User implements ModelInterface, ArrayAccess, JsonSerializable
             throw new InvalidArgumentException('non-nullable preferred_language cannot be null');
         }
         $this->container['preferred_language'] = $preferred_language;
+
+        return $this;
+    }
+
+    /**
+     * Gets sign_in_activity
+     *
+     * @return \OpenAPI\Client\Model\SignInActivity|null
+     */
+    public function getSignInActivity(): ?\OpenAPI\Client\Model\SignInActivity
+    {
+        return $this->container['sign_in_activity'];
+    }
+
+    /**
+     * Sets sign_in_activity
+     *
+     * @param \OpenAPI\Client\Model\SignInActivity|null $sign_in_activity sign_in_activity
+     *
+     * @return $this
+     */
+    public function setSignInActivity(?\OpenAPI\Client\Model\SignInActivity $sign_in_activity): static
+    {
+        if (is_null($sign_in_activity)) {
+            throw new InvalidArgumentException('non-nullable sign_in_activity cannot be null');
+        }
+        $this->container['sign_in_activity'] = $sign_in_activity;
+
+        return $this;
+    }
+
+    /**
+     * Gets external_id
+     *
+     * @return string|null
+     */
+    public function getExternalId(): ?string
+    {
+        return $this->container['external_id'];
+    }
+
+    /**
+     * Sets external_id
+     *
+     * @param string|null $external_id A unique identifier assigned to the user by the organization.
+     *
+     * @return $this
+     */
+    public function setExternalId(?string $external_id): static
+    {
+        if (is_null($external_id)) {
+            throw new InvalidArgumentException('non-nullable external_id cannot be null');
+        }
+        $this->container['external_id'] = $external_id;
 
         return $this;
     }

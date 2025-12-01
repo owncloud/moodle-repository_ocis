@@ -59,7 +59,8 @@ class Identity implements ModelInterface, ArrayAccess, JsonSerializable
       */
     protected static array $openAPITypes = [
         'display_name' => 'string',
-        'id' => 'string'
+        'id' => 'string',
+        'at_libre_graph_user_type' => 'string'
     ];
 
     /**
@@ -69,7 +70,8 @@ class Identity implements ModelInterface, ArrayAccess, JsonSerializable
       */
     protected static array $openAPIFormats = [
         'display_name' => null,
-        'id' => null
+        'id' => null,
+        'at_libre_graph_user_type' => null
     ];
 
     /**
@@ -79,7 +81,8 @@ class Identity implements ModelInterface, ArrayAccess, JsonSerializable
       */
     protected static array $openAPINullables = [
         'display_name' => false,
-		'id' => false
+		'id' => false,
+		'at_libre_graph_user_type' => false
     ];
 
     /**
@@ -169,7 +172,8 @@ class Identity implements ModelInterface, ArrayAccess, JsonSerializable
      */
     protected static array $attributeMap = [
         'display_name' => 'displayName',
-        'id' => 'id'
+        'id' => 'id',
+        'at_libre_graph_user_type' => '@libre.graph.userType'
     ];
 
     /**
@@ -179,7 +183,8 @@ class Identity implements ModelInterface, ArrayAccess, JsonSerializable
      */
     protected static array $setters = [
         'display_name' => 'setDisplayName',
-        'id' => 'setId'
+        'id' => 'setId',
+        'at_libre_graph_user_type' => 'setAtLibreGraphUserType'
     ];
 
     /**
@@ -189,7 +194,8 @@ class Identity implements ModelInterface, ArrayAccess, JsonSerializable
      */
     protected static array $getters = [
         'display_name' => 'getDisplayName',
-        'id' => 'getId'
+        'id' => 'getId',
+        'at_libre_graph_user_type' => 'getAtLibreGraphUserType'
     ];
 
     /**
@@ -250,6 +256,7 @@ class Identity implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $this->setIfExists('display_name', $data ?? [], null);
         $this->setIfExists('id', $data ?? [], null);
+        $this->setIfExists('at_libre_graph_user_type', $data ?? [], null);
     }
 
     /**
@@ -347,6 +354,33 @@ class Identity implements ModelInterface, ArrayAccess, JsonSerializable
             throw new InvalidArgumentException('non-nullable id cannot be null');
         }
         $this->container['id'] = $id;
+
+        return $this;
+    }
+
+    /**
+     * Gets at_libre_graph_user_type
+     *
+     * @return string|null
+     */
+    public function getAtLibreGraphUserType(): ?string
+    {
+        return $this->container['at_libre_graph_user_type'];
+    }
+
+    /**
+     * Sets at_libre_graph_user_type
+     *
+     * @param string|null $at_libre_graph_user_type The type of the identity. This can be either \"Member\" for regular user, \"Guest\" for guest users or \"Federated\" for users imported from a federated instance. Can be used by clients to indicate the type of user. For more details, clients should look up and cache the user at the /users endpoint.
+     *
+     * @return $this
+     */
+    public function setAtLibreGraphUserType(?string $at_libre_graph_user_type): static
+    {
+        if (is_null($at_libre_graph_user_type)) {
+            throw new InvalidArgumentException('non-nullable at_libre_graph_user_type cannot be null');
+        }
+        $this->container['at_libre_graph_user_type'] = $at_libre_graph_user_type;
 
         return $this;
     }

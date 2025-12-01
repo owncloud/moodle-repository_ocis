@@ -13,6 +13,8 @@ return array(
     'Sabre\\Event\\' => array($vendorDir . '/sabre/event/lib'),
     'Sabre\\' => array($vendorDir . '/sabre/dav/lib'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log/src'),
+    'PHPCSStandards\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => array($vendorDir . '/dealerdirect/phpcodesniffer-composer-installer/src'),
     'Owncloud\\OcisPhpSdk\\' => array($vendorDir . '/owncloud/ocis-php-sdk/src'),
     'OpenAPI\\Client\\' => array($vendorDir . '/owncloud/libre-graph-api-php/src'),
+    'MoodleHQ\\MoodleCS\\moodle\\' => array($vendorDir . '/moodlehq/moodle-cs/moodle'),
 );

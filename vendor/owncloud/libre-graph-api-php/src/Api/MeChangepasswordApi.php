@@ -125,7 +125,7 @@ class MeChangepasswordApi
     /**
      * Operation changeOwnPassword
      *
-     * Chanage your own password
+     * Change your own password
      *
      * @param  \OpenAPI\Client\Model\PasswordChange $password_change Password change request (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['changeOwnPassword'] to see the possible values for this operation
@@ -145,7 +145,7 @@ class MeChangepasswordApi
     /**
      * Operation changeOwnPasswordWithHttpInfo
      *
-     * Chanage your own password
+     * Change your own password
      *
      * @param  \OpenAPI\Client\Model\PasswordChange $password_change Password change request (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['changeOwnPassword'] to see the possible values for this operation
@@ -216,7 +216,7 @@ class MeChangepasswordApi
     /**
      * Operation changeOwnPasswordAsync
      *
-     * Chanage your own password
+     * Change your own password
      *
      * @param  \OpenAPI\Client\Model\PasswordChange $password_change Password change request (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['changeOwnPassword'] to see the possible values for this operation
@@ -240,7 +240,7 @@ class MeChangepasswordApi
     /**
      * Operation changeOwnPasswordAsyncWithHttpInfo
      *
-     * Chanage your own password
+     * Change your own password
      *
      * @param  \OpenAPI\Client\Model\PasswordChange $password_change Password change request (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['changeOwnPassword'] to see the possible values for this operation
@@ -351,6 +351,10 @@ class MeChangepasswordApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

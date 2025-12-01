@@ -74,6 +74,12 @@ class DriveItemApi
         'deleteDriveItem' => [
             'application/json',
         ],
+        'getDriveItem' => [
+            'application/json',
+        ],
+        'updateDriveItem' => [
+            'application/json',
+        ],
     ];
 
     /**
@@ -377,6 +383,10 @@ class DriveItemApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -393,6 +403,802 @@ class DriveItemApi
         $query = ObjectSerializer::buildQuery($queryParams);
         return new Request(
             'DELETE',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation getDriveItem
+     *
+     * Get a DriveItem.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDriveItem'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return \OpenAPI\Client\Model\DriveItem|\OpenAPI\Client\Model\OdataError
+     */
+    public function getDriveItem(
+        string $drive_id,
+        string $item_id,
+        string $contentType = self::contentTypes['getDriveItem'][0]
+    )
+    {
+        list($response) = $this->getDriveItemWithHttpInfo($drive_id, $item_id, $contentType);
+        return $response;
+    }
+
+    /**
+     * Operation getDriveItemWithHttpInfo
+     *
+     * Get a DriveItem.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDriveItem'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return array of \OpenAPI\Client\Model\DriveItem|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function getDriveItemWithHttpInfo(
+        string $drive_id,
+        string $item_id,
+        string $contentType = self::contentTypes['getDriveItem'][0]
+    ): array
+    {
+        $request = $this->getDriveItemRequest($drive_id, $item_id, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            switch($statusCode) {
+                case 200:
+                    if ('\OpenAPI\Client\Model\DriveItem' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\DriveItem' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\DriveItem', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                default:
+                    if ('\OpenAPI\Client\Model\OdataError' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\OdataError', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            $returnType = '\OpenAPI\Client\Model\DriveItem';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\DriveItem',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+                default:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation getDriveItemAsync
+     *
+     * Get a DriveItem.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDriveItem'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function getDriveItemAsync(
+        string $drive_id,
+        string $item_id,
+        string $contentType = self::contentTypes['getDriveItem'][0]
+    ): PromiseInterface
+    {
+        return $this->getDriveItemAsyncWithHttpInfo($drive_id, $item_id, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation getDriveItemAsyncWithHttpInfo
+     *
+     * Get a DriveItem.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDriveItem'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function getDriveItemAsyncWithHttpInfo(
+        $drive_id,
+        $item_id,
+        string $contentType = self::contentTypes['getDriveItem'][0]
+    ): PromiseInterface
+    {
+        $returnType = '\OpenAPI\Client\Model\DriveItem';
+        $request = $this->getDriveItemRequest($drive_id, $item_id, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'getDriveItem'
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDriveItem'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function getDriveItemRequest(
+        $drive_id,
+        $item_id,
+        string $contentType = self::contentTypes['getDriveItem'][0]
+    ): Request
+    {
+
+        // verify the required parameter 'drive_id' is set
+        if ($drive_id === null || (is_array($drive_id) && count($drive_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_id when calling getDriveItem'
+            );
+        }
+
+        // verify the required parameter 'item_id' is set
+        if ($item_id === null || (is_array($item_id) && count($item_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $item_id when calling getDriveItem'
+            );
+        }
+
+
+        $resourcePath = '/v1beta1/drives/{drive-id}/items/{item-id}';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+        // path params
+        if ($drive_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'drive-id' . '}',
+                ObjectSerializer::toPathValue($drive_id),
+                $resourcePath
+            );
+        }
+        // path params
+        if ($item_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'item-id' . '}',
+                ObjectSerializer::toPathValue($item_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            ['application/json', ],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'GET',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation updateDriveItem
+     *
+     * Update a DriveItem.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  \OpenAPI\Client\Model\DriveItem $drive_item DriveItem properties to update (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDriveItem'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return \OpenAPI\Client\Model\DriveItem|\OpenAPI\Client\Model\OdataError
+     */
+    public function updateDriveItem(
+        string $drive_id,
+        string $item_id,
+        \OpenAPI\Client\Model\DriveItem $drive_item,
+        string $contentType = self::contentTypes['updateDriveItem'][0]
+    )
+    {
+        list($response) = $this->updateDriveItemWithHttpInfo($drive_id, $item_id, $drive_item, $contentType);
+        return $response;
+    }
+
+    /**
+     * Operation updateDriveItemWithHttpInfo
+     *
+     * Update a DriveItem.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  \OpenAPI\Client\Model\DriveItem $drive_item DriveItem properties to update (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDriveItem'] to see the possible values for this operation
+     *
+     * @throws ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws InvalidArgumentException
+     * @return array of \OpenAPI\Client\Model\DriveItem|\OpenAPI\Client\Model\OdataError, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function updateDriveItemWithHttpInfo(
+        string $drive_id,
+        string $item_id,
+        \OpenAPI\Client\Model\DriveItem $drive_item,
+        string $contentType = self::contentTypes['updateDriveItem'][0]
+    ): array
+    {
+        $request = $this->updateDriveItemRequest($drive_id, $item_id, $drive_item, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            switch($statusCode) {
+                case 200:
+                    if ('\OpenAPI\Client\Model\DriveItem' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\DriveItem' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\DriveItem', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                default:
+                    if ('\OpenAPI\Client\Model\OdataError' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\OpenAPI\Client\Model\OdataError' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\OpenAPI\Client\Model\OdataError', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            $returnType = '\OpenAPI\Client\Model\DriveItem';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                         );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\DriveItem',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+                default:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\OpenAPI\Client\Model\OdataError',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation updateDriveItemAsync
+     *
+     * Update a DriveItem.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  \OpenAPI\Client\Model\DriveItem $drive_item DriveItem properties to update (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDriveItem'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function updateDriveItemAsync(
+        string $drive_id,
+        string $item_id,
+        \OpenAPI\Client\Model\DriveItem $drive_item,
+        string $contentType = self::contentTypes['updateDriveItem'][0]
+    ): PromiseInterface
+    {
+        return $this->updateDriveItemAsyncWithHttpInfo($drive_id, $item_id, $drive_item, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation updateDriveItemAsyncWithHttpInfo
+     *
+     * Update a DriveItem.
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  \OpenAPI\Client\Model\DriveItem $drive_item DriveItem properties to update (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDriveItem'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return PromiseInterface
+     */
+    public function updateDriveItemAsyncWithHttpInfo(
+        $drive_id,
+        $item_id,
+        $drive_item,
+        string $contentType = self::contentTypes['updateDriveItem'][0]
+    ): PromiseInterface
+    {
+        $returnType = '\OpenAPI\Client\Model\DriveItem';
+        $request = $this->updateDriveItemRequest($drive_id, $item_id, $drive_item, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'updateDriveItem'
+     *
+     * @param  string $drive_id key: id of drive (required)
+     * @param  string $item_id key: id of item (required)
+     * @param  \OpenAPI\Client\Model\DriveItem $drive_item DriveItem properties to update (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDriveItem'] to see the possible values for this operation
+     *
+     * @throws InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function updateDriveItemRequest(
+        $drive_id,
+        $item_id,
+        $drive_item,
+        string $contentType = self::contentTypes['updateDriveItem'][0]
+    ): Request
+    {
+
+        // verify the required parameter 'drive_id' is set
+        if ($drive_id === null || (is_array($drive_id) && count($drive_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_id when calling updateDriveItem'
+            );
+        }
+
+        // verify the required parameter 'item_id' is set
+        if ($item_id === null || (is_array($item_id) && count($item_id) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $item_id when calling updateDriveItem'
+            );
+        }
+
+        // verify the required parameter 'drive_item' is set
+        if ($drive_item === null || (is_array($drive_item) && count($drive_item) === 0)) {
+            throw new InvalidArgumentException(
+                'Missing the required parameter $drive_item when calling updateDriveItem'
+            );
+        }
+
+
+        $resourcePath = '/v1beta1/drives/{drive-id}/items/{item-id}';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+        // path params
+        if ($drive_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'drive-id' . '}',
+                ObjectSerializer::toPathValue($drive_id),
+                $resourcePath
+            );
+        }
+        // path params
+        if ($item_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'item-id' . '}',
+                ObjectSerializer::toPathValue($item_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            ['application/json', ],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (isset($drive_item)) {
+            if (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the body
+                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($drive_item));
+            } else {
+                $httpBody = $drive_item;
+            }
+        } elseif (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'PATCH',
             $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
             $headers,
             $httpBody

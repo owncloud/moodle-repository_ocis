@@ -465,6 +465,10 @@ class DrivesApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -732,6 +736,10 @@ class DrivesApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1089,6 +1097,10 @@ class DrivesApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1117,7 +1129,7 @@ class DrivesApi
      * Update the drive
      *
      * @param  string $drive_id key: id of drive (required)
-     * @param  \OpenAPI\Client\Model\Drive $drive New space values (required)
+     * @param  \OpenAPI\Client\Model\DriveUpdate $drive_update New space values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDrive'] to see the possible values for this operation
      *
      * @throws ApiException on non-2xx response or if the response body is not in the expected format
@@ -1126,11 +1138,11 @@ class DrivesApi
      */
     public function updateDrive(
         string $drive_id,
-        \OpenAPI\Client\Model\Drive $drive,
+        \OpenAPI\Client\Model\DriveUpdate $drive_update,
         string $contentType = self::contentTypes['updateDrive'][0]
     )
     {
-        list($response) = $this->updateDriveWithHttpInfo($drive_id, $drive, $contentType);
+        list($response) = $this->updateDriveWithHttpInfo($drive_id, $drive_update, $contentType);
         return $response;
     }
 
@@ -1140,7 +1152,7 @@ class DrivesApi
      * Update the drive
      *
      * @param  string $drive_id key: id of drive (required)
-     * @param  \OpenAPI\Client\Model\Drive $drive New space values (required)
+     * @param  \OpenAPI\Client\Model\DriveUpdate $drive_update New space values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDrive'] to see the possible values for this operation
      *
      * @throws ApiException on non-2xx response or if the response body is not in the expected format
@@ -1149,11 +1161,11 @@ class DrivesApi
      */
     public function updateDriveWithHttpInfo(
         string $drive_id,
-        \OpenAPI\Client\Model\Drive $drive,
+        \OpenAPI\Client\Model\DriveUpdate $drive_update,
         string $contentType = self::contentTypes['updateDrive'][0]
     ): array
     {
-        $request = $this->updateDriveRequest($drive_id, $drive, $contentType);
+        $request = $this->updateDriveRequest($drive_id, $drive_update, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1304,7 +1316,7 @@ class DrivesApi
      * Update the drive
      *
      * @param  string $drive_id key: id of drive (required)
-     * @param  \OpenAPI\Client\Model\Drive $drive New space values (required)
+     * @param  \OpenAPI\Client\Model\DriveUpdate $drive_update New space values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDrive'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
@@ -1312,11 +1324,11 @@ class DrivesApi
      */
     public function updateDriveAsync(
         string $drive_id,
-        \OpenAPI\Client\Model\Drive $drive,
+        \OpenAPI\Client\Model\DriveUpdate $drive_update,
         string $contentType = self::contentTypes['updateDrive'][0]
     ): PromiseInterface
     {
-        return $this->updateDriveAsyncWithHttpInfo($drive_id, $drive, $contentType)
+        return $this->updateDriveAsyncWithHttpInfo($drive_id, $drive_update, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1330,7 +1342,7 @@ class DrivesApi
      * Update the drive
      *
      * @param  string $drive_id key: id of drive (required)
-     * @param  \OpenAPI\Client\Model\Drive $drive New space values (required)
+     * @param  \OpenAPI\Client\Model\DriveUpdate $drive_update New space values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDrive'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
@@ -1338,12 +1350,12 @@ class DrivesApi
      */
     public function updateDriveAsyncWithHttpInfo(
         $drive_id,
-        $drive,
+        $drive_update,
         string $contentType = self::contentTypes['updateDrive'][0]
     ): PromiseInterface
     {
         $returnType = '\OpenAPI\Client\Model\Drive';
-        $request = $this->updateDriveRequest($drive_id, $drive, $contentType);
+        $request = $this->updateDriveRequest($drive_id, $drive_update, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1385,7 +1397,7 @@ class DrivesApi
      * Create request for operation 'updateDrive'
      *
      * @param  string $drive_id key: id of drive (required)
-     * @param  \OpenAPI\Client\Model\Drive $drive New space values (required)
+     * @param  \OpenAPI\Client\Model\DriveUpdate $drive_update New space values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateDrive'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
@@ -1393,7 +1405,7 @@ class DrivesApi
      */
     public function updateDriveRequest(
         $drive_id,
-        $drive,
+        $drive_update,
         string $contentType = self::contentTypes['updateDrive'][0]
     ): Request
     {
@@ -1405,10 +1417,10 @@ class DrivesApi
             );
         }
 
-        // verify the required parameter 'drive' is set
-        if ($drive === null || (is_array($drive) && count($drive) === 0)) {
+        // verify the required parameter 'drive_update' is set
+        if ($drive_update === null || (is_array($drive_update) && count($drive_update) === 0)) {
             throw new InvalidArgumentException(
-                'Missing the required parameter $drive when calling updateDrive'
+                'Missing the required parameter $drive_update when calling updateDrive'
             );
         }
 
@@ -1439,12 +1451,12 @@ class DrivesApi
         );
 
         // for model (json/xml)
-        if (isset($drive)) {
+        if (isset($drive_update)) {
             if (stripos($headers['Content-Type'], 'application/json') !== false) {
                 # if Content-Type contains "application/json", json_encode the body
-                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($drive));
+                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($drive_update));
             } else {
-                $httpBody = $drive;
+                $httpBody = $drive_update;
             }
         } elseif (count($formParams) > 0) {
             if ($multipart) {
@@ -1470,6 +1482,10 @@ class DrivesApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
