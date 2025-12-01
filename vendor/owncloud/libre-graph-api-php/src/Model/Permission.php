@@ -62,6 +62,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'id' => 'string',
         'has_password' => 'bool',
         'expiration_date_time' => '\DateTime',
+        'created_date_time' => '\DateTime',
         'granted_to_v2' => '\OpenAPI\Client\Model\SharePointIdentitySet',
         'link' => '\OpenAPI\Client\Model\SharingLink',
         'roles' => 'string[]',
@@ -79,6 +80,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'id' => null,
         'has_password' => null,
         'expiration_date_time' => 'date-time',
+        'created_date_time' => 'date-time',
         'granted_to_v2' => null,
         'link' => null,
         'roles' => null,
@@ -96,6 +98,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'id' => false,
 		'has_password' => false,
 		'expiration_date_time' => true,
+		'created_date_time' => true,
 		'granted_to_v2' => false,
 		'link' => false,
 		'roles' => false,
@@ -193,6 +196,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'id' => 'id',
         'has_password' => 'hasPassword',
         'expiration_date_time' => 'expirationDateTime',
+        'created_date_time' => 'createdDateTime',
         'granted_to_v2' => 'grantedToV2',
         'link' => 'link',
         'roles' => 'roles',
@@ -210,6 +214,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'id' => 'setId',
         'has_password' => 'setHasPassword',
         'expiration_date_time' => 'setExpirationDateTime',
+        'created_date_time' => 'setCreatedDateTime',
         'granted_to_v2' => 'setGrantedToV2',
         'link' => 'setLink',
         'roles' => 'setRoles',
@@ -227,6 +232,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         'id' => 'getId',
         'has_password' => 'getHasPassword',
         'expiration_date_time' => 'getExpirationDateTime',
+        'created_date_time' => 'getCreatedDateTime',
         'granted_to_v2' => 'getGrantedToV2',
         'link' => 'getLink',
         'roles' => 'getRoles',
@@ -294,6 +300,7 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
         $this->setIfExists('id', $data ?? [], null);
         $this->setIfExists('has_password', $data ?? [], null);
         $this->setIfExists('expiration_date_time', $data ?? [], null);
+        $this->setIfExists('created_date_time', $data ?? [], null);
         $this->setIfExists('granted_to_v2', $data ?? [], null);
         $this->setIfExists('link', $data ?? [], null);
         $this->setIfExists('roles', $data ?? [], null);
@@ -428,6 +435,40 @@ class Permission implements ModelInterface, ArrayAccess, JsonSerializable
             }
         }
         $this->container['expiration_date_time'] = $expiration_date_time;
+
+        return $this;
+    }
+
+    /**
+     * Gets created_date_time
+     *
+     * @return \DateTime|null
+     */
+    public function getCreatedDateTime(): ?\DateTime
+    {
+        return $this->container['created_date_time'];
+    }
+
+    /**
+     * Sets created_date_time
+     *
+     * @param \DateTime|null $created_date_time An optional creation date. Libregraph only.
+     *
+     * @return $this
+     */
+    public function setCreatedDateTime(?\DateTime $created_date_time): static
+    {
+        if (is_null($created_date_time)) {
+            array_push($this->openAPINullablesSetToNull, 'created_date_time');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('created_date_time', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['created_date_time'] = $created_date_time;
 
         return $this;
     }

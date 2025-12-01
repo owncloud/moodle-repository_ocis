@@ -376,6 +376,10 @@ class UserApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -646,6 +650,10 @@ class UserApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1043,6 +1051,10 @@ class UserApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1071,7 +1083,7 @@ class UserApi
      * Update entity in users
      *
      * @param  string $user_id key: id of user (required)
-     * @param  \OpenAPI\Client\Model\User $user New property values (required)
+     * @param  \OpenAPI\Client\Model\UserUpdate $user_update New property values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateUser'] to see the possible values for this operation
      *
      * @throws ApiException on non-2xx response or if the response body is not in the expected format
@@ -1080,11 +1092,11 @@ class UserApi
      */
     public function updateUser(
         string $user_id,
-        \OpenAPI\Client\Model\User $user,
+        \OpenAPI\Client\Model\UserUpdate $user_update,
         string $contentType = self::contentTypes['updateUser'][0]
     )
     {
-        list($response) = $this->updateUserWithHttpInfo($user_id, $user, $contentType);
+        list($response) = $this->updateUserWithHttpInfo($user_id, $user_update, $contentType);
         return $response;
     }
 
@@ -1094,7 +1106,7 @@ class UserApi
      * Update entity in users
      *
      * @param  string $user_id key: id of user (required)
-     * @param  \OpenAPI\Client\Model\User $user New property values (required)
+     * @param  \OpenAPI\Client\Model\UserUpdate $user_update New property values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateUser'] to see the possible values for this operation
      *
      * @throws ApiException on non-2xx response or if the response body is not in the expected format
@@ -1103,11 +1115,11 @@ class UserApi
      */
     public function updateUserWithHttpInfo(
         string $user_id,
-        \OpenAPI\Client\Model\User $user,
+        \OpenAPI\Client\Model\UserUpdate $user_update,
         string $contentType = self::contentTypes['updateUser'][0]
     ): array
     {
-        $request = $this->updateUserRequest($user_id, $user, $contentType);
+        $request = $this->updateUserRequest($user_id, $user_update, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1258,7 +1270,7 @@ class UserApi
      * Update entity in users
      *
      * @param  string $user_id key: id of user (required)
-     * @param  \OpenAPI\Client\Model\User $user New property values (required)
+     * @param  \OpenAPI\Client\Model\UserUpdate $user_update New property values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateUser'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
@@ -1266,11 +1278,11 @@ class UserApi
      */
     public function updateUserAsync(
         string $user_id,
-        \OpenAPI\Client\Model\User $user,
+        \OpenAPI\Client\Model\UserUpdate $user_update,
         string $contentType = self::contentTypes['updateUser'][0]
     ): PromiseInterface
     {
-        return $this->updateUserAsyncWithHttpInfo($user_id, $user, $contentType)
+        return $this->updateUserAsyncWithHttpInfo($user_id, $user_update, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1284,7 +1296,7 @@ class UserApi
      * Update entity in users
      *
      * @param  string $user_id key: id of user (required)
-     * @param  \OpenAPI\Client\Model\User $user New property values (required)
+     * @param  \OpenAPI\Client\Model\UserUpdate $user_update New property values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateUser'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
@@ -1292,12 +1304,12 @@ class UserApi
      */
     public function updateUserAsyncWithHttpInfo(
         $user_id,
-        $user,
+        $user_update,
         string $contentType = self::contentTypes['updateUser'][0]
     ): PromiseInterface
     {
         $returnType = '\OpenAPI\Client\Model\User';
-        $request = $this->updateUserRequest($user_id, $user, $contentType);
+        $request = $this->updateUserRequest($user_id, $user_update, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1339,7 +1351,7 @@ class UserApi
      * Create request for operation 'updateUser'
      *
      * @param  string $user_id key: id of user (required)
-     * @param  \OpenAPI\Client\Model\User $user New property values (required)
+     * @param  \OpenAPI\Client\Model\UserUpdate $user_update New property values (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateUser'] to see the possible values for this operation
      *
      * @throws InvalidArgumentException
@@ -1347,7 +1359,7 @@ class UserApi
      */
     public function updateUserRequest(
         $user_id,
-        $user,
+        $user_update,
         string $contentType = self::contentTypes['updateUser'][0]
     ): Request
     {
@@ -1359,10 +1371,10 @@ class UserApi
             );
         }
 
-        // verify the required parameter 'user' is set
-        if ($user === null || (is_array($user) && count($user) === 0)) {
+        // verify the required parameter 'user_update' is set
+        if ($user_update === null || (is_array($user_update) && count($user_update) === 0)) {
             throw new InvalidArgumentException(
-                'Missing the required parameter $user when calling updateUser'
+                'Missing the required parameter $user_update when calling updateUser'
             );
         }
 
@@ -1393,12 +1405,12 @@ class UserApi
         );
 
         // for model (json/xml)
-        if (isset($user)) {
+        if (isset($user_update)) {
             if (stripos($headers['Content-Type'], 'application/json') !== false) {
                 # if Content-Type contains "application/json", json_encode the body
-                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($user));
+                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($user_update));
             } else {
-                $httpBody = $user;
+                $httpBody = $user_update;
             }
         } elseif (count($formParams) > 0) {
             if ($multipart) {
@@ -1424,6 +1436,10 @@ class UserApi
             }
         }
 
+        // this endpoint requires HTTP basic authentication
+        if (!empty($this->config->getUsername()) || !(empty($this->config->getPassword()))) {
+            $headers['Authorization'] = 'Basic ' . base64_encode($this->config->getUsername() . ":" . $this->config->getPassword());
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

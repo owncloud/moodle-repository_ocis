@@ -18,19 +18,51 @@ docker run --rm -v ${PWD}:/data phpdoc/phpdoc:3
 
 After that you will find the documentation inside the `docs` folder.
 
-:exclamation: This SDK is still under heavy development and is not yet ready for production use, the API might change!
+## Installation via Composer
+Add "owncloud/ocis-php-sdk" to the `require` block in your composer.json and then run composer install.
+> [!WARNING]  
+> The ocis-php-sdk currently relies on a development version of the "owncloud/libre-graph-api-php" package. To ensure proper dependency resolution, it is necessary to set "minimum-stability": "dev" and "prefer-stable": true in your composer.json file.
+
+```json
+{
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "owncloud/ocis-php-sdk": "^1.0"
+    }
+}
+```
+Alternatively, you can simply run the following from the command line:
+```bash
+composer config minimum-stability dev
+composer config prefer-stable true
+composer require owncloud/ocis-php-sdk
+```
 
 ## Getting started
-Create an Ocis object using the service Url and an access token:
+Ocis has two types of access token, one which is used to interact with drive, group, user, shares etc.(OICD access token) and another which can be used to interact with education endpoints (education access token).
+
+Create an Ocis object using the service Url and an OIDC access token:
 ```php
 $ocis = new Ocis('https://example.ocis.com', $accessToken);
 ```
+Or create an Ocis object to interact with education endpoints using the service Url and an education access token:
+```php
+$ocis = new Ocis('https://education.ocis.com', null, [], $educationAccessToken);
+```
 
-Acquiring an access token is out of scope of this SDK, but you can find [examples for that below](#acquiring-an-access-token).
+At least one access token should be provided to use the SKD.
 
-Also refreshing tokens is not part of the SDK, but after you got a new token, you can update the Ocis object:
+Acquiring an OICD access token is out of scope of this SDK, but you can find [examples for that below](#acquiring-an-access-token).
+
+Also refreshing OICD tokens is not part of the SDK, but after you got a new token, you can update the Ocis object:
 ```php
 $ocis->setAccessToken($newAccessToken);
+```
+
+Education access token is set when starting the ocis graph server. You can get it using following snippet
+```php
+$educationAccessToken = getenv("GRAPH_HTTP_API_TOKEN")
 ```
 
 ## Drives (spaces)
@@ -69,6 +101,45 @@ $drives[0]->uploadFile("/documents/myfile.txt", "Hello World!");
 $resources = $drives[0]->getResources("/documents");
 ```
 
+### Drive Permission
+Users/Groups can be invited to drives by specifying permissions. The **Drive** class has methods to invite Users/Groups, update permission roles and expiration dates, remove users and groups, etc.
+
+Drive invitations are only possible on **project drives**.
+
+```php
+// find all users with a specific surname
+$users = $ocis->getUsers("einstein")[0];
+
+// get all drives of type project
+$drives = $ocis->getMyDrives(
+    DriveOrder::NAME,
+    OrderDirection::ASC,
+    DriveType::PROJECT
+);
+
+// get the drive named 'game'
+foreach ($drives as $drive) {
+    if ($drive->getName) === 'game' {
+        $gameDrive = $drive;
+        break;
+    }
+}
+
+// get all roles that are possible for that drive
+$driveRoles = $gameDrive->getRoles();
+
+// get the role that is allowed to view, download, upload, edit, add, delete and manage members
+foreach ($driveRoles as $role) {
+    if ($role->getDisplayName() === 'Manager') {
+        $managerRole = $role;
+        break;
+    }
+}
+
+// invite user einstein on project drive 'game' with manager permission
+$gameDrive->invite($users, $managerRole);
+```
+
 ## Notifications
 Notifications can be listed using the `getNotifications` method, which will return an array of `Notification` objects representing all active notifications.
 
@@ -86,17 +157,32 @@ $roles = $resources[0]->getRoles();
 
 // find the role that is allowed to read and write the shared file or folder 
 for ($roles as $role) {
-    if ($role->getDisplayName() === 'Editor') {
+    if ($role->getDisplayName() === 'Can edit') {
         $editorRole = $role;
         break;
     }
 }
 
 // find all users with a specific surname
-$users = $ocis->getUsers("gurung");
+$users = $ocis->getUsers("einstein")[0];
 
 // share the resource with the users
 $resources[0]->invite($users, $editorRole);
+```
+
+## Education User
+
+Education Users can only be created, listed and deleted using education access token. If you want to use other APIs you need to use the OICD access token.
+
+```php
+// create education user
+$educationUsers = $ocis->createEducationUser()
+// list all education user
+$educationUsers = $ocis->getEducationUsers()
+// list education user by id
+$educationUsers = $ocis->getEducationUserById()
+// delete education user
+$educationUser[0]->delete()
 ```
 
 ## Requirements
@@ -220,15 +306,29 @@ To test, simply open a browser and head to http://url-of-this-file.
 ## Development
 
 ### Integration tests
-The integration tests start a full oCIS server with keycloak and other services using docker.
 To run the tests locally
 1. Install and setup `docker` (min version 24) and `docker compose` (min version 2.21).
-2. add these lines to your `/etc/hosts` file:
+2. Ensure that the following php dependencies are installed for executing the integration tests:
+   ```
+   - php-curl
+   - php-dom
+   - php-phpdbg
+   - php-mbstring
+   - php-ast
+   ``` 
+3. add these lines to your `/etc/hosts` file:
    ```
    127.0.0.1	ocis.owncloud.test
    127.0.0.1	keycloak.owncloud.test
    ```
-3. run `make test-php-integration`
+4. run whole tests 
+   ```
+   make test-php-integration        // start a full oCIS server with keycloak and other services using docker before running tests
+   ```
+5. run single test 
+   ```
+   make test-php-integration testGetResources   // start a full oCIS server with keycloak and other services using docker before running single test
+   ```
 
-If something goes wrong, use `make clean` to clean the created containers and volumes. 
+   If something goes wrong, use `make clean` to clean the created containers and volumes. 
 

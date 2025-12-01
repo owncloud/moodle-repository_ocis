@@ -36,7 +36,7 @@ use OpenAPI\Client\ObjectSerializer;
 /**
  * EducationUser Class Doc Comment
  *
- * @description And extension of user with education specific attributes
+ * @description An extension of user with education-specific attributes
  * @package  OpenAPI\Client
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
@@ -72,7 +72,8 @@ class EducationUser implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => 'string',
         'given_name' => 'string',
         'primary_role' => 'string',
-        'user_type' => 'string'
+        'user_type' => 'string',
+        'external_id' => 'string'
     ];
 
     /**
@@ -94,7 +95,8 @@ class EducationUser implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => null,
         'given_name' => null,
         'primary_role' => null,
-        'user_type' => null
+        'user_type' => null,
+        'external_id' => null
     ];
 
     /**
@@ -116,7 +118,8 @@ class EducationUser implements ModelInterface, ArrayAccess, JsonSerializable
 		'surname' => false,
 		'given_name' => false,
 		'primary_role' => false,
-		'user_type' => false
+		'user_type' => false,
+		'external_id' => false
     ];
 
     /**
@@ -218,7 +221,8 @@ class EducationUser implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => 'surname',
         'given_name' => 'givenName',
         'primary_role' => 'primaryRole',
-        'user_type' => 'userType'
+        'user_type' => 'userType',
+        'external_id' => 'externalID'
     ];
 
     /**
@@ -240,7 +244,8 @@ class EducationUser implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => 'setSurname',
         'given_name' => 'setGivenName',
         'primary_role' => 'setPrimaryRole',
-        'user_type' => 'setUserType'
+        'user_type' => 'setUserType',
+        'external_id' => 'setExternalId'
     ];
 
     /**
@@ -262,7 +267,8 @@ class EducationUser implements ModelInterface, ArrayAccess, JsonSerializable
         'surname' => 'getSurname',
         'given_name' => 'getGivenName',
         'primary_role' => 'getPrimaryRole',
-        'user_type' => 'getUserType'
+        'user_type' => 'getUserType',
+        'external_id' => 'getExternalId'
     ];
 
     /**
@@ -335,6 +341,7 @@ class EducationUser implements ModelInterface, ArrayAccess, JsonSerializable
         $this->setIfExists('given_name', $data ?? [], null);
         $this->setIfExists('primary_role', $data ?? [], null);
         $this->setIfExists('user_type', $data ?? [], null);
+        $this->setIfExists('external_id', $data ?? [], null);
     }
 
     /**
@@ -751,7 +758,7 @@ class EducationUser implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets user_type
      *
-     * @param string|null $user_type The user`s type. This can be either \"Member\" for regular user, or \"Guest\" for guest users.
+     * @param string|null $user_type The user`s type. This can be either \"Member\" for regular user, \"Guest\" for guest users or \"Federated\" for users imported from a federated instance.
      *
      * @return $this
      */
@@ -761,6 +768,33 @@ class EducationUser implements ModelInterface, ArrayAccess, JsonSerializable
             throw new InvalidArgumentException('non-nullable user_type cannot be null');
         }
         $this->container['user_type'] = $user_type;
+
+        return $this;
+    }
+
+    /**
+     * Gets external_id
+     *
+     * @return string|null
+     */
+    public function getExternalId(): ?string
+    {
+        return $this->container['external_id'];
+    }
+
+    /**
+     * Sets external_id
+     *
+     * @param string|null $external_id A unique identifier for the user assigned by the school or institution.
+     *
+     * @return $this
+     */
+    public function setExternalId(?string $external_id): static
+    {
+        if (is_null($external_id)) {
+            throw new InvalidArgumentException('non-nullable external_id cannot be null');
+        }
+        $this->container['external_id'] = $external_id;
 
         return $this;
     }

@@ -49,33 +49,41 @@ require_once(__DIR__ . '/vendor/autoload.php');
 
 
 
+// Configure HTTP basic authorization: basicAuth
+$config = OpenAPI\Client\Configuration::getDefaultConfiguration()
+              ->setUsername('YOUR_USERNAME')
+              ->setPassword('YOUR_PASSWORD');
 
-$apiInstance = new OpenAPI\Client\Api\ApplicationsApi(
+
+$apiInstance = new OpenAPI\Client\Api\ActivitiesApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client(),
     $config
 );
-$application_id = 'application_id_example'; // string | key: id of application
+$kql = resourceid:a0ca6a90-a365-4782-871e-d44447bbc668$a0ca6a90-a365-4782-871e-d44447bbc668 depth:2; // string
 
 try {
-    $result = $apiInstance->getApplication($application_id);
+    $result = $apiInstance->getActivities($kql);
     print_r($result);
 } catch (Exception $e) {
-    echo 'Exception when calling ApplicationsApi->getApplication: ', $e->getMessage(), PHP_EOL;
+    echo 'Exception when calling ActivitiesApi->getActivities: ', $e->getMessage(), PHP_EOL;
 }
 
 ```
 
 ## API Endpoints
 
-All URIs are relative to *https://ocis.ocis-traefik.latest.owncloud.works/graph*
+All URIs are relative to *https://ocis.ocis.rolling.owncloud.works/graph*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*ActivitiesApi* | [**getActivities**](docs/Api/ActivitiesApi.md#getactivities) | **GET** /v1beta1/extensions/org.libregraph/activities | Get activities
 *ApplicationsApi* | [**getApplication**](docs/Api/ApplicationsApi.md#getapplication) | **GET** /v1.0/applications/{application-id} | Get application by id
 *ApplicationsApi* | [**listApplications**](docs/Api/ApplicationsApi.md#listapplications) | **GET** /v1.0/applications | Get all applications
 *DriveItemApi* | [**deleteDriveItem**](docs/Api/DriveItemApi.md#deletedriveitem) | **DELETE** /v1beta1/drives/{drive-id}/items/{item-id} | Delete a DriveItem.
+*DriveItemApi* | [**getDriveItem**](docs/Api/DriveItemApi.md#getdriveitem) | **GET** /v1beta1/drives/{drive-id}/items/{item-id} | Get a DriveItem.
+*DriveItemApi* | [**updateDriveItem**](docs/Api/DriveItemApi.md#updatedriveitem) | **PATCH** /v1beta1/drives/{drive-id}/items/{item-id} | Update a DriveItem.
 *DrivesApi* | [**createDrive**](docs/Api/DrivesApi.md#createdrive) | **POST** /v1.0/drives | Create a new drive of a specific type
 *DrivesApi* | [**deleteDrive**](docs/Api/DrivesApi.md#deletedrive) | **DELETE** /v1.0/drives/{drive-id} | Delete a specific space
 *DrivesApi* | [**getDrive**](docs/Api/DrivesApi.md#getdrive) | **GET** /v1.0/drives/{drive-id} | Get drive by id
@@ -90,7 +98,14 @@ Class | Method | HTTP request | Description
 *DrivesPermissionsApi* | [**setPermissionPassword**](docs/Api/DrivesPermissionsApi.md#setpermissionpassword) | **POST** /v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id}/setPassword | Set sharing link password
 *DrivesPermissionsApi* | [**updatePermission**](docs/Api/DrivesPermissionsApi.md#updatepermission) | **PATCH** /v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id} | Update sharing permission
 *DrivesRootApi* | [**createDriveItem**](docs/Api/DrivesRootApi.md#createdriveitem) | **POST** /v1beta1/drives/{drive-id}/root/children | Create a drive item
+*DrivesRootApi* | [**createLinkSpaceRoot**](docs/Api/DrivesRootApi.md#createlinkspaceroot) | **POST** /v1beta1/drives/{drive-id}/root/createLink | Create a sharing link for the root item of a Drive
+*DrivesRootApi* | [**deletePermissionSpaceRoot**](docs/Api/DrivesRootApi.md#deletepermissionspaceroot) | **DELETE** /v1beta1/drives/{drive-id}/root/permissions/{perm-id} | Remove access to a Drive
+*DrivesRootApi* | [**getPermissionSpaceRoot**](docs/Api/DrivesRootApi.md#getpermissionspaceroot) | **GET** /v1beta1/drives/{drive-id}/root/permissions/{perm-id} | Get a single sharing permission for the root item of a drive
 *DrivesRootApi* | [**getRoot**](docs/Api/DrivesRootApi.md#getroot) | **GET** /v1.0/drives/{drive-id}/root | Get root from arbitrary space
+*DrivesRootApi* | [**inviteSpaceRoot**](docs/Api/DrivesRootApi.md#invitespaceroot) | **POST** /v1beta1/drives/{drive-id}/root/invite | Send a sharing invitation
+*DrivesRootApi* | [**listPermissionsSpaceRoot**](docs/Api/DrivesRootApi.md#listpermissionsspaceroot) | **GET** /v1beta1/drives/{drive-id}/root/permissions | List the effective permissions on the root item of a drive.
+*DrivesRootApi* | [**setPermissionPasswordSpaceRoot**](docs/Api/DrivesRootApi.md#setpermissionpasswordspaceroot) | **POST** /v1beta1/drives/{drive-id}/root/permissions/{perm-id}/setPassword | Set sharing link password for the root item of a drive
+*DrivesRootApi* | [**updatePermissionSpaceRoot**](docs/Api/DrivesRootApi.md#updatepermissionspaceroot) | **PATCH** /v1beta1/drives/{drive-id}/root/permissions/{perm-id} | Update sharing permission
 *EducationClassApi* | [**addUserToClass**](docs/Api/EducationClassApi.md#addusertoclass) | **POST** /v1.0/education/classes/{class-id}/members/$ref | Assign a user to a class
 *EducationClassApi* | [**createClass**](docs/Api/EducationClassApi.md#createclass) | **POST** /v1.0/education/classes | Add new education class
 *EducationClassApi* | [**deleteClass**](docs/Api/EducationClassApi.md#deleteclass) | **DELETE** /v1.0/education/classes/{class-id} | Delete education class
@@ -126,7 +141,7 @@ Class | Method | HTTP request | Description
 *GroupApi* | [**updateGroup**](docs/Api/GroupApi.md#updategroup) | **PATCH** /v1.0/groups/{group-id} | Update entity in groups
 *GroupsApi* | [**createGroup**](docs/Api/GroupsApi.md#creategroup) | **POST** /v1.0/groups | Add new entity to groups
 *GroupsApi* | [**listGroups**](docs/Api/GroupsApi.md#listgroups) | **GET** /v1.0/groups | Get entities from groups
-*MeChangepasswordApi* | [**changeOwnPassword**](docs/Api/MeChangepasswordApi.md#changeownpassword) | **POST** /v1.0/me/changePassword | Chanage your own password
+*MeChangepasswordApi* | [**changeOwnPassword**](docs/Api/MeChangepasswordApi.md#changeownpassword) | **POST** /v1.0/me/changePassword | Change your own password
 *MeDriveApi* | [**getHome**](docs/Api/MeDriveApi.md#gethome) | **GET** /v1.0/me/drive | Get personal space for user
 *MeDriveApi* | [**listSharedByMe**](docs/Api/MeDriveApi.md#listsharedbyme) | **GET** /v1beta1/me/drive/sharedByMe | Get a list of driveItem objects shared by the current user.
 *MeDriveApi* | [**listSharedWithMe**](docs/Api/MeDriveApi.md#listsharedwithme) | **GET** /v1beta1/me/drive/sharedWithMe | Get a list of driveItem objects shared with the owner of a drive.
@@ -153,6 +168,9 @@ Class | Method | HTTP request | Description
 
 ## Models
 
+- [Activity](docs/Model/Activity.md)
+- [ActivityTemplate](docs/Model/ActivityTemplate.md)
+- [ActivityTimes](docs/Model/ActivityTimes.md)
 - [AppRole](docs/Model/AppRole.md)
 - [AppRoleAssignment](docs/Model/AppRoleAssignment.md)
 - [Application](docs/Model/Application.md)
@@ -160,6 +178,7 @@ Class | Method | HTTP request | Description
 - [ClassMemberReference](docs/Model/ClassMemberReference.md)
 - [ClassReference](docs/Model/ClassReference.md)
 - [ClassTeacherReference](docs/Model/ClassTeacherReference.md)
+- [CollectionOfActivities](docs/Model/CollectionOfActivities.md)
 - [CollectionOfAppRoleAssignments](docs/Model/CollectionOfAppRoleAssignments.md)
 - [CollectionOfApplications](docs/Model/CollectionOfApplications.md)
 - [CollectionOfClass](docs/Model/CollectionOfClass.md)
@@ -182,6 +201,7 @@ Class | Method | HTTP request | Description
 - [DriveItemCreateLink](docs/Model/DriveItemCreateLink.md)
 - [DriveItemInvite](docs/Model/DriveItemInvite.md)
 - [DriveRecipient](docs/Model/DriveRecipient.md)
+- [DriveUpdate](docs/Model/DriveUpdate.md)
 - [EducationClass](docs/Model/EducationClass.md)
 - [EducationSchool](docs/Model/EducationSchool.md)
 - [EducationUser](docs/Model/EducationUser.md)
@@ -214,13 +234,17 @@ Class | Method | HTTP request | Description
 - [SharingLink](docs/Model/SharingLink.md)
 - [SharingLinkPassword](docs/Model/SharingLinkPassword.md)
 - [SharingLinkType](docs/Model/SharingLinkType.md)
+- [SignInActivity](docs/Model/SignInActivity.md)
 - [SpecialFolder](docs/Model/SpecialFolder.md)
 - [TagAssignment](docs/Model/TagAssignment.md)
 - [TagUnassignment](docs/Model/TagUnassignment.md)
+- [Thumbnail](docs/Model/Thumbnail.md)
+- [ThumbnailSet](docs/Model/ThumbnailSet.md)
 - [Trash](docs/Model/Trash.md)
 - [UnifiedRoleDefinition](docs/Model/UnifiedRoleDefinition.md)
 - [UnifiedRolePermission](docs/Model/UnifiedRolePermission.md)
 - [User](docs/Model/User.md)
+- [UserUpdate](docs/Model/UserUpdate.md)
 - [Video](docs/Model/Video.md)
 
 ## Authorization
@@ -231,6 +255,11 @@ Class | Method | HTTP request | Description
 ### bearerAuth
 
 - **Type**: Bearer authentication (plain)
+
+
+### basicAuth
+
+- **Type**: HTTP basic authentication
 
 ## Tests
 

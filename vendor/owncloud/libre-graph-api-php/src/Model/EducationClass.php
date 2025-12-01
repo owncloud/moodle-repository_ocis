@@ -330,9 +330,6 @@ class EducationClass implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['display_name'] === null) {
-            $invalidProperties[] = "'display_name' can't be null";
-        }
         if (!is_null($this->container['membersodata_bind']) && (count($this->container['membersodata_bind']) > 20)) {
             $invalidProperties[] = "invalid value for 'membersodata_bind', number of items must be less than or equal to 20.";
         }
@@ -341,9 +338,6 @@ class EducationClass implements ModelInterface, ArrayAccess, JsonSerializable
             $invalidProperties[] = "invalid value for 'membersodata_bind', number of items must be greater than or equal to 1.";
         }
 
-        if ($this->container['classification'] === null) {
-            $invalidProperties[] = "'classification' can't be null";
-        }
         $allowedValues = $this->getClassificationAllowableValues();
         if (!is_null($this->container['classification']) && !in_array($this->container['classification'], $allowedValues, true)) {
             $invalidProperties[] = sprintf(
@@ -425,9 +419,9 @@ class EducationClass implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets display_name
      *
-     * @return string
+     * @return string|null
      */
-    public function getDisplayName(): string
+    public function getDisplayName(): ?string
     {
         return $this->container['display_name'];
     }
@@ -435,11 +429,11 @@ class EducationClass implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets display_name
      *
-     * @param string $display_name The display name for the group. This property is required when a group is created and cannot be cleared during updates. Returned by default. Supports $search and $orderBy.
+     * @param string|null $display_name The display name for the group. This property is required when a group is created and cannot be cleared during updates. Returned by default. Supports $search and $orderBy.
      *
      * @return $this
      */
-    public function setDisplayName(string $display_name): static
+    public function setDisplayName(?string $display_name): static
     {
         if (is_null($display_name)) {
             throw new InvalidArgumentException('non-nullable display_name cannot be null');
@@ -513,9 +507,9 @@ class EducationClass implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets classification
      *
-     * @return string
+     * @return string|null
      */
-    public function getClassification(): string
+    public function getClassification(): ?string
     {
         return $this->container['classification'];
     }
@@ -523,11 +517,11 @@ class EducationClass implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets classification
      *
-     * @param string $classification Classification of the group, i.e. \"class\" or \"course\"
+     * @param string|null $classification Classification of the group, i.e. \"class\" or \"course\"
      *
      * @return $this
      */
-    public function setClassification(string $classification): static
+    public function setClassification(?string $classification): static
     {
         if (is_null($classification)) {
             throw new InvalidArgumentException('non-nullable classification cannot be null');
