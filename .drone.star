@@ -1,7 +1,7 @@
 MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
 OC_CI_BAZEL_BUILDIFIER = "owncloudci/bazel-buildifier:latest"
 OC_CI_GOLANG = "owncloudci/golang:1.24"
-OC_CI_NODEJS = "owncloudci/nodejs:18"
+OC_CI_NODEJS = "owncloudci/nodejs:24"
 OC_CI_PHP = "owncloudci/php:%s"
 OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
 OC_UBUNTU = "owncloud/ubuntu:20.04"
@@ -246,6 +246,7 @@ def runOcis(ctx, branch):
                 "git clone -b %s --single-branch %s" % (ocis_branch, ocis_repo_url),
                 "cd ocis",
                 "git checkout %s" % ocis_commit_id,
+                "sed -i 's/ReferrerPolicy:[[:space:]]*\"no-referrer\"/ReferrerPolicy:               \"strict-origin-when-cross-origin\"/' services/proxy/pkg/middleware/security.go",
             ],
             "volumes": [
                 {
