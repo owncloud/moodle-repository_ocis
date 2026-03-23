@@ -1,7 +1,7 @@
 MOODLEHQ_APACHE = "moodlehq/moodle-php-apache:8.1"
 OC_CI_BAZEL_BUILDIFIER = "owncloudci/bazel-buildifier:latest"
 OC_CI_GOLANG = "owncloudci/golang:1.24"
-OC_CI_NODEJS = "owncloudci/nodejs:18"
+OC_CI_NODEJS = "owncloudci/nodejs:24"
 OC_CI_PHP = "owncloudci/php:%s"
 OC_CI_WAIT_FOR = "owncloudci/wait-for:latest"
 OC_UBUNTU = "owncloud/ubuntu:20.04"
@@ -402,6 +402,7 @@ def runBehatUITest():
                 "update-ca-certificates",
                 "cd /var/www/html/moodle",
                 'vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml --tags="@ocis"',
+                'vendor/bin/behat --config /var/www/behatdata/behatrun/behat/behat.yml --tags="@max_uploads"',
             ],
             "volumes": [
                 {
