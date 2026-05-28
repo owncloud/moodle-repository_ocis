@@ -1,168 +1,111 @@
-# Integration of Moodle and [oCIS](https://doc.owncloud.com/ocis/next/)
+# Moodle Repository for oCIS
 
-A [Moodle repository](https://docs.moodle.org/402/en/Repositories) that makes files stored in oCIS accessible through the [Moodle file-picker](https://docs.moodle.org/402/en/File_picker).
+<!-- OSPO-managed README | Generated: 2026-04-16 | v2 -->
 
-## Minimum requirement
+[![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE) [![ownCloud OSPO](https://img.shields.io/badge/OSPO-ownCloud-blue)](https://kiteworks.com/opensource) [![Docker Hub](https://img.shields.io/docker/pulls/owncloud)](https://hub.docker.com/r/owncloud/ocis)
+
+A Moodle repository plugin that integrates ownCloud Infinite Scale with Moodle's file picker. It enables Moodle users to browse, select, and link files stored in oCIS directly through the native Moodle file picker interface, using OpenID Connect for authentication and the oCIS PHP SDK for file operations.
+
+## Getting Started
+
+Follow the steps below to install and configure the Moodle repository plugin.
+
+### Requirements
+
+- Moodle 4.2+
+- PHP 8.1+
+- oCIS 5.0+
 - [oCIS PHP SDK](https://github.com/owncloud/ocis-php-sdk/)
-- moodle 4.2
-- PHP 8.1
-- oCIS 5.0
 
-## Main features
+### Installation
 
-### 1. Authentication
-The existing OAuth2 implementation in Moodle does support OpenID connect, so a custom Oauth2 service is used to connect to oCIS.
+1. Copy this repository into your Moodle `repository/ocis/` directory.
+2. Run `composer install` to fetch dependencies.
+3. Configure the OAuth2 service in Moodle to connect to your oCIS instance.
+4. Enable the repository plugin in Moodle's administration panel.
 
-### 2. Link files between Moodle & oCIS using the [Moodle file-picker](https://docs.moodle.org/402/en/File_picker)
+For detailed setup including TLS certificate configuration, see the [full README](https://github.com/owncloud/moodle-repository_ocis).
 
-There are three different modes for the Moodle user to link files from oCIS to Moodle:
+## Documentation
 
-1. **Internal** (Make a copy of the file)
+- [Moodle Repository Plugin Docs](https://docs.moodle.org/402/en/Repositories)
+- [oCIS Documentation](https://doc.owncloud.com/ocis/next/)
+- [oCIS PHP SDK](https://github.com/owncloud/ocis-php-sdk)
 
-   In this case the file is copied from oCIS and stored within the Moodle file system.
-2. **Reference**: (Link to the file) :construction: *This feature is not implemented yet* :woman_technologist:
+## Part of ownCloud Infinite Scale
 
-   In this case a public link of the file is created in oCIS and Moodle stores this link
-3. **Controlled Link**: (Create an access controlled link to the file) :construction: *This feature is not implemented yet* :man_technologist:
+This plugin bridges [Moodle](https://moodle.org/) (4.2+) and [oCIS](https://github.com/owncloud/ocis) (5.0+), allowing educational institutions to use oCIS as a file storage backend for their learning management system.
 
+This component is part of the [oCIS Docker image](https://hub.docker.com/r/owncloud/ocis).
 
-   For this to work a special oCIS account needs to be connected to Moodle that will be used as a System account. If the user selects the "Controlled Link" option, the file will be shared to the System account and Moodle will access it through the System account.
+Depends on the [oCIS PHP SDK](https://github.com/owncloud/ocis-php-sdk).
 
-## Screenshots
+## Community & Support
 
-![file-picker-main.png](docs%2Ffile-picker-main.png)
+**[Star](https://github.com/owncloud/moodle-repository_ocis)** this repo and **Watch** for release notifications!
 
-![file-picker-list.png](docs%2Ffile-picker-list.png)
+- [ownCloud Website](https://owncloud.com)
+- [Community Discussions](https://github.com/orgs/owncloud/discussions)
+- [Matrix Chat](https://app.element.io/#/room/#owncloud:matrix.org)
+- [Documentation](https://doc.owncloud.com)
+- [Enterprise Support](https://owncloud.com/contact-us/)
+- [OSPO Home](https://kiteworks.com/opensource)
 
-![file-picker-images.png](docs%2Ffile-picker-images.png)
+## Contributing
 
+We welcome contributions! Please read the [Contributing Guidelines](CONTRIBUTING.md)
+and our [Code of Conduct](CODE_OF_CONDUCT.md) before getting started.
 
-## Installation
-1. TLS certificate
-   The TLS certificates of oCIS need to be trusted by the server running moodle. If your oCIS instance has already a trusted certificate you can skip this step. 
-   If you are using self-signed certificates you need to copy them to the moodle server and make it trust them. e.g. on Debian based systems to run oCIS on `https://host.docker.internal:9200`:
-   1. create a TLS certificate
-      ```bash
-      openssl req -x509  -newkey rsa:2048 -keyout ocis.pem -out ocis.crt -nodes -days 365 -subj '/CN=host.docker.internal'
-      ```
-   2. make 'host.docker.internal' resolve to the IP 127.0.0.1 on the docker host machine
-      ```bash
-      sudo sh -c "echo '127.0.0.1 host.docker.internal' >> /etc/hosts"
-      ```
-2. Install moodle and this plugin
-    - Development environment with docker:
-      ```bash
-      # get moodle from git
-      git clone https://github.com/moodle/moodle.git --branch MOODLE_402_STABLE --single-branch --depth=1
-      # get and install this plugin including it's dependencies
-      cd moodle/repository/
-      git clone https://github.com/owncloud/moodle-repository_ocis.git ocis
-      # get docker containers for moodle developers
-      cd ../../
-      git clone https://github.com/moodlehq/moodle-docker.git
-      cd moodle-docker
-      # some general settings for moodle
-      export MOODLE_DOCKER_WWWROOT=<path-of-your-moodle-source-code>
-      export MOODLE_DOCKER_DB=pgsql
-      export MOODLE_DOCKER_PHP_VERSION=8.1
-      cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/config.php
-      # disable some security settings, that would block access to non standard ports and local addresses
-      # !DON'T DO THAT FOR PRODUCTION INSTALLATIONS!
-      sed -i "s|require_once(__DIR__ . '/lib/setup.php');|\$CFG->curlsecurityblockedhosts = '';\n\$CFG->curlsecurityallowedport = '';\n\$CFG->behat_extraallowedsettings = ['curlsecurityblockedhosts', 'curlsecurityallowedport'];\nrequire_once(__DIR__ . '/lib/setup.php');|" $MOODLE_DOCKER_WWWROOT/config.php
-      # allow container to access docker host via 'host.docker.internal'
-      cat > local.yml <<'EOF'
-      services:
-        webserver:
-          extra_hosts:
-            - host.docker.internal:host-gateway
-          environment:
-            MOODLE_OCIS_URL: "https://host.docker.internal:9200" # optional, used to create OAuth 2 services and repository instance during installation
-            MOODLE_OCIS_CLIENT_ID: "xdXOt13JKxym1B1QcEncf2XDkLAexMBFwiT9j6EfhhHFJhs2KM9jbjTmf8JBXE69"  # optional, used to create OAuth 2 services and repository instance during installation
-            MOODLE_OCIS_CLIENT_SECRET: "UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh" # optional, used to create OAuth 2 services and repository instance during installation
-      EOF
-      # run moodle
-      bin/moodle-docker-compose up -d
-      # if oCIS will run with a self signed certificate copy that into the moodle container and make it trust it
-      bin/moodle-docker-compose cp </path/of/ocis.crt> webserver:/usr/local/share/ca-certificates/
-      bin/moodle-docker-compose exec webserver update-ca-certificates
-      bin/moodle-docker-wait-for-db
-      bin/moodle-docker-compose exec webserver php admin/cli/install_database.php --agree-license --fullname="Docker moodle" --shortname="docker_moodle" --summary="Docker moodle site" --adminpass="admin" --adminemail="admin@example.com"
-      ```
-      moodle will now be available under http://localhost:8000
-    - Other installation methods (require to [install and run moodle](https://docs.moodle.org/402/en/Installing_Moodle) first):
-        - Install the plugin using git:
-          - Clone the code of this repository into the `repository/ocis` folder of your moodle installation:
-            ```bash
-            git clone https://github.com/owncloud/moodle-repository_ocis.git <moodle-path>/repository/ocis
-            ```
-          - Checkout the wanted version:
-            ```bash
-            cd <moodle-path>/repository/ocis
-            git checkout v<the-required-version-of-the-plugin>
-            ```
-        - Install the plugin using a downloaded ZIP file:
-            - Download the ZIP file of the last release [from GitHub](https://github.com/owncloud/moodle-repository_ocis/tags)
-            - In your moodle installation login as administrator 
-            - Navigate to the "Plugin installer" (Site administration -> Plugins -> Install plugins)
-            - Upload the ZIP package of the plugin
-            - Click the `Install plugin from the ZIP file` button
-3. Install & run [oCIS](https://doc.owncloud.com/ocis/next/quickguide/quickguide.html)
-   If you have created an own TLS certificate in point 1, run oCIS using this certificate: 
-   ```bash
-   OCIS_INSECURE=true \
-   PROXY_HTTP_ADDR=0.0.0.0:9200 \
-   OCIS_URL=https://host.docker.internal:9200 \
-   PROXY_TRANSPORT_TLS_KEY=</path/of/ocis.pem> \
-   PROXY_TRANSPORT_TLS_CERT=</path/of/ocis.crt> \
-   ./ocis server
-   ```
-   :exclamation: Having set `OCIS_INSECURE=true` is not recommended for production use! :exclamation:
-4. Login to moodle as "admin"
-5. If you run oCIS on `localhost` or any local IP address go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and delete the IP address and host-name you are using from the "cURL blocked hosts list" list. E.g if you have been following the examples above and using `https://host.docker.internal:9200` as the address for oCIS, you will have to delete `172.16.0.0/12` from the list. 
-6. If you run oCIS on any port other than `443` go to the "HTTP security" page ("Site administration" > "General" > "Security" > "HTTP security") and add the port you are using to the "cURL allowed ports list" list. E.g. if you have been following the examples above add `9200` to the list.
-7. Go to the "OAuth 2 services" page ("Site administration" > "Server" >"Server" > "OAuth 2 services")
-8. Create a new "Custom" service
-   1. Choose any name you like
-   2. Set "Client ID".
-      If moodle runs on `localhost` the ID `xdXOt13JKxym1B1QcEncf2XDkLAexMBFwiT9j6EfhhHFJhs2KM9jbjTmf8JBXE69` can be used for testing, else another client need to be set up in the [oCIS IDP](https://owncloud.dev/services/idp/configuration/)
-   3. Set "Client secret"
-      If moodle runs on `localhost` the secret `UBntmLjC2yYCeHwsyj73Uwo9TAaecAetRwMw0xYcvNL9yRdLSUi0hUAHfvCHFeFh` can be used for testing, else another client need to be set up in the [oCIS IDP](https://owncloud.dev/services/idp/configuration/)
-   4. Set "Service base URL" to the URL of your oCIS instance. An instance with a trusted TLS certificate is required, e.g. `https://host.docker.internal:9200`
-   5. Set "Scopes included in a login request for offline access." to `openid offline_access email profile`
-   6. Save the changes
-9. To use webfinger for discovery of the oCIS server that is assigned to a specific user:
-    1. Click on the "Configure endpoints" icon of the newly created service
-    2. Create a new endpoint with the name `webfinger_endpoint` and the webfinger URL e.g. `<service-base-url>/.well-known/webfinger`
-10. Go to the "Manage repositories" page ("Site administration" > "Plugins" > "Repositories" > "ownCloud Infinite Scale repository")
-11. Create a new repository instance
-12. Choose a name you like
-13. Select the Oauth2 service you created before
-14. Save the settings
-15. Navigate to any page where there is a file picker e.g. "My courses" > "Create course" > "Course image"
-16. "Add" a new file
-17. Select the repository you have created earlier
-18. Click "Login in to your account"
-19. Go through the login / oauth process
-20. Now you should be able to see the content of your personal space and select files from there
+### Workflow
 
+- **Rebase Early, Rebase Often!** We use a rebase workflow. Always rebase on the target branch before submitting a PR.
+- **Dependabot**: Automated dependency updates are managed via Dependabot. Review and merge dependency PRs promptly.
+- **Signed Commits**: All commits **must** be PGP/GPG signed. See [GitHub's signing guide](https://docs.github.com/en/authentication/managing-commit-signature-verification).
+- **DCO Sign-off**: Every commit must carry a `Signed-off-by` line:
+  ```
+  git commit -s -S -m "your commit message"
+  ```
+- **GitHub Actions Policy**: Workflows may only use actions that are (a) owned by `owncloud`, (b) created by GitHub (`actions/*`), or (c) verified in the GitHub Marketplace.
 
-## Development
+## Security
 
-:exclamation: If extra dependencies were installed for development, make sure not to commit them to the repository! :exclamation:
+**Do not open a public GitHub issue for security vulnerabilities.**
 
-### Auto-provisioning
+Report vulnerabilities at **<https://security.owncloud.com>** -- see [SECURITY.md](SECURITY.md).
 
-To reduce the setup steps specially when doing development and running automated tests these environment variables can be set to auto-provision the plugin:
+Bug bounty: [YesWeHack ownCloud Program](https://yeswehack.com/programs/owncloud-bug-bounty-program)
 
-- `MOODLE_OCIS_URL`, `MOODLE_OCIS_CLIENT_ID`, `MOODLE_OCIS_CLIENT_SECRET`, `MOODLE_OCIS_LOGO_URL` to create OAuth 2 services and repository instance during installation. Note: the auto-provisioning will be triggered only if all of `MOODLE_OCIS_URL`, `MOODLE_OCIS_CLIENT_ID`, `MOODLE_OCIS_CLIENT_SECRET` variables are set.
+## License
 
-### Run tests
+This project is licensed under the [GPL-3.0](LICENSE).
 
-#### Style check
-To meet the [moodle coding style](https://moodledev.io/general/development/policies/codingstyle), we are using phpcs with the [moodle ruleset](https://moodledev.io/general/development/tools/phpcs).
-```bash
-make test-php-style
-make test-php-style-fix
-```
-#### UI Tests
-Additional setup for [UI TEST](tests/README.md)
+## About the ownCloud OSPO
+
+The [Kiteworks Open Source Program Office](https://kiteworks.com/opensource), operating under
+the [ownCloud](https://owncloud.com) brand, launched on May 5, 2026, to steward the open source
+ecosystem around ownCloud's products. The OSPO ensures transparent governance, license compliance,
+community health, and sustainable collaboration between the open source community and
+[Kiteworks](https://www.kiteworks.com), which acquired ownCloud in 2023.
+
+- **OSPO Home**: <https://kiteworks.com/opensource>
+- **GitHub**: <https://github.com/owncloud>
+- **ownCloud**: <https://owncloud.com>
+
+For questions about the OSPO or licensing, contact ospo@kiteworks.com.
+
+### License Migration to Apache 2.0
+
+The OSPO is driving a strategic relicensing of ownCloud repositories toward the
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0), following
+the [Apache Software Foundation's third-party license policy](https://www.apache.org/legal/resolved.html).
+
+Individual repositories will migrate as their audit is completed. The LICENSE file
+in each repo reflects its **current** license status (not the target).
+
+**Current license: GPL-3.0** (Category X per Apache policy -- cannot be included in Apache-2.0 works).
+
+Migration prerequisites for this repository:
+
+- **CLA/DCO coverage**: All past contributors must have signed agreements permitting relicensing
+- **Copyleft dependency audit**: All GPL dependencies must be replaced or isolated
+- **Complete relicensing**: GPL-3.0 is a strong copyleft license; migration requires full relicensing of all files
