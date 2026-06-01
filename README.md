@@ -24,7 +24,7 @@ Follow the steps below to install and configure the Moodle repository plugin.
 3. Configure the OAuth2 service in Moodle to connect to your oCIS instance.
 4. Enable the repository plugin in Moodle's administration panel.
 
-For detailed setup including TLS certificate configuration, see the [full README](https://github.com/owncloud/moodle-repository_ocis).
+For detailed setup including TLS certificate configuration (self-signed certs, Docker development environment), see [INSTALL.md](INSTALL.md).
 
 ## Documentation
 
