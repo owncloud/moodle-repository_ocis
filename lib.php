@@ -44,7 +44,6 @@ use repository_ocis\ocis_manager;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(__DIR__ . '/vendor/autoload.php');
 require_once($CFG->dirroot . '/repository/lib.php');
 
 /**
@@ -83,6 +82,7 @@ class repository_ocis extends repository {
      * @throws coding_exception|dml_exception
      */
     public function __construct($repositoryid, $context = SYSCONTEXTID, $options = []) {
+        require_once(__DIR__ . '/vendor/autoload.php');
         parent::__construct($repositoryid, $context, $options);
         // Issuer from repository instance config.
         $issuerid = $this->get_option('issuerid');
