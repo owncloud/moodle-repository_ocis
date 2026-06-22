@@ -386,7 +386,6 @@ class repository_ocis extends repository {
             $file = $this->getocismanager()->get_ocis_client()->getResourceById($fileid);
             if (
                 ($file->getSize() > (int)$CFG->maxbytes && (int)$CFG->maxbytes !== 0)
-                || $file->getSize() > get_user_max_upload_file_size($this->context)
             ) {
                 throw new moodle_exception(
                     'exceed_maxbytes_error',
