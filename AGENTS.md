@@ -1,4 +1,4 @@
-# agents.md -- Moodle Repository for oCIS
+# AGENTS.md -- Moodle Repository for oCIS
 
 ## Repository Overview
 
